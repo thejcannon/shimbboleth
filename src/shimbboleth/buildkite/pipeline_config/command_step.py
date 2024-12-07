@@ -1,0 +1,415 @@
+# @TODO: Inline some annotations?
+
+from typing import Literal, Any, Annotated, ClassVar
+from typing_extensions import TypeAliasType
+
+from pydantic import (
+    BaseModel,
+    Field,
+    model_validator,
+)
+
+from shimbboleth.buildkite.pipeline_config._alias import FieldAlias, FieldAliasSupport
+from shimbboleth.buildkite.pipeline_config._canonicalize import (
+    Canonicalizer,
+    ListofStringCanonicalizer,
+)
+from shimbboleth.buildkite.pipeline_config._base import BKStepBase
+from shimbboleth.buildkite.pipeline_config._agents import AgentsT
+from shimbboleth.buildkite.pipeline_config._types import (
+    BranchesT,
+    EnvT,
+    LabelT,
+    SkipT,
+    LooseBoolT,
+)
+from shimbboleth.buildkite.pipeline_config._notify import CommandNotifyT
+
+
+class SoftFailByStatus(BaseModel, extra="allow"):
+    exit_status: Literal["*"] | int | None = Field(
+        default=None,
+        description="The exit status number that will cause this job to soft-fail",
+    )
+
+
+# @TODO: Canonicalize
+#   (IDK if we should flatten '*' exit statuses or convert 'true' to '*')
+SoftFailT = TypeAliasType(
+    "SoftFailT",
+    Annotated[
+        LooseBoolT | list[SoftFailByStatus],
+        Field(description="The conditions for marking the step as a soft-fail."),
+    ],
+)
+
+
+class CommandStepSignature(BaseModel, extra="allow"):
+    """
+    The signature of the command step, generally injected by agents at pipeline upload
+    """
+
+    algorithm: str | None = Field(
+        default=None,
+        description="The algorithm used to generate the signature",
+        examples=["HS512", "EdDSA", "PS256"],
+    )
+    signed_fields: list[str] | None = Field(
+        default=None,
+        description="The fields that were signed to form the signature value",
+        examples=[["command", "matrix", "plugins", "env::SOME_ENV_VAR"]],
+    )
+    value: str | None = Field(
+        default=None,
+        description="The signature value, a JWS compact signature with a detached body",
+    )
+
+
+class ManualRetryConditions(BaseModel, extra="forbid"):
+    allowed: LooseBoolT = Field(
+        default=True,
+        description="Whether or not this job can be retried manually",
+    )
+    permit_on_passed: LooseBoolT = Field(
+        default=True,
+        description="Whether or not this job can be retried after it has passed",
+    )
+    reason: str | None = Field(
+        default=None,
+        description="A string that will be displayed in a tooltip on the Retry button in Buildkite. This will only be displayed if the allowed attribute is set to false.",
+        examples=["No retries allowed on deploy steps"],
+    )
+
+
+class AutomaticRetry(BaseModel, extra="forbid"):
+    # @TODO: Canonicalize?
+    exit_status: Literal["*"] | int | list[int] | None = Field(
+        default=None,
+        description="The exit status number that will cause this job to retry",
+    )
+    limit: int | None = Field(
+        default=None,
+        description="The number of times this job can be retried",
+        ge=1,
+        le=10,
+    )
+    signal: str | None = Field(
+        default=None,
+        description="The exit signal, if any, that may be retried",
+        examples=["*", "none", "SIGKILL", "term"],
+    )
+    signal_reason: (
+        Literal[
+            "*",
+            "none",
+            "agent_refused",
+            "agent_stop",
+            "cancel",
+            "process_run_error",
+            "signature_rejected",
+        ]
+        | None
+    ) = Field(
+        default=None, description="The exit signal reason, if any, that may be retried"
+    )
+
+
+_AUTOMATIC_RETRY_DEFAULT = [AutomaticRetry(exit_status="*", limit=2)]
+
+
+class _AutomaticRetryCanonicalizer(
+    Canonicalizer[
+        LooseBoolT | AutomaticRetry | list[AutomaticRetry] | None, list[AutomaticRetry]
+    ]
+):
+    # @TODO: We could inject the default here
+
+    @classmethod
+    def canonicalize(
+        cls, value: LooseBoolT | AutomaticRetry | list[AutomaticRetry] | None
+    ) -> list[AutomaticRetry]:
+        if value is None or value == "false" or value is False:
+            return []
+        if value == "true" or value is True:
+            return _AUTOMATIC_RETRY_DEFAULT
+        if not isinstance(value, list):
+            return [value]
+        return value
+
+
+class _ManualRetryCanonicalizer(
+    Canonicalizer[
+        LooseBoolT | ManualRetryConditions | None,
+        ManualRetryConditions,
+    ]
+):
+    @classmethod
+    def canonicalize(
+        cls, value: LooseBoolT | ManualRetryConditions | None
+    ) -> ManualRetryConditions:
+        if value is None or value == "true" or value is True:
+            return ManualRetryConditions(allowed=True)
+        if value == "false" or value is False:
+            return ManualRetryConditions(allowed=False)
+        return value
+
+
+class RetryRuleset(BaseModel, extra="forbid"):
+    """The conditions for retrying this step."""
+
+    automatic: Annotated[list[AutomaticRetry], _AutomaticRetryCanonicalizer()] = Field(
+        # @TODO: Why does default have Nones here in the schema?
+        default=_AUTOMATIC_RETRY_DEFAULT,
+        description="Whether to allow a job to retry automatically. If set to true, the retry conditions are set to the default value.",
+    )
+    # NB: This canonicalizes truthy values into `ManualRetryConditions(allowed=True)`
+    manual: Annotated[ManualRetryConditions, _ManualRetryCanonicalizer()] = Field(
+        default=ManualRetryConditions(allowed=True),
+        description="Whether to allow a job to be retried manually",
+        json_schema_extra={"default": True},
+    )
+
+
+# @TODO: Make better types for the `matrix` stuff. E.g. single dimensional vs multi dimensional has different
+#   `with` values. See https://buildkite.com/docs/pipelines/configure/workflows/build-matrix#matrix-limits
+
+
+# @TODO: Validation: "Each item within a `matrix` must be either a string, boolean or integer"
+MatrixElementT = TypeAliasType("MatrixElementT", str | int | bool)
+SingleDimensionalMatrix = Annotated[
+    list[MatrixElementT],
+    Field(
+        description="List of elements for simple single-dimension Build Matrix",
+        examples=[["linux", "freebsd"]],
+    ),
+]
+
+
+class MatrixAdjustment(BaseModel, extra="forbid"):
+    """An adjustment to a Build Matrix"""
+
+    with_value: (
+        Annotated[
+            str,
+            Field(
+                description="List of existing or new elements for single-dimension Build Matrix"
+            ),
+        ]
+        | Annotated[
+            dict[
+                Annotated[
+                    str,
+                    Field(
+                        description="Build Matrix dimension name",
+                    ),
+                ],
+                Annotated[str, Field(description="Build Matrix dimension element")],
+            ],
+            Field(
+                description="Specification of a new or existing Build Matrix combination",
+                examples=[{"arch": "arm64", "os": "linux"}],
+            ),
+        ]
+    ) = Field(alias="with")
+
+    skip: SkipT | None = None
+    soft_fail: SoftFailT | None = None
+
+
+class MultiDimenisonalMatrix(BaseModel, extra="forbid"):
+    "Configuration for multi-dimension Build Matrix"
+
+    setup: (
+        Annotated[
+            list[MatrixElementT],
+            Field(
+                description="List of elements for single-dimension Build Matrix",
+                examples=[["linux", "freebsd"]],
+            ),
+        ]
+        | Annotated[
+            dict[
+                Annotated[
+                    str,
+                    Field(
+                        description="Build Matrix dimension name",
+                        pattern="^[a-zA-Z0-9_]+$",
+                    ),
+                ],
+                Annotated[
+                    list[MatrixElementT],
+                    Field(
+                        description="List of elements for this Build Matrix dimension"
+                    ),
+                ],
+            ],
+            Field(
+                description="Mapping of Build Matrix dimension names to their lists of elements",
+                examples=[{"arch": ["arm64", "riscv"], "os": ["linux", "freebsd"]}],
+            ),
+        ]
+    )
+
+    adjustments: list[MatrixAdjustment] | None = Field(
+        default=None, description="List of Build Matrix adjustments"
+    )
+
+
+PluginArrayItem = Annotated[
+    # @TODO: Any?
+    dict[str, Any],
+    Field(
+        examples=[{"docker-compose#v1.0.0": {"run": "app"}}],
+        # @TODO: Validate this Python-side
+        json_schema_extra={"maxProperties": 1},
+    ),
+]
+PluginArrayT = Annotated[
+    # @TODO: Canonicalize?
+    list[str | PluginArrayItem], Field(description="Array of plugins for this step")
+]
+PluginMapT = Annotated[
+    # @TODO: Any?
+    dict[str, Any],
+    Field(
+        description="A map of plugins for this step. Deprecated: please use the array syntax.",
+        deprecated=True,
+    ),
+]
+
+
+class CacheMap(BaseModel, extra="allow"):
+    paths: list[str]
+
+    name: str | None = None
+    size: str | None = Field(default=None, pattern="^\\d+g$")
+
+
+class _CacheCanonicalizer(Canonicalizer[str | list[str] | CacheMap, CacheMap]):
+    @classmethod
+    def canonicalize(cls, value: str | list[str] | CacheMap) -> CacheMap:
+        if isinstance(value, str):
+            return CacheMap(paths=[value])
+        if isinstance(value, list):
+            return CacheMap(paths=value)
+        return value
+
+
+CacheT = TypeAliasType(
+    "CacheT",
+    Annotated[
+        CacheMap,
+        _CacheCanonicalizer(),
+        Field(
+            description="The paths for the caches to be used in the step",
+            examples=[
+                "dist/",
+                [".build/*", "assets/*"],
+                {
+                    "name": "cool-cache",
+                    "paths": ["/path/one", "/path/two"],
+                    "size": "20g",
+                },
+            ],
+        ),
+    ],
+)
+
+CancelOnBuildFailingT = TypeAliasType(
+    "CancelOnBuildFailingT",
+    Annotated[
+        LooseBoolT,
+        Field(
+            default=False,
+            description="Whether to cancel the job as soon as the build is marked as failing",
+        ),
+    ],
+)
+
+
+class CommandStep(BKStepBase, extra="forbid"):
+    """
+    A command step runs one or more shell commands on one or more agents.
+
+    https://buildkite.com/docs/pipelines/command-step
+    """
+
+    agents: AgentsT | None = None
+    # @TODO: Canonicalize?
+    artifact_paths: str | list[str] | None = Field(
+        default=None,
+        description="The glob path/s of artifacts to upload once this step has finished running",
+        examples=[["screenshots/*"], ["dist/myapp.zip", "dist/myapp.tgz"]],
+    )
+    branches: BranchesT | None = None
+    cache: CacheT | None = None
+    cancel_on_build_failing: CancelOnBuildFailingT | None = None
+    command: Annotated[list[str], ListofStringCanonicalizer()] = Field(
+        default=[],
+        description="The commands to run on the agent",
+    )
+    # @TODO: Validate these together
+    concurrency: int | None = Field(
+        default=None,
+        description="The maximum number of jobs created from this step that are allowed to run at the same time. If you use this attribute, you must also define concurrency_group.",
+        examples=[1],
+    )
+    concurrency_group: str | None = Field(
+        default=None,
+        description="A unique name for the concurrency group that you are creating with the concurrency attribute",
+        examples=["my-pipeline/deploy"],
+    )
+    concurrency_method: Literal["ordered", "eager"] | None = Field(
+        default=None,
+        description="Control command order, allowed values are 'ordered' (default) and 'eager'.  If you use this attribute, you must also define concurrency_group and concurrency.",
+        examples=["ordered"],
+    )
+    env: EnvT | None = None
+    matrix: SingleDimensionalMatrix | MultiDimenisonalMatrix | None = None
+    notify: CommandNotifyT | None = None
+    parallelism: int | None = Field(
+        default=None,
+        description="The number of parallel jobs that will be created based on this step",
+        examples=[42],
+    )
+    plugins: PluginArrayT | PluginMapT | None = None
+    priority: int | None = Field(
+        default=None,
+        description="Priority of the job, higher priorities are assigned to agents",
+        examples=[-1, 1],
+    )
+    retry: RetryRuleset | None = None
+    signature: CommandStepSignature | None = None
+    skip: SkipT | None = None
+    soft_fail: SoftFailT | None = None
+    timeout_in_minutes: int | None = Field(
+        default=None,
+        description="The number of minutes to time out a job",
+        examples=[60],
+        ge=1,
+    )
+
+    label: LabelT | None = Field(default=None)
+    type: Literal["script", "command", "commands"] | None = None
+
+    name: ClassVar = FieldAlias("label", mode="prepend")
+    commands: ClassVar = FieldAlias(
+        "command", description="The commands to run on the agent"
+    )
+
+    @model_validator(mode="before")
+    @classmethod
+    def _check_command_commands(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            if "command" in data and "commands" in data:
+                raise ValueError(
+                    "Step type is ambiguous: use only one of `command` or `commands`"
+                )
+        return data
+
+
+class NestedCommandStep(FieldAliasSupport, extra="forbid"):
+    command: CommandStep | None = Field(default=None)
+
+    commands: ClassVar = FieldAlias("command")
+    script: ClassVar = FieldAlias("command")
