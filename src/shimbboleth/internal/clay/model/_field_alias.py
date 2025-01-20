@@ -11,6 +11,7 @@ Features:
 import dataclasses
 from typing import Literal
 
+
 @dataclasses.dataclass(slots=True, frozen=True)
 class FieldAlias:
     alias_of: str

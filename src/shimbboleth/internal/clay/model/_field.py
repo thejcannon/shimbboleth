@@ -3,7 +3,6 @@ import dataclasses
 from typing import overload
 
 
-
 T = TypeVar("T")
 
 
@@ -16,6 +15,7 @@ def field(
     json_alias: str | None = None,
 ) -> T: ...
 
+
 @overload
 def field(
     *,
@@ -24,6 +24,7 @@ def field(
     json_dumper: Callable | None = None,
     json_alias: str | None = None,
 ) -> T: ...
+
 
 @overload
 def field(
@@ -34,5 +35,9 @@ def field(
 ) -> Any: ...
 
 
-def field(*, default = dataclasses.MISSING, default_factory = dataclasses.MISSING, **metadata) -> Any:
-    return dataclasses.field(default=default, default_factory=default_factory, metadata=metadata)  # type: ignore
+def field(
+    *, default=dataclasses.MISSING, default_factory=dataclasses.MISSING, **metadata
+) -> Any:
+    return dataclasses.field(
+        default=default, default_factory=default_factory, metadata=metadata
+    )  # type: ignore

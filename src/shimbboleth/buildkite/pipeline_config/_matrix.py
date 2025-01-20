@@ -10,7 +10,12 @@ See: https://buildkite.com/docs/pipelines/configure/step-types/command-step#matr
 from typing import TypeAlias, Literal, Annotated
 
 from shimbboleth.internal.clay.model import Model, field
-from shimbboleth.internal.clay.validation import MatchesRegex, NonEmptyList, Not, NonEmptyDict
+from shimbboleth.internal.clay.validation import (
+    MatchesRegex,
+    NonEmptyList,
+    Not,
+    NonEmptyDict,
+)
 from shimbboleth.buildkite.pipeline_config._types import (
     skip_from_json,
     soft_fail_from_json,

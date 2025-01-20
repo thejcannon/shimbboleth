@@ -10,6 +10,7 @@ from shimbboleth.internal.clay._validators import ValidationDescriptor, get_vali
 
 T = TypeVar("T")
 
+
 @dataclass_transform(kw_only_default=True, field_specifiers=(dataclasses.field, field))
 class ModelMeta(type):
     __dataclass_fields__: ClassVar[dict[str, dataclasses.Field[Any]]]

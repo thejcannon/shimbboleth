@@ -8,7 +8,6 @@ from shimbboleth.internal.clay.model import Model, field, FieldAlias
 from shimbboleth.internal.clay.json_dump import dump
 
 
-
 def make_model(attrs, **kwargs):
     return type(Model)("MyModel", (Model,), attrs, **kwargs)
 

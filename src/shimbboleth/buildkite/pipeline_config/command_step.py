@@ -3,13 +3,12 @@ from typing import Literal, Any, Annotated, ClassVar
 from shimbboleth.internal.clay.model import (
     Model,
     field,
-
     FieldAlias,
-
 )
 from shimbboleth.internal.clay.jsonT import JSONObject
 from shimbboleth.internal.clay.validation import (
-    SingleKeyDict, ValidationError,
+    SingleKeyDict,
+    ValidationError,
     Ge,
     Le,
     Not,

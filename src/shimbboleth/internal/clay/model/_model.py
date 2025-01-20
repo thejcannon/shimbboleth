@@ -8,7 +8,6 @@ from shimbboleth.internal.clay.model._meta import ModelMeta
 T = TypeVar("T")
 
 
-
 class _ModelBase:
     _extra: dict[str, JSON]
     """
