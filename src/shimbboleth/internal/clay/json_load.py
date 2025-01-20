@@ -13,6 +13,7 @@ from shimbboleth.internal.clay._types import (
     AnnotationType,
     LiteralType,
     GenericUnionType,
+    get_origin,
 )
 from shimbboleth.internal.clay.validation import InvalidValueError
 
@@ -102,39 +103,6 @@ def load_generic_alias(field_type: GenericAlias, *, data: Any):
         return load_dict(data, field_type=field_type)
 
 
-def _get_union_typemap(unionT: UnionType):
-    typemap = {}
-    has_literal = False
-    for argT in unionT.__args__:
-        rawtype = argT
-        if isinstance(rawtype, LiteralType):
-            if has_literal:
-                raise TypeError(f"Multiple literals in Union: {unionT}")
-            has_literal = True
-            literal_types = {type(val) for val in rawtype.__args__}
-            if len(literal_types) > 1:
-                raise TypeError(f"Literal args must all be the same type: {unionT}")
-            rawtype = literal_types.pop()
-
-        while hasattr(rawtype, "__origin__"):
-            rawtype = rawtype.__origin__
-
-        if isinstance(rawtype, ModelMeta):
-            rawtype = dict
-        elif rawtype is re.Pattern:
-            rawtype = str
-        elif rawtype is uuid.UUID:
-            rawtype = str
-
-        if rawtype in typemap:
-            # @TODO: Improve message
-            raise TypeError(f"Overlapping types in Union: {unionT}")
-
-        typemap[rawtype] = argT
-
-    return typemap
-
-
 def _get_jsontype(field_type) -> type:
     if isinstance(field_type, LiteralType):
         literal_types = {type(val) for val in field_type.__args__}
@@ -142,10 +110,7 @@ def _get_jsontype(field_type) -> type:
             raise TypeError(f"Literal args must all be the same type: {field_type}")
         return literal_types.pop()
 
-    rawtype = field_type
-    while hasattr(rawtype, "__origin__"):
-        rawtype = rawtype.__origin__
-
+    rawtype = get_origin(field_type)
     if isinstance(rawtype, ModelMeta):
         return dict
     if rawtype is re.Pattern:
@@ -158,9 +123,16 @@ def _get_jsontype(field_type) -> type:
 
 @load.register
 def load_union_type(field_type: UnionType, *, data: Any):
-    # @TODO: Some kind of assertion this is valid/safe
-    #   (E.g. assert no two args are the same JSON type)
-    #   (and put it in `ModelMeta`?)
+    # NB: This is safe, since we check for overlapping types in
+    #  `src/shimbboleth/internal/clay/_validators.py` in `get_union_type_validators`.
+    # (not true, JSON loaders)
+
+    # @TODO: Turn this off outside of shimbboleth tests?
+    if __debug__:
+        jsontypes = {_get_jsontype(argT) for argT in field_type.__args__}
+        assert (
+            len(field_type.__args__) == len(jsontypes)
+        ), f"Overlapping outer types in Union is unsupported: Input: `{field_type.__args__}`. Result: `{jsontypes}`."
 
     for argT in field_type.__args__:
         expected_type = _get_jsontype(argT)

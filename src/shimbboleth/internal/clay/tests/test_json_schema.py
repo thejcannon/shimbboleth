@@ -12,7 +12,7 @@ from shimbboleth.internal.clay.validation import (
 )
 from shimbboleth.internal.clay.field import field
 from shimbboleth.internal.clay.field_alias import FieldAlias
-from typing import Annotated, Literal, ClassVar
+from typing import Annotated, Literal, ClassVar, Union
 
 import pytest
 from pytest import param
@@ -58,6 +58,11 @@ def str_to_int(value: str) -> int:
             id="union",
         ),
         param(
+            Union[bool, int],
+            {"oneOf": [{"type": "boolean"}, {"type": "integer"}]},
+            id="union",
+        ),
+        param(
             str | None, {"oneOf": [{"type": "string"}, {"type": "null"}]}, id="union"
         ),
         # Literal
@@ -79,7 +84,7 @@ def str_to_int(value: str) -> int:
         # Annotated
         param(
             NonEmptyList[int],
-            {"type": "array", "items": {"type": "integer"}, "minLength": 1},
+            {"type": "array", "items": {"type": "integer"}, "minItems": 1},
             id="annotated",
         ),
         param(

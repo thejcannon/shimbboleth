@@ -10,9 +10,9 @@ pre-commit:
       tags:
         - formatter
       glob: "*.{py}"
-      run: uv run ruff format
+      run: uv run ruff format {staged_files}
     ruff-check:
       tags:
         - fixer
       glob: "*.{py}"
-      run: uv run ruff check --fix
+      run: uv run ruff check --fix {staged_files}

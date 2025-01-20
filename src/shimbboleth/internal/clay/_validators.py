@@ -8,7 +8,11 @@ from typing import (
 from types import MemberDescriptorType, GenericAlias, UnionType
 import dataclasses
 import uuid
-from shimbboleth.internal.clay._types import AnnotationType, GenericUnionType
+from shimbboleth.internal.clay._types import (
+    AnnotationType,
+    GenericUnionType,
+    get_origin,
+)
 from shimbboleth.internal.clay.validation import (
     ValidationError,
     _NotGenericAlias,
@@ -73,12 +77,8 @@ class UnionValidator:
     # NB: This is an incomplete map, only types with validators will be included.
     validators_by_type: Mapping[type, tuple[Validator]]
 
-    # @TODO: Description
-    description = "@TODO"
-
     def __call__(self, value: str):
         # NB: Remember, we assume data type-correctness
-        # @TODO: This doesn't handle subtyping, but IDK if we want to support that
         validators = self.validators_by_type.get(type(value), [])
         for validator in validators:
             validator(value)
@@ -106,17 +106,13 @@ def get_generic_alias_validators(field_type: GenericAlias) -> Iterable[Validator
 
 @get_validators.register
 def get_union_type_validators(field_type: UnionType) -> Iterable[Validator]:
-    validators_by_type = {}
-    for argT in field_type.__args__:
-        rawtype = argT
-        while hasattr(rawtype, "__origin__"):
-            rawtype = rawtype.__origin__
-
-        if rawtype in validators_by_type:
-            raise TypeError(
-                f"Overlapping outer types in Union is unsupported: found multiple '{rawtype}' types."
-            )
-        validators_by_type[rawtype] = list(get_validators(argT))
+    validators_by_type = {
+        get_origin(argT): list(get_validators(argT)) for argT in field_type.__args__
+    }
+    # @TODO: Turn this off outside of shimbboleth tests?
+    assert (
+        len(validators_by_type) == len(field_type.__args__)
+    ), f"Overlapping outer types in Union is unsupported: Input: `{field_type.__args__}`. Result: `{validators_by_type}`."
 
     validators_by_type = {
         key: tuple(value) for key, value in validators_by_type.items() if value

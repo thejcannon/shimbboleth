@@ -8,3 +8,11 @@ LiteralType: TypeAlias = type(Literal[None])  # type: ignore
 
 GenericUnionType: TypeAlias = type(Union[int, str])  # type: ignore
 """The "type" of a Union type. This differs from types.UnionType (which is returned by `int | str`)."""
+
+
+# NB: Differs from `typing.get_origin`. This one doesn't special-case `Annotated`.
+def get_origin(t, /):
+    ret = t
+    while hasattr(ret, "__origin__"):
+        ret = ret.__origin__
+    return ret

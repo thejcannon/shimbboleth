@@ -13,6 +13,7 @@ T = TypeVar("T")
 
 @dataclass_transform(kw_only_default=True, field_specifiers=(dataclasses.field, field))
 class ModelMeta(type):
+    __dataclass_fields__: ClassVar[dict[str, dataclasses.Field[Any]]]
     __allow_extra_properties__: bool
     __field_aliases__: MappingProxyType[str, FieldAlias] = MappingProxyType({})
     __json_fieldnames__: frozenset[str]
@@ -39,10 +40,6 @@ class ModelMeta(type):
         return dataclasses.dataclass(slots=True, kw_only=True)(cls)
 
     def __init__(cls, name, bases, namespace, *, extra: bool | None = None):
-        # @TODO: Validate that the attribute types follow the guidelines:
-        # - Only types we expect (mostly JSON types and some nicities like Literal)
-        # - No overlap of types (use a loader)
-
         cls.__allow_extra_properties__ = bool(extra)
 
         cls.__field_aliases__ = MappingProxyType(
@@ -58,7 +55,7 @@ class ModelMeta(type):
 
         cls.__json_fieldnames__ = frozenset(
             field.metadata.get("json_alias", field.name)
-            for field in dataclasses.fields(cls)  # type: ignore
+            for field in dataclasses.fields(cls)
         )
 
         # Replace the fields with validators with descriptors which invoke the validators before setting
@@ -73,8 +70,7 @@ class ModelMeta(type):
                     ),
                 )
 
-    # @TODO cache this (immutably)
-    @property
+    @property  # NB: Not cached # @TODO: method instead of prop? (Hard part is immutability)
     def model_json_schema(cls) -> JSONObject:
         from shimbboleth.internal.clay.json_schema import schema
 
@@ -83,4 +79,5 @@ class ModelMeta(type):
         return {**model_defs.pop(cls.__name__), "$defs": model_defs}
 
     def model_load(cls: T, data: Any) -> T:
+        # NB: Implemented in `Model`
         raise NotImplementedError

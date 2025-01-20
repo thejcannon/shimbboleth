@@ -6,6 +6,7 @@ import uuid
 import dataclasses
 
 from shimbboleth.internal.clay.model import Model
+from shimbboleth.internal.clay.model_meta import ModelMeta
 from shimbboleth.internal.clay.json_dump import dump
 from shimbboleth.internal.clay._types import (
     AnnotationType,
@@ -152,9 +153,53 @@ def schema_dict(
 
 class _ModelFieldSchemaHelper:
     @staticmethod
+    def _check_field_type(field: dataclasses.Field):
+        """
+        Check that the field has a supported (union) type.
+
+        Unsupported field tyoes some in two flavors:
+            - Nested unions
+            - Unions with overlapping JSON types
+
+        We do this check so that `json_load` can just take the first
+        passing `isiinstance` check, rather than having to check all
+        types in the union.
+
+        NB: We do this in `json_schema` because we know:
+            - We'll be getting the schema for our models
+            - Schema generation isn't excpected to be as fast as possible
+        """
+        input_type = field.type
+        json_loader = field.metadata.get("json_loader", None)
+        if json_loader:
+            input_type = field.metadata.get(
+                "json_schema_type", json_loader.__annotations__["value"]
+            )
+
+        if isinstance(input_type, (UnionType, GenericUnionType)):
+            json_types = set()
+            for argT in input_type.__args__:
+                assert not isinstance(argT, (UnionType, GenericUnionType))
+
+                rawtype = argT
+                while hasattr(rawtype, "__origin__"):
+                    rawtype = rawtype.__origin__
+
+                if isinstance(rawtype, ModelMeta):
+                    rawtype = dict
+                elif rawtype is re.Pattern:
+                    rawtype = str
+                elif rawtype is uuid.UUID:
+                    rawtype = str
+
+                assert rawtype not in json_types, f"Overlapping types in Union: {argT}"
+
+    @staticmethod
     def _get_field_type_schema(
         field: dataclasses.Field, *, model_defs: dict[str, JSONObject]
     ) -> JSONObject:
+        _ModelFieldSchemaHelper._check_field_type(field)
+
         json_loader = field.metadata.get("json_loader", None)
         if json_loader:
             input_type = field.metadata.get(

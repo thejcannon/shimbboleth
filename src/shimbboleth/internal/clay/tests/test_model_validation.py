@@ -23,4 +23,4 @@ def test_error_message():
     with pytest.raises(ValidationError) as e:
         MyModel(field="")
 
-    assert "Field: field" in str(e.value)
+    assert "Path: .field" in str(e.value)
