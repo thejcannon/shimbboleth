@@ -1,7 +1,7 @@
 from typing import Any, TypeAlias, Literal, cast
 from functools import lru_cache
 
-from shimbboleth.internal.clay import Model, field
+from shimbboleth.internal.clay.model import Model, field
 from shimbboleth.internal.clay.jsonT import JSONArray, JSONObject
 from shimbboleth.internal.clay.validation import InvalidValueError
 

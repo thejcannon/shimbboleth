@@ -1,15 +1,14 @@
-from typing import dataclass_transform, Any, ClassVar, TypeVar
-from types import MappingProxyType
+from typing import Any, TypeVar
 import dataclasses
+from typing import dataclass_transform, ClassVar
+from types import MappingProxyType
 
-from shimbboleth.internal.clay.field import field
-from shimbboleth.internal.clay.field_alias import FieldAlias
-from shimbboleth.internal.clay._validators import ValidationDescriptor, get_validators
 from shimbboleth.internal.clay.jsonT import JSONObject
-
+from shimbboleth.internal.clay.model._field_alias import FieldAlias
+from shimbboleth.internal.clay.model._field import field
+from shimbboleth.internal.clay._validators import ValidationDescriptor, get_validators
 
 T = TypeVar("T")
-
 
 @dataclass_transform(kw_only_default=True, field_specifiers=(dataclasses.field, field))
 class ModelMeta(type):

@@ -1,5 +1,8 @@
-from typing import Callable, Any, TypeVar, overload
+from typing import Any, TypeVar, Callable
 import dataclasses
+from typing import overload
+
+
 
 T = TypeVar("T")
 
@@ -11,9 +14,16 @@ def field(
     json_loader: Callable | None = None,
     json_dumper: Callable | None = None,
     json_alias: str | None = None,
-    **field_kwargs,
 ) -> T: ...
 
+@overload
+def field(
+    *,
+    default_factory: Callable[[], T],
+    json_loader: Callable | None = None,
+    json_dumper: Callable | None = None,
+    json_alias: str | None = None,
+) -> T: ...
 
 @overload
 def field(
@@ -21,23 +31,8 @@ def field(
     json_loader: Callable | None = None,
     json_dumper: Callable | None = None,
     json_alias: str | None = None,
-    **field_kwargs,
 ) -> Any: ...
 
 
-def field(
-    *,
-    json_loader: Callable | None = None,
-    json_dumper: Callable | None = None,
-    json_alias: str | None = None,
-    **field_kwargs,
-) -> Any:
-    metadata = {}
-    if json_loader:
-        metadata["json_loader"] = json_loader
-    if json_dumper:
-        metadata["json_dumper"] = json_dumper
-    if json_alias:
-        metadata["json_alias"] = json_alias
-
-    return dataclasses.field(**field_kwargs, metadata=metadata)
+def field(*, default = dataclasses.MISSING, default_factory = dataclasses.MISSING, **metadata) -> Any:
+    return dataclasses.field(default=default, default_factory=default_factory, metadata=metadata)  # type: ignore

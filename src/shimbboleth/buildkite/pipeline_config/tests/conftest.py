@@ -12,28 +12,28 @@ from shimbboleth.buildkite.pipeline_config import (
     GroupStep,
     get_schema,
 )
-from shimbboleth.internal.clay import Model
+from shimbboleth.internal.clay.model import Model
 import jsonschema
 
-T = TypeVar("T", bound=Model)
+ModelT = TypeVar("ModelT", bound=Model)
 
 UPSTREAM_JSON_SCHEMA_COMMIT = "2fbbfc199bd66c0ff64303a2d9c7072ad24f3ce3"
 UPSTREAM_JSON_SCHEMA_URL = f"https://raw.githubusercontent.com/buildkite/pipeline-schema/{UPSTREAM_JSON_SCHEMA_COMMIT}/schema.json"
 
 
 @dataclass(slots=True, frozen=True)
-class StepTypeParam(Generic[T]):
-    cls: type[T]
+class StepTypeParam(Generic[ModelT]):
+    cls: type[ModelT]
     ctor_defaults: dict[str, Any]
 
     @property
     def stepname(self) -> str:
         return self.cls.__name__.lower().removesuffix("step")
 
-    def ctor(self, **kwargs) -> T:
+    def ctor(self, **kwargs) -> ModelT:
         return self.cls(**{**kwargs, **self.ctor_defaults})
 
-    def model_load(self, value: dict[str, Any]) -> T:
+    def model_load(self, value: dict[str, Any]) -> ModelT:
         return self.cls.model_load({**value, **self.dumped_default})
 
     @property

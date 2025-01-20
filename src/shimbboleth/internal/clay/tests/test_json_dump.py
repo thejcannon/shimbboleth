@@ -4,10 +4,9 @@ import re
 from typing import ClassVar
 from pytest import param
 
-from shimbboleth.internal.clay.model import Model
-from shimbboleth.internal.clay.field import field
+from shimbboleth.internal.clay.model import Model, field, FieldAlias
 from shimbboleth.internal.clay.json_dump import dump
-from shimbboleth.internal.clay.field_alias import FieldAlias
+
 
 
 def make_model(attrs, **kwargs):

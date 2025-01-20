@@ -6,7 +6,6 @@ import uuid
 import dataclasses
 
 from shimbboleth.internal.clay.model import Model
-from shimbboleth.internal.clay.model_meta import ModelMeta
 from shimbboleth.internal.clay.json_dump import dump
 from shimbboleth.internal.clay._types import (
     AnnotationType,
@@ -185,7 +184,7 @@ class _ModelFieldSchemaHelper:
                 while hasattr(rawtype, "__origin__"):
                     rawtype = rawtype.__origin__
 
-                if isinstance(rawtype, ModelMeta):
+                if isinstance(rawtype, type) and issubclass(rawtype, Model):
                     rawtype = dict
                 elif rawtype is re.Pattern:
                     rawtype = str

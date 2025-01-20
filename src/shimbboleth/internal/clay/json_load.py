@@ -7,7 +7,6 @@ import dataclasses
 import logging
 
 from shimbboleth.internal.clay.jsonT import JSONObject, JSON
-from shimbboleth.internal.clay.model_meta import ModelMeta
 from shimbboleth.internal.clay.model import Model
 from shimbboleth.internal.clay._types import (
     AnnotationType,
@@ -111,7 +110,7 @@ def _get_jsontype(field_type) -> type:
         return literal_types.pop()
 
     rawtype = get_origin(field_type)
-    if isinstance(rawtype, ModelMeta):
+    if isinstance(rawtype, type) and issubclass(rawtype, Model):
         return dict
     if rawtype is re.Pattern:
         return str

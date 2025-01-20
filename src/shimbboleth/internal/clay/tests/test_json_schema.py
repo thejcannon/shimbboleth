@@ -1,7 +1,7 @@
 from shimbboleth.internal.clay.json_schema import schema
 import re
 import uuid
-from shimbboleth.internal.clay.model import Model
+from shimbboleth.internal.clay.model import Model, field, FieldAlias
 from shimbboleth.internal.clay.validation import (
     MatchesRegex,
     Ge,
@@ -10,8 +10,6 @@ from shimbboleth.internal.clay.validation import (
     NonEmptyString,
     Not,
 )
-from shimbboleth.internal.clay.field import field
-from shimbboleth.internal.clay.field_alias import FieldAlias
 from typing import Annotated, Literal, ClassVar, Union
 
 import pytest

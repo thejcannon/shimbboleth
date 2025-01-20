@@ -1,6 +1,7 @@
 from typing import Literal, Any, Annotated
 
-from shimbboleth.internal.clay import Model, NonEmptyList, Not
+from shimbboleth.internal.clay.model import Model
+from shimbboleth.internal.clay.validation import NonEmptyList, Not
 
 
 class ExitStatus(Model, extra=True):

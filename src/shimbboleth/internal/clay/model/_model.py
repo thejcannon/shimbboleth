@@ -1,10 +1,12 @@
 from typing import Any, Self, TypeVar, Callable
 import dataclasses
 
-from shimbboleth.internal.clay.model_meta import ModelMeta
 from shimbboleth.internal.clay.jsonT import JSON, JSONObject
+from shimbboleth.internal.clay.model._meta import ModelMeta
+
 
 T = TypeVar("T")
+
 
 
 class _ModelBase:

@@ -1,17 +1,21 @@
 from typing import Literal, Any, Annotated, ClassVar
 
-from shimbboleth.internal.clay import (
+from shimbboleth.internal.clay.model import (
     Model,
     field,
-    MatchesRegex,
+
     FieldAlias,
+
+)
+from shimbboleth.internal.clay.jsonT import JSONObject
+from shimbboleth.internal.clay.validation import (
+    SingleKeyDict, ValidationError,
     Ge,
     Le,
     Not,
     NonEmptyList,
+    MatchesRegex,
 )
-from shimbboleth.internal.clay.jsonT import JSONObject
-from shimbboleth.internal.clay.validation import SingleKeyDict, ValidationError
 
 from shimbboleth.buildkite.pipeline_config._base import StepBase
 from shimbboleth.buildkite.pipeline_config._agents import agents_from_json

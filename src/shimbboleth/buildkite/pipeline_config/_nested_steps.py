@@ -1,6 +1,6 @@
 from typing import ClassVar
 
-from shimbboleth.internal.clay import Model, FieldAlias
+from shimbboleth.internal.clay.model import Model, FieldAlias
 
 from shimbboleth.buildkite.pipeline_config.block_step import BlockStep
 from shimbboleth.buildkite.pipeline_config.input_step import InputStep

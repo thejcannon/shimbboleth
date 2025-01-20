@@ -2,7 +2,8 @@
 Contains the base class for all steps: StepBase.
 """
 
-from shimbboleth.internal.clay import Model, field, FieldAlias, Not
+from shimbboleth.internal.clay.model import Model, field, FieldAlias
+from shimbboleth.internal.clay.validation import Not
 from shimbboleth.internal.clay.jsonT import JSONObject
 from shimbboleth.internal.clay.json_load import JSONLoadError
 from shimbboleth.buildkite.pipeline_config._types import bool_from_json

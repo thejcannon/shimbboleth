@@ -1,7 +1,8 @@
 from typing import Literal, TypeAlias, Any
 import dataclasses
 
-from shimbboleth.internal.clay import Model, field, NonEmptyList
+from shimbboleth.internal.clay.model import Model, field
+from shimbboleth.internal.clay.validation import NonEmptyList
 from shimbboleth.internal.clay.json_load import JSONLoadError
 
 

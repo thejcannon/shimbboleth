@@ -1,7 +1,7 @@
 from typing import Literal, ClassVar
 
 
-from shimbboleth.internal.clay import field, FieldAlias, Model
+from shimbboleth.internal.clay.model import field, FieldAlias, Model
 from shimbboleth.internal.clay.jsonT import JSONObject
 
 from shimbboleth.buildkite.pipeline_config._base import StepBase
