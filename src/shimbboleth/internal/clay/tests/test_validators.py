@@ -1,5 +1,6 @@
 from shimbboleth.internal.clay._validators import get_validators
 from shimbboleth.internal.clay.validation import (
+    MaxLength,
     ValidationError,
     NonEmpty,
     MatchesRegex,
@@ -10,7 +11,6 @@ from shimbboleth.internal.clay.validation import (
 import uuid
 from typing import Annotated, Union
 
-# @TODO: MaxLength
 
 import pytest
 from pytest import param
@@ -55,10 +55,14 @@ from pytest import param
         param(
             Annotated[str, uuid.UUID], "123e4567-e89b-12d3-a456-426614174000", id="uuid"
         ),
+        # Union
         param(Union[Annotated[str, NonEmpty], Annotated[int, Ge(1)]], "1", id="union"),
         param(Union[Annotated[str, NonEmpty], Annotated[int, Ge(1)]], 1, id="union"),
         param(list[Annotated[str, NonEmpty]] | int, ["a"], id="union"),
         param(list[Annotated[str, NonEmpty]] | int, 1, id="union"),
+        # MaxLength
+        param(Annotated[list[int], MaxLength(1)], [], id="MaxLength"),
+        param(Annotated[list[int], MaxLength(1)], [1], id="MaxLength"),
     ],
 )
 def test_valid(field_type, obj):
@@ -151,6 +155,13 @@ def test_valid(field_type, obj):
             [""],
             "`''` to be non-empty",
             id="union",
+        ),
+        # MaxLength
+        param(
+            Annotated[list[int], MaxLength(1)],
+            [1, 1],
+            r"`\[1, 1\]` to have a length less than `1`",
+            id="MaxLength",
         ),
     ],
 )

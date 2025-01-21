@@ -26,6 +26,8 @@ from shimbboleth.internal.clay.validation import (
 )
 from functools import singledispatch
 
+from shimbboleth.internal.utils import is_shimbboleth_pytesting
+
 K = TypeVar("K")
 V = TypeVar("V")
 
@@ -109,10 +111,11 @@ def get_union_type_validators(field_type: UnionType) -> Iterable[Validator]:
     validators_by_type = {
         get_origin(argT): list(get_validators(argT)) for argT in field_type.__args__
     }
-    # @TODO: Turn this off outside of shimbboleth tests?
-    assert (
-        len(validators_by_type) == len(field_type.__args__)
-    ), f"Overlapping outer types in Union is unsupported: Input: `{field_type.__args__}`. Result: `{validators_by_type}`."
+
+    if is_shimbboleth_pytesting():
+        assert (
+            len(validators_by_type) == len(field_type.__args__)
+        ), f"Overlapping outer types in Union is unsupported: Input: `{field_type.__args__}`. Result: `{validators_by_type}`."
 
     validators_by_type = {
         key: tuple(value) for key, value in validators_by_type.items() if value
@@ -166,7 +169,6 @@ class ValidationDescriptor:
 
     def __set__(self, instance, value):
         for validator in self.validators:
-            # @TODO: From JSON, this should be the JSON alias
             with ValidationError.context(attr=self.field_descriptor.__name__):
                 validator(value)
         self.field_descriptor.__set__(instance, value)

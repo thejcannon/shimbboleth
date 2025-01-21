@@ -8,6 +8,7 @@ Currently configures:
 #   plugin in its own little box.
 
 import pytest
+import os
 
 
 def pytest_addoption(parser):
@@ -31,3 +32,5 @@ def pytest_runtest_setup(item):
         "integration"
     ):
         pytest.skip("Integration test; use `-m integration` to run")
+
+    os.environ["SHIMBBOLETH_PYTESTING"] = "1"

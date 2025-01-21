@@ -5,6 +5,7 @@ import re
 import uuid
 import dataclasses
 
+from shimbboleth.internal.utils import is_shimbboleth_pytesting
 from shimbboleth.internal.clay.model import Model
 from shimbboleth.internal.clay.json_dump import dump
 from shimbboleth.internal.clay._types import (
@@ -107,8 +108,12 @@ def _schema_annotation_type(annotation: Any, *, outer: Any) -> JSONObject:
     elif isinstance(annotation, _NotGenericAlias):
         return {"not": _schema_annotation_type(annotation.inner, outer=outer)}
     elif isinstance(annotation, MaxLength):
-        # @TODO: List and str support
-        return {"maxProperties": annotation.limit}
+        outer = getattr(outer, "__origin__", outer)
+        if outer is list:
+            return {"maxItems": annotation.limit}
+        elif outer is dict:
+            return {"maxProperties": annotation.limit}
+        return {"maxLength": annotation.limit}
     elif annotation is uuid.UUID:
         return {
             "type": "string",
@@ -197,7 +202,8 @@ class _ModelFieldSchemaHelper:
     def _get_field_type_schema(
         field: dataclasses.Field, *, model_defs: dict[str, JSONObject]
     ) -> JSONObject:
-        _ModelFieldSchemaHelper._check_field_type(field)
+        if is_shimbboleth_pytesting():
+            _ModelFieldSchemaHelper._check_field_type(field)
 
         json_loader = field.metadata.get("json_loader", None)
         if json_loader:
@@ -222,6 +228,12 @@ class _ModelFieldSchemaHelper:
             field_schema["default"] = dump(field.default)
         elif field.default_factory is not dataclasses.MISSING:
             field_schema["default"] = dump(field.default_factory())
+
+        if is_shimbboleth_pytesting() and "default" in field_schema:
+            __import__("jsonschema").validate(
+                field_schema["default"], {**field_schema, "$defs": model_defs}
+            )
+
         return field_schema
 
 

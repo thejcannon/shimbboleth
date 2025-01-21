@@ -503,6 +503,9 @@
             },
             {
               "$ref": "#/$defs/MultiDimensionMatrix"
+            },
+            {
+              "type": "null"
             }
           ]
         },

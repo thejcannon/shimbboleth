@@ -295,7 +295,7 @@ def _convert_env(
 
 @CommandStep._json_loader_(
     "matrix",
-    json_schema_type=MatrixArray | SingleDimensionMatrix | MultiDimensionMatrix,
+    json_schema_type=MatrixArray | SingleDimensionMatrix | MultiDimensionMatrix | None,
 )
 def _load_matrix(
     value: MatrixArray | JSONObject | None,

@@ -1,10 +1,14 @@
+"""
+Tests related to `json_load.py`.
+"""
+
 import pytest
 from typing import Literal, Annotated, ClassVar
 import uuid
 from pytest import param
 
 from shimbboleth.internal.clay.model import Model, field, FieldAlias
-from shimbboleth.internal.clay.validation import MatchesRegex, NonEmpty
+from shimbboleth.internal.clay.validation import MatchesRegex, NonEmpty, Ge
 from shimbboleth.internal.clay.json_load import load
 
 
@@ -62,7 +66,8 @@ def str_to_int(value: str) -> int:
         param(Annotated[str, MatchesRegex(r"^.*$")], "", id="annotated"),
     ],
 )
-def test_passing(field_type, data):
+def test_no_change(field_type, data):
+    """Test loading with types+objects that are loaded as themselves"""
     assert load(field_type, data=data) == data
 
 
@@ -120,6 +125,7 @@ def test_passing_uuid(field_type, data):
     ],
 )
 def test_invalid(field_type, data):
+    """Test invalid combinations of type + object"""
     with pytest.raises(TypeError):
         load(field_type, data=data)
 
@@ -236,12 +242,17 @@ def test_model__extras():
     assert instance._extra == {}
 
 
-def test_nested_models():
-    # @TODO: Test list[Model] or dict[str, Model] or `Model | None`
-    pass
+def test_model_in_other_type():
+    class MyModel(Model):
+        field: str
 
-
-# @TODO: Test paths
+    assert load(list[MyModel], data=[{"field": "one king mop"}]) == [
+        MyModel(field="one king mop")
+    ]
+    assert load(dict[str, MyModel], data={"key": {"field": "one king mop"}}) == {
+        "key": MyModel(field="one king mop")
+    }
+    assert load(MyModel | None, data=None) is None
 
 
 def test_field_alias():
@@ -261,3 +272,28 @@ def test_json_alias():
 
     with pytest.raises(TypeError):
         load(MyModel, data={"if_condition": "value"})
+
+
+def test__load_error__json_alias_path():
+    """
+    Test when loading fails the path in the error uses the `json_alias`.
+    """
+
+    class MyModel(Model):
+        integer: int = field(json_alias="int")
+
+    with pytest.raises(Exception, match=r"Path: .int"):
+        MyModel.model_load({"int": ""})
+
+
+def test__validation_error__json_alias_path():
+    """
+    Test when validation fails (which is Python-side)
+    the path in the error uses the `json_alias`.
+    """
+
+    class MyModel(Model):
+        integer: Annotated[int, Ge(0)] = field(json_alias="int")
+
+    with pytest.raises(Exception, match=r"Path: .int"):
+        MyModel.model_load({"int": -1})

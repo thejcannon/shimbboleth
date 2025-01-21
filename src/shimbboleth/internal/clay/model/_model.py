@@ -1,3 +1,7 @@
+"""
+Module defining the `Model` base class for all shimbboleth modeling.
+"""
+
 from typing import Any, Self, TypeVar, Callable
 import dataclasses
 
@@ -20,7 +24,6 @@ class Model(_ModelBase, metaclass=ModelMeta):
     def _json_loader_(cls, field: str, *, json_schema_type=None) -> Callable[[T], T]:
         field = cls.__dataclass_fields__[field]
 
-        # @TODO: Assert funcname?
         assert isinstance(field, dataclasses.Field), "Did you forget to = field(...)?"
         assert (
             "json_loader" not in field.metadata
@@ -43,7 +46,6 @@ class Model(_ModelBase, metaclass=ModelMeta):
 
     @staticmethod
     def _json_dumper_(field) -> Callable[[T], T]:
-        # @TODO: Assert funcname
         assert isinstance(field, dataclasses.Field), "Did you forget to = field(...)?"
         assert (
             "json_dumper" not in field.metadata

@@ -1,12 +1,14 @@
+from contextlib import contextmanager
 from functools import singledispatch
-from typing import Any, TypeVar, TYPE_CHECKING
+from typing import Any, TypeVar
 from types import UnionType, GenericAlias
 import re
 import uuid
 import dataclasses
 import logging
 
-from shimbboleth.internal.clay.jsonT import JSONObject, JSON
+from shimbboleth.internal.utils import is_shimbboleth_pytesting
+from shimbboleth.internal.clay.jsonT import JSONObject
 from shimbboleth.internal.clay.model import Model
 from shimbboleth.internal.clay._types import (
     AnnotationType,
@@ -14,7 +16,7 @@ from shimbboleth.internal.clay._types import (
     GenericUnionType,
     get_origin,
 )
-from shimbboleth.internal.clay.validation import InvalidValueError
+from shimbboleth.internal.clay.validation import InvalidValueError, ValidationError
 
 T = TypeVar("T")
 ModelT = TypeVar("ModelT", bound=Model)
@@ -27,6 +29,7 @@ class JSONLoadError(InvalidValueError, TypeError):
     pass
 
 
+# @TODO: Can use ValidationError
 class WrongTypeError(JSONLoadError):
     def __init__(self, expected, data):
         super().__init__(
@@ -34,6 +37,7 @@ class WrongTypeError(JSONLoadError):
         )
 
 
+# @TODO: Can use ValidationError
 class ExtrasNotAllowedError(JSONLoadError):
     def __init__(self, model_type: type[Model], extras: JSONObject):
         super().__init__(
@@ -41,16 +45,19 @@ class ExtrasNotAllowedError(JSONLoadError):
         )
 
 
+# @TODO: Can use ValidationError
 class NotAValidUUIDError(JSONLoadError):
     def __init__(self, data):
         super().__init__(f"Expected a valid UUID, got `{data!r}`")
 
 
+# @TODO: Can use ValidationError
 class NotAValidPatternError(JSONLoadError):
     def __init__(self, data):
         super().__init__(f"Expected a valid regex pattern, got `{data!r}`")
 
 
+# @TODO: Can use ValidationError
 class MissingFieldsError(JSONLoadError):
     def __init__(self, model_name: str, *fieldnames: str):
         fieldnames = tuple(f"`{field}`" for field in fieldnames)
@@ -66,7 +73,7 @@ def _ensure_is(data, expected: type[T]) -> T:
 
 
 @singledispatch
-def load(field_type, *, data):  # type: ignore
+def load(field_type, *, data):
     if field_type is bool:
         return load_bool(data)
     if field_type is int:
@@ -81,11 +88,7 @@ def load(field_type, *, data):  # type: ignore
     if field_type is uuid.UUID:
         return load_uuid(data)
     if field_type is Any:
-        # @TODO: Remove this
         return data
-    # NB: This is a string because it's a recursively defined type
-    if field_type == "JSON":
-        return load(JSON, data=data)  # type: ignore
     # NB: Dispatched manually, so we can avoid ciruclar definition with `Model.model_load`
     if issubclass(field_type, Model):
         return field_type.model_load(data)
@@ -126,8 +129,7 @@ def load_union_type(field_type: UnionType, *, data: Any):
     #  `src/shimbboleth/internal/clay/_validators.py` in `get_union_type_validators`.
     # (not true, JSON loaders)
 
-    # @TODO: Turn this off outside of shimbboleth tests?
-    if __debug__:
+    if is_shimbboleth_pytesting():
         jsontypes = {_get_jsontype(argT) for argT in field_type.__args__}
         assert (
             len(field_type.__args__) == len(jsontypes)
@@ -149,8 +151,6 @@ def _load_generic_union_type(field_type: GenericUnionType, *, data: Any):
 
 @load.register
 def load_literal(field_type: LiteralType, *, data: Any):
-    # @TODO: This is duplicated in `validation` (for annotated literals)
-    #   (Excpet not anymore? Did I forget some code?)
     for possibility in field_type.__args__:
         # NB: compare bool/int by identity (since `bool` inherits from `int`)
         if data is possibility:
@@ -197,10 +197,12 @@ def load_list(data: Any, *, field_type: GenericAlias) -> list[T]:
 def load_dict(data: Any, *, field_type: GenericAlias) -> dict:
     data = _ensure_is(data, dict)
     keyT, valueT = field_type.__args__
-    # @TODO: Context?
-    return {
-        load(keyT, data=key): load(valueT, data=value) for key, value in data.items()
-    }
+    ret = {}
+    for key, value in data.items():
+        loaded_key = load(keyT, data=key)
+        with JSONLoadError.context(key=key):
+            ret[loaded_key] = load(valueT, data=value)
+    return ret
 
 
 def load_pattern(data: Any) -> re.Pattern:
@@ -265,8 +267,7 @@ class _LoadModelHelper:
             json_loader.__annotations__["value"] if json_loader else field.type
         )
 
-        # @TODO: Use the alias in the context?
-        with JSONLoadError.context(attr=field.name):
+        with JSONLoadError.context(attr=field.metadata.get("json_alias", field.name)):
             value = load(expected_type, data=data[field.name])
             if json_loader:
                 value = json_loader(value)
@@ -286,6 +287,22 @@ class _LoadModelHelper:
         if missing_fields:
             raise MissingFieldsError(model_type.__name__, *missing_fields)
 
+    @contextmanager
+    @staticmethod
+    def rename_field_alias_in_path(model_type: type[Model]):
+        try:
+            yield
+        except ValidationError as e:
+            if not e.path[-1].startswith("."):
+                raise
+
+            field = model_type.__dataclass_fields__.get(e.path[-1][1:])
+            if field is not None:
+                json_alias = field.metadata.get("json_alias")
+                if json_alias:
+                    e.path[-1] = "." + json_alias
+            raise
+
 
 def load_model(model_type: type[ModelT], data: JSONObject) -> ModelT:
     data = load(JSONObject, data=data)
@@ -301,11 +318,8 @@ def load_model(model_type: type[ModelT], data: JSONObject) -> ModelT:
     }
     _LoadModelHelper.check_required_fields(model_type, init_kwargs)
 
-    instance = model_type(**init_kwargs)
+    with _LoadModelHelper.rename_field_alias_in_path(model_type):
+        instance = model_type(**init_kwargs)
+
     instance._extra = extras
     return instance
-
-
-if TYPE_CHECKING:
-
-    def load(field_type: type[T], *, data: JSONObject) -> T: ...

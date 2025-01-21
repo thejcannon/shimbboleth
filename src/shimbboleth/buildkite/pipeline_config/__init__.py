@@ -38,6 +38,8 @@ StepsT: TypeAlias = list[
 ]
 
 
+# @TODO: Just load it from disk?
+#   (and have the one test not use this or something)
 @lru_cache(maxsize=1)
 def get_schema():
     schema = BuildkitePipeline.model_json_schema

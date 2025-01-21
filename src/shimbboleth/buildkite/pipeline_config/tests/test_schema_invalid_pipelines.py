@@ -390,6 +390,12 @@ class Test_CommandStep__Notify(StepTestBase):
             id="matrix_multi_empty_adj",
         ),
         param(
+            {"setup": {"a": "b"}},
+            "Expected `list`, got `'b'` of type `str`",
+            ".matrix.setup['a']",
+            id="matrix_multi_bad_setup_value",
+        ),
+        param(
             {"setup": {"": []}},
             "Expected key `''` to match regex `^[a-zA-Z0-9_]+$",
             ".matrix.setup",

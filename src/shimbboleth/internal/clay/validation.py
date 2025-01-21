@@ -22,7 +22,6 @@ class Validator(Protocol):
 # @TODO: The distinction between this and Validation is a bit blurry,
 #   (at least document it).
 class InvalidValueError(Exception):
-    # @TODO: Allow `index`/`key`/`attr` so we don't have to use the context manager
     @overload
     def __init__(self, *args): ...
 

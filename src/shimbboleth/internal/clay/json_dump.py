@@ -6,11 +6,6 @@ from shimbboleth.internal.clay.jsonT import JSONArray, JSONObject
 from shimbboleth.internal.clay.model import Model
 from functools import singledispatch
 
-if True:
-    # NB: JSON must be imported for `singledispatch` to work
-    # @TODO: noqa (and what code?)
-    from shimbboleth.internal.clay.jsonT import JSON  # noqa
-
 
 @singledispatch
 def dump(obj) -> JSONObject:

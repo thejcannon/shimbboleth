@@ -6,6 +6,7 @@ from shimbboleth.internal.clay.validation import (
     MatchesRegex,
     Ge,
     Le,
+    MaxLength,
     NonEmptyList,
     NonEmptyString,
     Not,
@@ -114,9 +115,32 @@ def str_to_int(value: str) -> int:
             {"type": "integer", "not": {"minimum": 10}},
             id="annotated",
         ),
+        # MaxLength
+        param(
+            Annotated[list[str], MaxLength(10)],
+            {"type": "array", "items": {"type": "string"}, "maxItems": 10},
+            id="list-MaxLength",
+        ),
+        param(
+            Annotated[dict[str, str], MaxLength(10)],
+            {
+                "type": "object",
+                "additionalProperties": {"type": "string"},
+                "maxProperties": 10,
+            },
+            id="dict-MaxLength",
+        ),
+        param(
+            Annotated[str, MaxLength(10)],
+            {
+                "type": "string",
+                "maxLength": 10,
+            },
+            id="str-MaxLength",
+        ),
     ],
 )
-def test_schema(field_type, expected):
+def test_schema__non_model(field_type, expected):
     model_defs = {}
     assert schema(field_type, model_defs=model_defs) == expected
 
@@ -149,7 +173,7 @@ def test_schema(field_type, expected):
         ),
     ],
 )
-def test_model(model_def, expected):
+def test_schema__model(model_def, expected):
     assert model_def.model_json_schema == {
         "type": "object",
         "$defs": {},
@@ -189,7 +213,7 @@ def test_model__extra(model_def, expected):
         (
             make_model(
                 {
-                    "__annotations__": {"field": int},
+                    "__annotations__": {"field": list[int]},
                     "field": field(default_factory=list),
                 },
             ),
@@ -247,4 +271,47 @@ def test_nested_models():
     }
 
 
-# @TODO: json_schema_type
+def test_json_loader():
+    class MyModel(Model):
+        field: str
+
+    @MyModel._json_loader_("field")
+    def _load_field(value: int) -> str:
+        return ""
+
+    assert MyModel.model_json_schema == {
+        "type": "object",
+        "$defs": {},
+        "additionalProperties": False,
+        "properties": {"field": {"type": "integer"}},
+        "required": ["field"],
+    }
+
+
+def test_json_schema():
+    class MyModel(Model):
+        field: str
+
+    @MyModel._json_loader_("field", json_schema_type=bool)
+    def _load_field(value: int) -> str:
+        return ""
+
+    assert MyModel.model_json_schema == {
+        "type": "object",
+        "$defs": {},
+        "additionalProperties": False,
+        "properties": {"field": {"type": "boolean"}},
+        "required": ["field"],
+    }
+
+
+def test_json_loader__with_field_default():
+    class MyModel(Model):
+        field: str = ""
+
+    @MyModel._json_loader_("field")
+    def _load_field(value: int) -> str:
+        return ""
+
+    with pytest.raises(Exception):
+        assert MyModel.model_json_schema
