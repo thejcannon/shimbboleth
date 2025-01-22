@@ -336,7 +336,9 @@ def _load_plugins(
             # NB: Because we aren't _assigning_ to a 'SingleKeyDict`, the validation doesn't
             #   kick in. (Womp Womp)
             if len(elem) > 1:
-                raise ValidationError(elem, expectation="have only one key", index=index)
+                raise ValidationError(
+                    elem, expectation="have only one key", index=index
+                )
             spec, config = next(iter(elem.items()))
             ret.append(Plugin(spec=spec, config=config))
     return ret

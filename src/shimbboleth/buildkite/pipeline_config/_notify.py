@@ -123,8 +123,6 @@ def parse_step_notify(
             keyname = dataclasses.fields(elem)[1].name
             # NB: It IS a valid _build_ notification though
             raise JSONLoadError(
-                value=keyname,
-                expectation="be a valid step notification",
-                index=index
+                value=keyname, expectation="be a valid step notification", index=index
             )
     return parsed

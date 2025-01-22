@@ -83,9 +83,17 @@ class StepTestBase(PipelineTestBase):
     ["config", "error", "path"],
     [
         param(
-            ["unknown"], "Expected `'unknown'` to be a valid Buildkite pipeline step", "[0]", id="unknown_step"
+            ["unknown"],
+            "Expected `'unknown'` to be a valid Buildkite pipeline step",
+            "[0]",
+            id="unknown_step",
         ),
-        param([None], "Expected `None` to be a valid Buildkite pipeline step", "[0]", id="null_step"),
+        param(
+            [None],
+            "Expected `None` to be a valid Buildkite pipeline step",
+            "[0]",
+            id="null_step",
+        ),
         param(
             [{"type": "unknown"}],
             "Expected `{'type': 'unknown'}` to be a valid Buildkite pipeline step",
@@ -430,7 +438,10 @@ class Test_TriggerStep(StepTestBase):
     "step,error,path",
     [
         param(
-            {}, "Expected required fields `'steps'` to be provided for model `GroupStep`", "", id="missing_steps"
+            {},
+            "Expected required fields `'steps'` to be provided for model `GroupStep`",
+            "",
+            id="missing_steps",
         ),
         param(
             {"steps": []}, "Expected `[]` to be non-empty", ".steps", id="empty_steps"
