@@ -23,6 +23,7 @@ def test_gen_schema_matches_disk():
             )
         assert False, "Schema mismatch"
 
+
 def test_schema_defaults(monkeypatch):
     monkeypatch.setenv("SHIMBBOLETH_TEST_DEFAULTS", "1")
     BuildkitePipeline.model_json_schema
