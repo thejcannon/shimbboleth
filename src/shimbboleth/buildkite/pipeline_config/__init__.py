@@ -3,7 +3,7 @@ from functools import lru_cache
 
 from shimbboleth.internal.clay.model import Model, field
 from shimbboleth.internal.clay.jsonT import JSONArray, JSONObject
-from shimbboleth.internal.clay.validation import InvalidValueError
+from shimbboleth.internal.clay.validation import ValidationError
 
 from shimbboleth.buildkite.pipeline_config._agents import agents_from_json
 from shimbboleth.buildkite.pipeline_config.block_step import BlockStep
@@ -82,7 +82,7 @@ class BuildkitePipeline(Model, extra=True):
         if isinstance(value, list):
             try:
                 return super().model_load({"steps": value})
-            except InvalidValueError as e:
+            except ValidationError as e:
                 e.path.pop(0)  # Remove the "steps"
                 raise
         return super().model_load(value)

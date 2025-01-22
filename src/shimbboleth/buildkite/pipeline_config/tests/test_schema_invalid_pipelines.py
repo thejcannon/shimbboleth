@@ -16,6 +16,7 @@ from shimbboleth.buildkite.pipeline_config.tests.conftest import (
     STEP_TYPE_PARAMS,
     ALL_STEP_TYPE_PARAMS,
 )
+from shimbboleth.internal.clay.validation import ValidationError
 
 import pytest
 import jsonschema
@@ -29,8 +30,7 @@ UPSTREAM_SCHEMA_INVALID = pytest.mark.meta(upstream_schema_valid=False)
 
 class PipelineTestBase:
     def test_model_load(self, config, *, error, path):
-        # @TODO: ValidationError? InvalidValueError?
-        with pytest.raises(Exception) as e:
+        with pytest.raises(ValidationError) as e:
             print(BuildkitePipeline.model_load(config))
         assert error in str(e.value)
         assert f"Path: {path}\n" in str(e.value) + "\n"

@@ -1,7 +1,7 @@
 from typing import Any
 
 from shimbboleth.internal.clay.jsonT import JSONObject
-from shimbboleth.internal.clay.validation import InvalidValueError
+from shimbboleth.internal.clay.validation import ValidationError
 
 from shimbboleth.buildkite.pipeline_config.block_step import BlockStep
 from shimbboleth.buildkite.pipeline_config.input_step import InputStep
@@ -53,7 +53,7 @@ def _parse_step(
             if step.get("type", None) == stepkey:
                 return stepmodel.model_load(step)
 
-    raise InvalidValueError(f"Unrecognizable step: `{step!r}`")
+    raise ValidationError(value=step, expectation="be a valid Buildkite pipeline step")
 
 
 def parse_steps(
@@ -61,6 +61,6 @@ def parse_steps(
 ) -> list[BlockStep | InputStep | CommandStep | WaitStep | TriggerStep | GroupStep]:
     ret = []
     for index, step in enumerate(steps):
-        with InvalidValueError.context(index=index):
+        with ValidationError.context(index=index):
             ret.append(_parse_step(step))
     return ret

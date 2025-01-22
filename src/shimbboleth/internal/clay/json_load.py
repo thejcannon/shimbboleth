@@ -16,7 +16,7 @@ from shimbboleth.internal.clay._types import (
     GenericUnionType,
     get_origin,
 )
-from shimbboleth.internal.clay.validation import InvalidValueError, ValidationError
+from shimbboleth.internal.clay.validation import ValidationError
 
 T = TypeVar("T")
 ModelT = TypeVar("ModelT", bound=Model)
@@ -25,36 +25,33 @@ ModelT = TypeVar("ModelT", bound=Model)
 LOG = logging.getLogger()
 
 
-class JSONLoadError(InvalidValueError, TypeError):
+class JSONLoadError(ValidationError, TypeError):
     pass
 
 
-# @TODO: Can use ValidationError
 class WrongTypeError(JSONLoadError):
     def __init__(self, expected, data):
-        super().__init__(
-            f"Expected `{expected}`, got `{data!r}` of type `{type(data).__name__}`"
-        )
+        super().__init__(value=data, expectation=f"be of type `{expected}`")
 
 
-# @TODO: Can use ValidationError
 class ExtrasNotAllowedError(JSONLoadError):
     def __init__(self, model_type: type[Model], extras: JSONObject):
         super().__init__(
-            f"Extra properties not allowed for `{model_type.__name__}`: {extras}"
+            value=extras,
+            expectation=f"not not be provided. {model_type.__name__} dosn't support extra keys.",
+            qualifier="extra keys",
         )
 
 
 # @TODO: Can use ValidationError
 class NotAValidUUIDError(JSONLoadError):
     def __init__(self, data):
-        super().__init__(f"Expected a valid UUID, got `{data!r}`")
+        super().__init__(value=data, expectation="be a valid UUID")
 
 
-# @TODO: Can use ValidationError
 class NotAValidPatternError(JSONLoadError):
     def __init__(self, data):
-        super().__init__(f"Expected a valid regex pattern, got `{data!r}`")
+        super().__init__(value=data, expectation="be a valid regex pattern")
 
 
 # @TODO: Can use ValidationError
@@ -62,7 +59,9 @@ class MissingFieldsError(JSONLoadError):
     def __init__(self, model_name: str, *fieldnames: str):
         fieldnames = tuple(f"`{field}`" for field in fieldnames)
         super().__init__(
-            f"`{model_name}` missing {len(fieldnames)} required fields: {', '.join(fieldnames)}"
+            value=", ".join(fieldnames),
+            expectation=f"be provided for model {model_name}",
+            qualifier="required fields",
         )
 
 
@@ -189,7 +188,7 @@ def load_list(data: Any, *, field_type: GenericAlias) -> list[T]:
     (argT,) = field_type.__args__
     ret = []
     for index, item in enumerate(data):
-        with JSONLoadError.context(index=index):
+        with ValidationError.context(index=index):
             ret.append(load(argT, data=item))
     return ret
 
@@ -200,7 +199,7 @@ def load_dict(data: Any, *, field_type: GenericAlias) -> dict:
     ret = {}
     for key, value in data.items():
         loaded_key = load(keyT, data=key)
-        with JSONLoadError.context(key=key):
+        with ValidationError.context(key=key):
             ret[loaded_key] = load(valueT, data=value)
     return ret
 
@@ -224,20 +223,20 @@ def load_uuid(data: Any) -> uuid.UUID:
 class _LoadModelHelper:
     @staticmethod
     def handle_field_aliases(model_type: type[Model], data: JSONObject) -> dict:
-        data = data
+        data_copy = data
         for field_alias_name, field_alias in model_type.__field_aliases__.items():
             if field_alias_name in data:
-                if data is data:
-                    data = data.copy()
+                if data_copy is data:
+                    data_copy = data.copy()
 
-                value = data.pop(field_alias_name)
+                value = data_copy.pop(field_alias_name)
                 if (
                     field_alias.json_mode == "prepend"
                     or data.get(field_alias.alias_of) is None
                 ):
-                    data[field_alias.alias_of] = value
+                    data_copy[field_alias.alias_of] = value
 
-        return data
+        return data_copy
 
     @staticmethod
     def rename_json_aliases(model_type: type[Model], data: JSONObject):
@@ -267,7 +266,7 @@ class _LoadModelHelper:
             json_loader.__annotations__["value"] if json_loader else field.type
         )
 
-        with JSONLoadError.context(attr=field.metadata.get("json_alias", field.name)):
+        with ValidationError.context(attr=field.metadata.get("json_alias", field.name)):
             value = load(expected_type, data=data[field.name])
             if json_loader:
                 value = json_loader(value)

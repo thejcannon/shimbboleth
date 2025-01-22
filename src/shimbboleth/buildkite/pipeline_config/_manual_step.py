@@ -3,9 +3,9 @@ import re
 from shimbboleth.internal.clay.model import field, Model
 from shimbboleth.internal.clay.jsonT import JSONObject
 from shimbboleth.internal.clay.validation import (
-    InvalidValueError,
     NonEmptyList,
     MatchesRegex,
+    ValidationError,
 )
 from shimbboleth.buildkite.pipeline_config._types import bool_from_json
 from shimbboleth.buildkite.pipeline_config._types import list_str_from_json
@@ -105,9 +105,8 @@ class SelectInput(_OptionBaseModel, extra=False):
         multiple: bool = False,
     ):
         if not multiple and isinstance(default, list):
-            # @TODO; Can be ValidationError
-            raise InvalidValueError(
-                "`default` cannot be a list when `multiple` is `False`"
+            raise ValidationError(
+                value=default, expectation="be a list when `multiple` is `False`"
             )
 
         instance = object.__new__(MultiSelectInput if multiple else SingleSelectInput)
@@ -206,12 +205,14 @@ def _load_fields(
 ) -> list[TextInput | SingleSelectInput | MultiSelectInput]:
     ret = []
     for index, field_dict in enumerate(value):
-        with InvalidValueError.context(index=index):
+        with ValidationError.context(index=index):
             if "text" in field_dict:
                 ret.append(TextInput.model_load(field_dict))
             elif "select" in field_dict:
                 ret.append(SelectInput.model_load(field_dict))
             else:
-                # @TODO; Can be ValidationError
-                raise InvalidValueError("Input fields must contain `text`` or `select`")
+                raise ValidationError(
+                    value=field_dict,
+                    expectation="contain `text` or `select`",
+                )
     return ret

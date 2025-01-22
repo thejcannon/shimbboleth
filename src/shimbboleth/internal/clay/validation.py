@@ -18,35 +18,43 @@ class Validator(Protocol):
     def __call__(self, value) -> None: ...
 
 
-# @TODO: Does this belong in another module?
-# @TODO: The distinction between this and Validation is a bit blurry,
-#   (at least document it).
-class InvalidValueError(Exception):
+class ValidationError(ValueError):
     @overload
-    def __init__(self, *args): ...
+    def __init__(self, value, *, expectation: str, qualifier: str = ""): ...
 
     @overload
-    def __init__(self, *args, index: int): ...
+    def __init__(self, value, *, expectation: str, qualifier: str = "", index: int): ...
 
     @overload
-    def __init__(self, *args, key: str): ...
+    def __init__(self, value, *, expectation: str, qualifier: str = "", key: str): ...
 
     @overload
-    def __init__(self, *args, attr: str): ...
+    def __init__(self, value, *, expectation: str, qualifier: str = "", attr: str): ...
 
     def __init__(
         self,
-        *args,
+        value,
+        *,
+        expectation: str,
+        qualifier: str = "",
         index: int | None = None,
         key: str | None = None,
         attr: str | None = None,
     ):
-        super().__init__(*args)
+        self.value = value
+        self.expectation = expectation
+        self.qualifier = qualifier
         self.path = []
         self.add_context(index=index, key=key, attr=attr)
 
     def __str__(self):
-        return super().__str__() + "\n" + f"Path: {''.join(self.path)}"
+        assert not self.qualifier
+        qualifier = f"{self.qualifier} " if self.qualifier else ""
+        return (
+            f"Expected {qualifier}`{self.value!r}` to {self.expectation}"
+            + "\n"
+            + f"Path: {''.join(self.path)}"
+        )
 
     def add_context(
         self,
@@ -69,24 +77,9 @@ class InvalidValueError(Exception):
     ):
         try:
             yield
-        except InvalidValueError as e:
+        except ValidationError as e:
             e.add_context(index=index, key=key, attr=attr)
             raise
-
-
-class ValidationError(InvalidValueError, ValueError):
-    def __init__(self, value, expectation: str, **kwargs):
-        super().__init__(**kwargs)
-        self.value = value
-        self.expectation = expectation
-        self.qualifier = ""
-
-    def __str__(self):
-        qualifier = f"{self.qualifier} " if self.qualifier else ""
-        return (
-            f"Expected {qualifier}`{self.value!r}` to {self.expectation}"
-            + super().__str__()
-        )
 
 
 class _NonEmptyT(Validator):
@@ -94,7 +87,7 @@ class _NonEmptyT(Validator):
 
     def __call__(self, value: str | dict | list):
         if len(value) == 0:
-            raise ValidationError(value, "be non-empty")
+            raise ValidationError(value, expectation="be non-empty")
 
     def __repr__(self) -> str:
         return "NonEmpty"
@@ -112,10 +105,10 @@ class MatchesRegex(Validator):
 
     def __call__(self, value: str):
         if not self.regex.fullmatch(value):
-            raise ValidationError(value, self.description)
+            raise ValidationError(value, expectation=self.expectation)
 
     @property
-    def description(self) -> str:
+    def expectation(self) -> str:
         return f"match regex `{self.regex.pattern}`"
 
 
@@ -130,10 +123,10 @@ class MaxLength:
 
     def __call__(self, value: dict):
         if len(value) > self.limit:
-            raise ValidationError(value, self.description)
+            raise ValidationError(value, expectation=self.expectation)
 
     @property
-    def description(self) -> str:
+    def expectation(self) -> str:
         return f"have a length less than `{self.limit}`"
 
 
@@ -162,7 +155,8 @@ class Not(Validator):
             except ValidationError:
                 pass
             else:
-                raise ValidationError(value, f"not {validator.description}")
+                expectation = validator.expectation  # type: ignore
+                raise ValidationError(value, expectation=f"not {expectation}")
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
@@ -171,10 +165,10 @@ class Ge(Validator):
 
     def __call__(self, value: int):
         if value < self.bound:
-            raise ValidationError(value, self.description)
+            raise ValidationError(value, expectation=self.expectation)
 
     @property
-    def description(self) -> str:
+    def expectation(self) -> str:
         return f"be >= {self.bound}"
 
 
@@ -184,8 +178,8 @@ class Le(Validator):
 
     def __call__(self, value: int):
         if value > self.bound:
-            raise ValidationError(value, self.description)
+            raise ValidationError(value, expectation=self.expectation)
 
     @property
-    def description(self) -> str:
+    def expectation(self) -> str:
         return f"be <= {self.bound}"
