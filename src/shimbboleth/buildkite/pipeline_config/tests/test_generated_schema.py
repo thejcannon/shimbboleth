@@ -2,7 +2,7 @@
 Tests for the JSON Schema itself.
 """
 
-from shimbboleth.buildkite.pipeline_config import get_schema
+from shimbboleth.buildkite.pipeline_config import get_schema, BuildkitePipeline
 from pathlib import Path
 import os
 import json
@@ -22,3 +22,7 @@ def test_gen_schema_matches_disk():
                 "Run the test again with SHIMBBOLETH_UPDATE_SCHEMAS=1 to update the schema"
             )
         assert False, "Schema mismatch"
+
+def test_schema_defaults(monkeypatch):
+    monkeypatch.setenv("SHIMBBOLETH_TEST_DEFAULTS", "1")
+    BuildkitePipeline.model_json_schema

@@ -2,6 +2,7 @@ from functools import singledispatch
 from typing import Any, TypeVar
 from types import UnionType, GenericAlias
 import re
+import os
 import uuid
 import dataclasses
 
@@ -229,7 +230,7 @@ class _ModelFieldSchemaHelper:
         elif field.default_factory is not dataclasses.MISSING:
             field_schema["default"] = dump(field.default_factory())
 
-        if is_shimbboleth_pytesting() and "default" in field_schema:
+        if is_shimbboleth_pytesting() and os.getenv("SHIMBBOLETH_TEST_DEFAULTS") and "default" in field_schema:
             __import__("jsonschema").validate(
                 field_schema["default"], {**field_schema, "$defs": model_defs}
             )
