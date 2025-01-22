@@ -65,13 +65,13 @@ class DictValidator:
 
 @dataclasses.dataclass(slots=True, frozen=True)
 class UUIDValidator:
-    description: ClassVar[str] = "be a valid UUID"
+    expectation: ClassVar[str] = "be a valid UUID"
 
     def __call__(self, value: str):
         try:
             uuid.UUID(value)
         except ValueError:
-            raise ValidationError(value, self.description) from None
+            raise ValidationError(value, expectation=self.expectation) from None
 
 
 @dataclasses.dataclass(slots=True, frozen=True)

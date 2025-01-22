@@ -83,30 +83,30 @@ class StepTestBase(PipelineTestBase):
     ["config", "error", "path"],
     [
         param(
-            ["unknown"], "Unrecognizable step: `'unknown'`", "[0]", id="unknown_step"
+            ["unknown"], "Expected `'unknown'` to be a valid Buildkite pipeline step", "[0]", id="unknown_step"
         ),
-        param([None], "Unrecognizable step: `None`", "[0]", id="null_step"),
+        param([None], "Expected `None` to be a valid Buildkite pipeline step", "[0]", id="null_step"),
         param(
             [{"type": "unknown"}],
-            "Unrecognizable step: `{'type': 'unknown'}`",
+            "Expected `{'type': 'unknown'}` to be a valid Buildkite pipeline step",
             "[0]",
             id="unknown_type",
         ),
         param(
             {"steps": [], "env": ["key"]},
-            "Expected `dict`, got `['key']` of type `list`",
+            "Expected `['key']` to be of type `dict`",
             ".env",
             id="env_list",
         ),
         param(
             {"steps": [], "notify": ["unknown"]},
-            "Unrecognizable notification: `unknown`",
+            "Expected `'unknown'` to be a valid notification type",
             ".notify[0]",
             id="notify_unknown",
         ),
         param(
             {"steps": [], "notify": [{"unknown": ""}]},
-            "Unrecognizable notification: `unknown`",
+            "Expected `{'unknown': ''}` to be a valid notification type",
             ".notify[0]",
             id="notify_unknown_dict",
         ),
@@ -135,7 +135,7 @@ class Test_InvalidPipeline(PipelineTestBase):
         ),
         param(
             {"depends_on": [{}]},
-            "`Dependency` missing 1 required fields: `step`",
+            "Expected required fields `'step'` to be provided for model `Dependency`",
             ".depends_on[0]",
             id="depends_on_missing_step",
             marks=UPSTREAM_SCHEMA_INVALID,
@@ -155,7 +155,7 @@ class Test_AnyStepType(StepTestBase):
     [
         param(
             {"fields": [{}]},
-            "Input fields must contain `text`` or `select`",
+            "Expected `{}` to contain `text` or `select`",
             ".fields[0]",
             id="missing_field_type",
         ),
@@ -177,7 +177,7 @@ class Test_ManualStep(StepTestBase):
     [
         param(
             {"text": "text"},
-            "`TextInput` missing 1 required fields: `key`",
+            "Expected required fields `'key'` to be provided for model `TextInput`",
             ".fields[0]",
             id="missing_text_key",
         ),
@@ -195,7 +195,7 @@ class Test_ManualStep(StepTestBase):
         ),
         param(
             {"text": "text", "key": "key", "format": "'[a-zA-Z++++'"},
-            "Expected a valid regex pattern, got `\"'[a-zA-Z++++'\"",
+            "Expected `\"'[a-zA-Z++++'\"` to be a valid regex pattern",
             ".fields[0].format",
             id="invalid_regex",
         ),
@@ -240,20 +240,20 @@ class Test_ManualStep__InvalidTextField(StepTestBase):
                 "multiple": False,
                 "default": ["value"],
             },
-            "`default` cannot be a list when `multiple` is `False`",
+            "Expected `['value']` to be a list when `multiple` is `False`",
             ".fields[0]",
             id="single_select_list_default",
             marks=UPSTREAM_SCHEMA_INVALID,
         ),
         param(
             {"select": "select", "options": [{"label": "label", "value": "value"}]},
-            "`SelectInput` missing 1 required fields: `key`",
+            "Expected required fields `'key'` to be provided for model `SelectInput`",
             ".fields[0]",
             id="missing_select_key",
         ),
         param(
             {"select": "select", "key": "key"},
-            "`SelectInput` missing 1 required fields: `options`",
+            "Expected required fields `'options'` to be provided for model `SelectInput`",
             ".fields[0]",
             id="missing_options",
         ),
@@ -282,7 +282,7 @@ class Test_ManualStep__InvalidSelectField(StepTestBase):
         ),
         param(
             {"cache": {}},
-            "`CommandCache` missing 1 required fields: `paths`",
+            "Expected required fields `'paths'` to be provided for model `CommandCache`",
             ".cache",
             id="cache_missing_paths",
         ),
@@ -310,25 +310,25 @@ class Test_CommandStep(StepTestBase):
     [
         param(
             ["unknown"],
-            "Unrecognizable notification: `unknown`",
+            "Expected `'unknown'` to be a valid notification type",
             ".notify[0]",
             id="notify_unknown",
         ),
         param(
             [{"email": "hello@example.com"}],
-            "`email` is not a valid step notification",
+            "Expected `'email'` to be a valid step notification",
             ".notify[0]",
             id="notify_email",
         ),
         param(
             [{"webhook": "https://example.com"}],
-            "`webhook` is not a valid step notification",
+            "Expected `'webhook'` to be a valid step notification",
             ".notify[0]",
             id="notify_webhook",
         ),
         param(
             [{"pagerduty_change_event": "pagerduty_change_event"}],
-            "`pagerduty_change_event` is not a valid step notification",
+            "Expected `'pagerduty_change_event'` to be a valid step notification",
             ".notify[0]",
             id="notify_pagerduty",
         ),
@@ -366,32 +366,33 @@ class Test_CommandStep__Notify(StepTestBase):
         ),
         param(
             {"setup": [""], "adjustments": [{"with": {"": ""}}]},
-            "Expected `str`, got `{'': ''}` of type `dict`",
-            ".matrix.adjustments[0].with_value",
+            "Expected `{'': ''}` to be of type `str`",
+            ".matrix.adjustments[0].with",
             id="matrix_single_mismatched_adj",
             marks=UPSTREAM_SCHEMA_INVALID,
         ),
         param(
             {"setup": {"": []}, "adjustments": [{"with": []}]},
-            "Expected `dict`, got `[]` of type `list`",
-            ".matrix.adjustments[0].with_value",
+            "Expected `[]` to be of type `dict`",
+            ".matrix.adjustments[0].with",
             id="matrix_multi_mismatched_adj",
         ),
         param(
             {"setup": [""], "adjustments": [{}]},
-            "`ScalarAdjustment` missing 1 required fields: `with_value`",
+            "Expected required fields `'with_value'` to be provided for model `ScalarAdjustment`",
             ".matrix.adjustments[0]",
             id="matrix_single_empty_adj",
         ),
         param(
             {"setup": {"a": ["b"]}, "adjustments": [{}]},
-            "`MultiDimensionMatrixAdjustment` missing 1 required fields: `with_value`",
+            # @TODO: with
+            "Expected required fields `'with_value'` to be provided for model `MultiDimensionMatrixAdjustment`",
             ".matrix.adjustments[0]",
             id="matrix_multi_empty_adj",
         ),
         param(
             {"setup": {"a": "b"}},
-            "Expected `list`, got `'b'` of type `str`",
+            "Expected `'b'` to be of type `list`",
             ".matrix.setup['a']",
             id="matrix_multi_bad_setup_value",
         ),
@@ -414,7 +415,7 @@ class Test_CommandStep__Matrix(StepTestBase):
     [
         param(
             {},
-            "`TriggerStep` missing 1 required fields: `trigger`",
+            "Expected required fields `'trigger'` to be provided for model `TriggerStep`",
             "",
             id="missing_trigger",
         ),
@@ -429,7 +430,7 @@ class Test_TriggerStep(StepTestBase):
     "step,error,path",
     [
         param(
-            {}, "`GroupStep` missing 1 required fields: `steps`", "", id="missing_steps"
+            {}, "Expected required fields `'steps'` to be provided for model `GroupStep`", "", id="missing_steps"
         ),
         param(
             {"steps": []}, "Expected `[]` to be non-empty", ".steps", id="empty_steps"
@@ -447,27 +448,27 @@ class Test_GroupStep(StepTestBase):
     [
         param(
             ["unknown"],
-            "Unrecognizable notification: `unknown`",
+            "Expected `'unknown'` to be a valid notification type",
             ".notify[0]",
             id="notify_unknown",
         ),
         param(
             [{"email": "hello@example.com"}],
-            "`email` is not a valid step notification",
+            "Expected `'email'` to be a valid step notification",
             ".notify[0]",
             id="notify_email",
             marks=UPSTREAM_SCHEMA_INVALID,
         ),
         param(
             [{"webhook": "https://example.com"}],
-            "`webhook` is not a valid step notification",
+            "Expected `'webhook'` to be a valid step notification",
             ".notify[0]",
             id="notify_webhook",
             marks=UPSTREAM_SCHEMA_INVALID,
         ),
         param(
             [{"pagerduty_change_event": "pagerduty_change_event"}],
-            "`pagerduty_change_event` is not a valid step notification",
+            "Expected `'pagerduty_change_event'` to be a valid step notification",
             ".notify[0]",
             id="notify_pagerduty",
             marks=UPSTREAM_SCHEMA_INVALID,

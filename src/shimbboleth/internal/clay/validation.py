@@ -48,7 +48,6 @@ class ValidationError(ValueError):
         self.add_context(index=index, key=key, attr=attr)
 
     def __str__(self):
-        assert not self.qualifier
         qualifier = f"{self.qualifier} " if self.qualifier else ""
         return (
             f"Expected {qualifier}`{self.value!r}` to {self.expectation}"

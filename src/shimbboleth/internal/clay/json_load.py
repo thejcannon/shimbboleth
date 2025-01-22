@@ -43,7 +43,6 @@ class ExtrasNotAllowedError(JSONLoadError):
         )
 
 
-# @TODO: Can use ValidationError
 class NotAValidUUIDError(JSONLoadError):
     def __init__(self, data):
         super().__init__(value=data, expectation="be a valid UUID")
@@ -54,13 +53,11 @@ class NotAValidPatternError(JSONLoadError):
         super().__init__(value=data, expectation="be a valid regex pattern")
 
 
-# @TODO: Can use ValidationError
 class MissingFieldsError(JSONLoadError):
     def __init__(self, model_name: str, *fieldnames: str):
-        fieldnames = tuple(f"`{field}`" for field in fieldnames)
         super().__init__(
             value=", ".join(fieldnames),
-            expectation=f"be provided for model {model_name}",
+            expectation=f"be provided for model `{model_name}`",
             qualifier="required fields",
         )
 
@@ -292,7 +289,7 @@ class _LoadModelHelper:
         try:
             yield
         except ValidationError as e:
-            if not e.path[-1].startswith("."):
+            if not e.path or not e.path[-1].startswith("."):
                 raise
 
             field = model_type.__dataclass_fields__.get(e.path[-1][1:])

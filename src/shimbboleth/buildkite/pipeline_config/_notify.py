@@ -96,11 +96,10 @@ def _parse_notification(value: Any) -> Any:
                 "github_commit_status": GitHubCommitStatusNotify,
                 "github_check": GitHubCheckNotify,
             }.get(key, None)
-            if notify_type is None:
-                raise JSONLoadError(f"Unrecognizable notification: `{key}`")
-            return notify_type.model_load(value)
+            if notify_type is not None:
+                return notify_type.model_load(value)
 
-    raise JSONLoadError(f"Unrecognizable notification: `{value}`")
+    raise JSONLoadError(value=value, expectation="be a valid notification type")
 
 
 def parse_build_notify(
@@ -124,6 +123,8 @@ def parse_step_notify(
             keyname = dataclasses.fields(elem)[1].name
             # NB: It IS a valid _build_ notification though
             raise JSONLoadError(
-                f"`{keyname}` is not a valid step notification", index=index
+                value=keyname,
+                expectation="be a valid step notification",
+                index=index
             )
     return parsed
