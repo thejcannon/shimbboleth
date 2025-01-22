@@ -305,7 +305,8 @@ def test_json_schema():
     }
 
 
-def test_json_loader__with_field_default():
+def test_json_loader__with_field_default(monkeypatch):
+    monkeypatch.setenv("SHIMBBOLETH_TEST_DEFAULTS", "1")
     class MyModel(Model):
         field: str = ""
 
