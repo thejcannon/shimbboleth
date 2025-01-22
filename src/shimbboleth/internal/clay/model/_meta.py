@@ -70,7 +70,7 @@ class ModelMeta(type):
                     ),
                 )
 
-    @property  # NB: Not cached # @TODO: method instead of prop? (Hard part is immutability)
+    @property
     def model_json_schema(cls) -> JSONObject:
         from shimbboleth.internal.clay.json_schema import schema
 
