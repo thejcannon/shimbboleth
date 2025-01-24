@@ -16,7 +16,7 @@ from shimbboleth.internal.clay.validation import (
     MatchesRegex,
 )
 
-from shimbboleth.buildkite.pipeline_config._base import StepBase
+from shimbboleth.buildkite.pipeline_config._base import Step
 from shimbboleth.buildkite.pipeline_config._agents import agents_from_json
 from shimbboleth.buildkite.pipeline_config._types import (
     list_str_from_json,
@@ -124,7 +124,7 @@ class Plugin(Model, extra=False):
         return {self.spec: self.config}
 
 
-class CommandStep(StepBase, extra=False):
+class CommandStep(Step, extra=False):
     """
     A command step runs one or more shell commands on one or more agents.
 

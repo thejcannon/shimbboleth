@@ -22,7 +22,7 @@ from shimbboleth.buildkite.pipeline_config._nested_steps import (
     NestedTriggerStep,
 )
 from shimbboleth.buildkite.pipeline_config._parse_steps import parse_steps
-from shimbboleth.buildkite.pipeline_config._base import Dependency as Dependency
+
 
 ALL_STEP_TYPES = (
     BlockStep,

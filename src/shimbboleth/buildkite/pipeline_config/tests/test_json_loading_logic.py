@@ -5,7 +5,8 @@ There's some overlap here with `test_schema_valid_pipelines.py`, but that's OK.
 Each module tests different things.
 """
 
-from shimbboleth.buildkite.pipeline_config import BuildkitePipeline, Dependency
+from shimbboleth.buildkite.pipeline_config import BuildkitePipeline
+from shimbboleth.buildkite.pipeline_config._base import Step
 
 from shimbboleth.buildkite.pipeline_config.command_step import (
     CommandStep,
@@ -35,13 +36,13 @@ def test_agents_list():
 
 def test_depends_on(all_step_types: StepTypeParam):
     assert all_step_types.model_load({"depends_on": "scalar"}).depends_on == [
-        Dependency(step="scalar")
+        Step.Dependency(step="scalar")
     ]
     assert all_step_types.model_load({"depends_on": ["string"]}).depends_on == [
-        Dependency(step="string")
+        Step.Dependency(step="string")
     ]
     assert all_step_types.model_load({"depends_on": [{"step": "id"}]}).depends_on == [
-        Dependency(step="id")
+        Step.Dependency(step="id")
     ]
 
 

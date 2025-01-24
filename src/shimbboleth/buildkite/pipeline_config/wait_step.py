@@ -7,10 +7,10 @@ from shimbboleth.buildkite.pipeline_config._types import (
     list_str_from_json,
     bool_from_json,
 )
-from shimbboleth.buildkite.pipeline_config._base import StepBase
+from shimbboleth.buildkite.pipeline_config._base import Step
 
 
-class WaitStep(StepBase, extra=False):
+class WaitStep(Step, extra=False):
     """
     A wait step waits for all previous steps to have successfully completed before allowing following jobs to continue.
 

@@ -2,10 +2,10 @@ from typing import Literal
 from typing_extensions import ClassVar
 
 from shimbboleth.internal.clay.model import FieldAlias
-from shimbboleth.buildkite.pipeline_config._manual_step import ManualStepBase, field
+from shimbboleth.buildkite.pipeline_config._manual_step import ManualStep, field
 
 
-class InputStep(ManualStepBase, extra=False):
+class InputStep(ManualStep, extra=False):
     """
     An input step is used to collect information from a user.
 

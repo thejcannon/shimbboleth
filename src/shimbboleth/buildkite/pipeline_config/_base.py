@@ -1,5 +1,5 @@
 """
-Contains the base class for all steps: StepBase.
+Contains the base class for all steps.
 """
 
 from shimbboleth.internal.clay.model import Model, field, FieldAlias
@@ -11,15 +11,15 @@ from uuid import UUID
 from typing import ClassVar, final, Annotated
 
 
-class Dependency(Model, extra=False):
-    # @TODO: Make a PR upstream, this isn't required upstream?
-    step: str
-
-    allow_failure: bool = field(default=False, json_loader=bool_from_json)
 
 
-# @TODO: Rename to "Step"?
-class StepBase(Model):
+class Step(Model):
+    class Dependency(Model, extra=False):
+        # @TODO: Make a PR upstream, this isn't required upstream?
+        step: str
+
+        allow_failure: bool = field(default=False, json_loader=bool_from_json)
+
     key: Annotated[str, Not[UUID]] | None = field(default=None)
     """A unique identifier for a step, must not resemble a UUID"""
 
@@ -54,18 +54,18 @@ class StepBase(Model):
         return val
 
 
-@StepBase._json_loader_("depends_on", json_schema_type=str | list[str | Dependency])
+@Step._json_loader_("depends_on", json_schema_type=str | list[str | Step.Dependency])
 @staticmethod
-def _load_depends_on(value: str | list[str | JSONObject]) -> list[Dependency]:
+def _load_depends_on(value: str | list[str | JSONObject]) -> list[Step.Dependency]:
     if isinstance(value, str):
-        return [Dependency(step=value)]
+        return [Step.Dependency(step=value)]
     ret = []
     for index, elem in enumerate(value):
         with JSONLoadError.context(index=index):
             ret.append(
-                Dependency(step=elem)
+                Step.Dependency(step=elem)
                 if isinstance(elem, str)
-                else Dependency.model_load(elem)
+                else Step.Dependency.model_load(elem)
             )
     return ret
 

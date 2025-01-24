@@ -4,7 +4,7 @@ from typing import Literal, ClassVar
 from shimbboleth.internal.clay.model import field, FieldAlias, Model
 from shimbboleth.internal.clay.jsonT import JSONObject
 
-from shimbboleth.buildkite.pipeline_config._base import StepBase
+from shimbboleth.buildkite.pipeline_config._base import Step
 from shimbboleth.buildkite.pipeline_config._types import (
     bool_from_json,
     list_str_from_json,
@@ -40,7 +40,7 @@ class TriggeredBuild(Model, extra=False):
     """Meta-data for the build"""
 
 
-class TriggerStep(StepBase, extra=False):
+class TriggerStep(Step, extra=False):
     """
     A trigger step creates a build on another pipeline.
 

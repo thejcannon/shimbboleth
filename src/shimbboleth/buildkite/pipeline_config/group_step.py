@@ -18,10 +18,10 @@ from shimbboleth.buildkite.pipeline_config.wait_step import WaitStep
 from shimbboleth.buildkite.pipeline_config.trigger_step import TriggerStep
 from shimbboleth.buildkite.pipeline_config.command_step import CommandStep
 from shimbboleth.buildkite.pipeline_config._notify import StepNotifyT
-from shimbboleth.buildkite.pipeline_config._base import StepBase
+from shimbboleth.buildkite.pipeline_config._base import Step
 
 
-class GroupStep(StepBase, extra=False):
+class GroupStep(Step, extra=False):
     """
     A group step can contain various sub-steps, and display them in a single logical group on the Build page.
 

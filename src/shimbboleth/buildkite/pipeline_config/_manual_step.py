@@ -9,7 +9,7 @@ from shimbboleth.internal.clay.validation import (
 )
 from shimbboleth.buildkite.pipeline_config._types import bool_from_json
 from shimbboleth.buildkite.pipeline_config._types import list_str_from_json
-from shimbboleth.buildkite.pipeline_config._base import StepBase
+from shimbboleth.buildkite.pipeline_config._base import Step
 
 
 class _OptionBaseModel(Model):
@@ -163,7 +163,7 @@ class MultiSelectInput(SelectInput, extra=False):
         )
 
 
-class ManualStepBase(StepBase, extra=False):
+class ManualStep(Step, extra=False):
     """
     (The base of both Input and Block steps)
     """
@@ -197,7 +197,7 @@ def _load_default(value: str | list[str] | None) -> list[str] | None:
     return value
 
 
-@ManualStepBase._json_loader_(
+@ManualStep._json_loader_(
     "fields", json_schema_type=list[TextInput | SingleSelectInput | MultiSelectInput]
 )
 def _load_fields(

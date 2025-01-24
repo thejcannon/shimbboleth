@@ -141,7 +141,7 @@
                     "type": "string"
                   },
                   {
-                    "$ref": "#/$defs/Dependency"
+                    "$ref": "#/$defs/Step.Dependency"
                   }
                 ]
               },
@@ -423,7 +423,7 @@
                     "type": "string"
                   },
                   {
-                    "$ref": "#/$defs/Dependency"
+                    "$ref": "#/$defs/Step.Dependency"
                   }
                 ]
               },
@@ -717,32 +717,6 @@
       "required": [],
       "type": "object"
     },
-    "Dependency": {
-      "additionalProperties": false,
-      "properties": {
-        "allow_failure": {
-          "default": false,
-          "oneOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "enum": [
-                "true",
-                "false"
-              ]
-            }
-          ]
-        },
-        "step": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "step"
-      ],
-      "type": "object"
-    },
     "EmailNotify": {
       "additionalProperties": false,
       "properties": {
@@ -873,7 +847,7 @@
                     "type": "string"
                   },
                   {
-                    "$ref": "#/$defs/Dependency"
+                    "$ref": "#/$defs/Step.Dependency"
                   }
                 ]
               },
@@ -1067,7 +1041,7 @@
                     "type": "string"
                   },
                   {
-                    "$ref": "#/$defs/Dependency"
+                    "$ref": "#/$defs/Step.Dependency"
                   }
                 ]
               },
@@ -1772,6 +1746,32 @@
       ],
       "type": "object"
     },
+    "Step.Dependency": {
+      "additionalProperties": false,
+      "properties": {
+        "allow_failure": {
+          "default": false,
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          ]
+        },
+        "step": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "step"
+      ],
+      "type": "object"
+    },
     "TextInput": {
       "additionalProperties": false,
       "properties": {
@@ -1906,7 +1906,7 @@
                     "type": "string"
                   },
                   {
-                    "$ref": "#/$defs/Dependency"
+                    "$ref": "#/$defs/Step.Dependency"
                   }
                 ]
               },
@@ -2113,7 +2113,7 @@
                     "type": "string"
                   },
                   {
-                    "$ref": "#/$defs/Dependency"
+                    "$ref": "#/$defs/Step.Dependency"
                   }
                 ]
               },
