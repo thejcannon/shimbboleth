@@ -44,27 +44,26 @@ def test_depends_on(all_step_types: StepTypeParam):
         Dependency(step="id")
     ]
 
-    def test_key_id_identifier(self, all_step_types):
-        assert all_step_types.model_load({"key": "key"}).key == "key"
-        assert all_step_types.model_load({"id": "id"}).key == "id"
-        assert (
-            all_step_types.model_load({"identifier": "identifier"}).key == "identifier"
-        )
-        assert all_step_types.model_load({"key": "key", "id": "id"}).key == "key"
-        assert (
-            all_step_types.model_load({"key": "key", "identifier": "identifier"}).key
-            == "key"
-        )
-        assert (
-            all_step_types.model_load({"id": "id", "identifier": "identifier"}).key
-            == "id"
-        )
-        assert (
-            all_step_types.model_load(
-                {"key": "key", "id": "id", "identifier": "identifier"}
-            ).key
-            == "key"
-        )
+
+def test_key_id_identifier(all_step_types):
+    assert all_step_types.model_load({"key": "key"}).key == "key"
+    assert all_step_types.model_load({"id": "id"}).key == "id"
+    assert all_step_types.model_load({"identifier": "identifier"}).key == "identifier"
+    assert all_step_types.model_load({"key": "key", "id": "id"}).key == "key"
+    assert (
+        all_step_types.model_load({"key": "key", "identifier": "identifier"}).key
+        == "key"
+    )
+    assert (
+        all_step_types.model_load({"id": "id", "identifier": "identifier"}).key
+        == "identifier"
+    )
+    assert (
+        all_step_types.model_load(
+            {"key": "key", "id": "id", "identifier": "identifier"}
+        ).key
+        == "key"
+    )
 
 
 def test_stepname_label_name(all_substep_types):
@@ -191,6 +190,19 @@ class Test_CommandStep:
             .matrix.adjustments[0]  # type: ignore
             .skip
             == expected
+        )
+
+    def test_matrix__multi_dimension__scalar_value(self):
+        assert (
+            CommandStep.model_load(
+                {
+                    "matrix": {
+                        "setup": {"key": "scalar"},
+                    }
+                }
+            )
+            .matrix.setup["key"]  # type: ignore
+            == ["scalar"]
         )
 
     @pytest.mark.parametrize(["input", "expected"], SKIP_VALS.items())

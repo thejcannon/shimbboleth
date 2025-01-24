@@ -19,6 +19,7 @@ from shimbboleth.buildkite.pipeline_config.tests.conftest import (
 from shimbboleth.internal.clay.validation import ValidationError
 
 import pytest
+import yaml
 import jsonschema
 import jsonschema.exceptions
 from pytest import param
@@ -26,7 +27,8 @@ from pytest import param
 # @TODO: Tests for extra keys!
 
 UPSTREAM_SCHEMA_INVALID = pytest.mark.meta(upstream_schema_valid=False)
-
+UPSTREAM_API_500 = pytest.mark.meta(upstream_api_500=True)
+UPSTREAM_API_OK = pytest.mark.meta(upstream_api_200=True)
 
 class PipelineTestBase:
     def test_model_load(self, config, *, error, path):
@@ -42,12 +44,28 @@ class PipelineTestBase:
     def test_upstream_json_schema(
         self, config, upstream_schema, request, *, error, path
     ):
+        # @TODO: This is duplicated with the valid test
         meta = request.node.get_closest_marker("meta")
         if meta and not meta.kwargs.get("upstream_schema_valid", True):
-            pytest.xfail("Upstream bug")
+            pytest.xfail("Upstream schema bug")
 
         with pytest.raises(jsonschema.exceptions.ValidationError):
             upstream_schema.validate(config)
+
+    @pytest.mark.integration
+    def test_upstream_API(self, config, cached_bk_api, *, error, path, request):
+        meta = request.node.get_closest_marker("meta")
+        if meta and meta.kwargs.get("upstream_api_500", False):
+            pytest.skip("Broken in the upstream API - Returns 500")
+        if meta and meta.kwargs.get("upstream_api_200", False):
+            pytest.xfail("Upstream API returns 200")
+
+        response = cached_bk_api.patch(
+            "/organizations/thejcannon/pipelines/step-blaster",
+            json={"configuration": yaml.dump(config, default_flow_style=False)},
+        )
+        print(response.json())
+        assert response.status_code == 422
 
 
 class StepTestBase(PipelineTestBase):
@@ -78,6 +96,13 @@ class StepTestBase(PipelineTestBase):
             path=path,
         )
 
+    @pytest.mark.integration
+    def test_upstream_API(self, step, steptype_param, cached_bk_api, request, *, error, path):  # type: ignore
+        step = self.get_step(step, steptype_param)
+        super().test_upstream_API(
+            {"steps": [step]}, cached_bk_api=cached_bk_api, request=request, error=error, path=path
+        )
+
 
 @pytest.mark.parametrize(
     ["config", "error", "path"],
@@ -105,6 +130,7 @@ class StepTestBase(PipelineTestBase):
             "Expected `['key']` to be of type `dict`",
             ".env",
             id="env_list",
+            marks=UPSTREAM_API_500
         ),
         param(
             {"steps": [], "notify": ["unknown"]},
@@ -287,12 +313,14 @@ class Test_ManualStep__InvalidSelectField(StepTestBase):
             "Expected `{'key1': {}, 'key2': {}}` to have only one key",
             ".plugins[0]",
             id="plugins_multiple_props",
+            marks=UPSTREAM_API_OK
         ),
         param(
             {"cache": {}},
             "Expected required fields `'paths'` to be provided for model `CommandCache`",
             ".cache",
             id="cache_missing_paths",
+            marks=UPSTREAM_API_OK
         ),
         param(
             {"cache": {"paths": [], "size": "1"}},
@@ -387,22 +415,17 @@ class Test_CommandStep__Notify(StepTestBase):
         ),
         param(
             {"setup": [""], "adjustments": [{}]},
+            # @TODO: "with" in message
             "Expected required fields `'with_value'` to be provided for model `ScalarAdjustment`",
             ".matrix.adjustments[0]",
             id="matrix_single_empty_adj",
         ),
         param(
             {"setup": {"a": ["b"]}, "adjustments": [{}]},
-            # @TODO: with
+            # @TODO: "with" in message
             "Expected required fields `'with_value'` to be provided for model `MultiDimensionMatrixAdjustment`",
             ".matrix.adjustments[0]",
             id="matrix_multi_empty_adj",
-        ),
-        param(
-            {"setup": {"a": "b"}},
-            "Expected `'b'` to be of type `list`",
-            ".matrix.setup['a']",
-            id="matrix_multi_bad_setup_value",
         ),
         param(
             {"setup": {"": []}},

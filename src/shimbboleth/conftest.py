@@ -3,9 +3,9 @@ Pytest config for all of shimbboleth testing.
 
 Currently configures:
     - Integration test support
+    - Setting `SHIMBBOLETH_PYTESTING` so we can opt-out of
+        certain behaviors when not testing shimbboleth
 """
-# @TODO: It'd be nice if this was just some kind of "meta" plugin and we got to configure each
-#   plugin in its own little box.
 
 import pytest
 import os

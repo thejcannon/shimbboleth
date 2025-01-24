@@ -272,6 +272,7 @@ class _LoadModelHelper:
 
     @staticmethod
     def check_required_fields(model_type: type[Model], data: JSONObject):
+        # @TODO: Handle aliases
         missing_fields = [
             field.name
             for field in dataclasses.fields(model_type)

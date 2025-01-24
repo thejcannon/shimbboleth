@@ -93,6 +93,9 @@ class _NonEmptyT(Validator):
 
 
 NonEmpty = _NonEmptyT()
+NonEmptyString = Annotated[str, NonEmpty]
+NonEmptyList = Annotated[list[T], NonEmpty]
+NonEmptyDict = Annotated[dict[K, V], NonEmpty]
 
 
 @dataclasses.dataclass(frozen=True, slots=True)
@@ -109,11 +112,6 @@ class MatchesRegex(Validator):
     @property
     def expectation(self) -> str:
         return f"match regex `{self.regex.pattern}`"
-
-
-NonEmptyString = Annotated[str, NonEmpty]
-NonEmptyList = Annotated[list[T], NonEmpty]
-NonEmptyDict = Annotated[dict[K, V], NonEmpty]
 
 
 @dataclasses.dataclass(frozen=True, slots=True)

@@ -18,6 +18,7 @@ class Dependency(Model, extra=False):
     allow_failure: bool = field(default=False, json_loader=bool_from_json)
 
 
+# @TODO: Rename to "Step"?
 class StepBase(Model):
     key: Annotated[str, Not[UUID]] | None = field(default=None)
     """A unique identifier for a step, must not resemble a UUID"""
@@ -64,7 +65,9 @@ def _load_depends_on(value: str | list[str | JSONObject]) -> list[Dependency]:
             ret.append(
                 Dependency(step=elem)
                 if isinstance(elem, str)
-                # HERES THE BUG
                 else Dependency.model_load(elem)
             )
     return ret
+
+
+# @TODO: Substep class (e.g. branches field and friends)

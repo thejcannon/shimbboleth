@@ -1,8 +1,11 @@
 # @TODO: Validate limits? https://buildkite.com/docs/pipelines/configure/workflows/build-matrix#matrix-limits
+#
 # @TODO: Should adjustment classes be inner classes?
+#   I think so. I think we could nest classes and give them good names.
+#   E.g. `Step.Dependency`, `CommandStep.Matrix`, etc.
 
 """
-@TODO: docstring
+Support for Command matrices.
 
 See: https://buildkite.com/docs/pipelines/configure/step-types/command-step#matrix-attributes
 """
@@ -47,8 +50,6 @@ class ScalarAdjustment(_AdjustmentBase, Model, extra=False):
     with_value: str = field(json_alias="with")
     """An existing (or new) element to adjust"""
 
-    # NB: other fields from base
-
 
 class SingleDimensionMatrix(Model, extra=False):
     """Configuration for single-dimension Build Matrix (e.g. list of elements/adjustments)."""
@@ -60,8 +61,6 @@ class SingleDimensionMatrix(Model, extra=False):
 
 class MultiDimensionMatrixAdjustment(_AdjustmentBase, Model):
     """An adjustment to a multi-dimension Build Matrix"""
-
-    # NB: other fields from base
 
     # @TODO: Each key in a `matrix.adjustments.with` must exist in the associated `matrix.setup`;
     #   new dimensions may not be created by an adjustment, only new elements; missing [...]
@@ -80,3 +79,11 @@ class MultiDimensionMatrix(Model, extra=False):
     """Maps dimension names to a lists of elements"""
 
     adjustments: list[MultiDimensionMatrixAdjustment] = field(default_factory=list)
+
+@MultiDimensionMatrix._json_loader_("setup")
+def _load_setup(value: NonEmptyDict[
+    Annotated[str, MatchesRegex(r"^[a-zA-Z0-9_]+$")], str | list[MatrixElementT]
+]) -> NonEmptyDict[
+    Annotated[str, MatchesRegex(r"^[a-zA-Z0-9_]+$")], list[MatrixElementT]
+]:
+    return {k: v if isinstance(v, list) else [v] for k, v in value.items()}

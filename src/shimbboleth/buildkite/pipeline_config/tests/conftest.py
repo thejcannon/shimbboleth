@@ -1,8 +1,12 @@
+# @TODO: Split this up (also conftest is eww, maybe just use vanilla python?)
 import pytest
 import httpx
+import hashlib
+import os
 from dataclasses import dataclass
 from typing import TypeVar, Generic, Any
 
+from shimbboleth.buildkite.pipeline_config.tests.cached_bk_api import CachedAPITransport
 from shimbboleth.buildkite.pipeline_config import (
     BlockStep,
     InputStep,
@@ -14,6 +18,8 @@ from shimbboleth.buildkite.pipeline_config import (
 )
 from shimbboleth.internal.clay.model import Model
 import jsonschema
+
+import httpx
 
 ModelT = TypeVar("ModelT", bound=Model)
 
@@ -103,3 +109,18 @@ def upstream_schema(pytestconfig) -> jsonschema.Draft202012Validator:
     return jsonschema.Draft202012Validator(
         schema, format_checker=jsonschema.Draft202012Validator.FORMAT_CHECKER
     )
+
+
+@pytest.fixture(scope="session")
+def cached_bk_api(pytestconfig: pytest.Config):
+    """
+    Fixture for a `httpx.Client` around the Buildkite API, which caches responses.
+    """
+    # @TODO: Can we mark as integration if the token isn't set?
+
+    return httpx.Client(
+        base_url="https://api.buildkite.com/v2/",
+        headers={"Authorization": f"Bearer {os.environ['BK_PIPELINE_API_TOKEN']}"},
+        transport=CachedAPITransport(pytestconfig.cache),
+    )
+    # @TODO: Cache the results in the GitHub Actions workflow?

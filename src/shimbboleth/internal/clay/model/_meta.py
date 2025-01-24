@@ -13,6 +13,8 @@ T = TypeVar("T")
 
 @dataclass_transform(kw_only_default=True, field_specifiers=(dataclasses.field, field))
 class ModelMeta(type):
+    __modelname__: str
+    """The 'model name'. Usually __name__, but in the case of a nest model, the dotted names."""
     __dataclass_fields__: ClassVar[dict[str, dataclasses.Field[Any]]]
     __allow_extra_properties__: bool
     __field_aliases__: MappingProxyType[str, FieldAlias] = MappingProxyType({})
@@ -37,9 +39,15 @@ class ModelMeta(type):
         #   We can tell if it's a dataclass if it has the magic attribute.
         if "__dataclass_fields__" in cls.__dict__:
             return cls
+
+        for attrname, attrvalue in namespace.items():
+            if isinstance(attrvalue, ModelMeta):
+                attrvalue.__modelname__ = f"{name}.{attrvalue.__name__}"
+
         return dataclasses.dataclass(slots=True, kw_only=True)(cls)
 
     def __init__(cls, name, bases, namespace, *, extra: bool | None = None):
+        cls.__modelname__ = cls.__name__
         cls.__allow_extra_properties__ = bool(extra)
 
         cls.__field_aliases__ = MappingProxyType(
@@ -76,7 +84,7 @@ class ModelMeta(type):
 
         model_defs = {}
         schema(cls, model_defs=model_defs)
-        return {**model_defs.pop(cls.__name__), "$defs": model_defs}
+        return {**model_defs.pop(cls.__modelname__), "$defs": model_defs}
 
     def model_load(cls: T, data: Any) -> T:
         # NB: Implemented in `Model`

@@ -1220,20 +1220,27 @@
         },
         "setup": {
           "additionalProperties": {
-            "items": {
-              "oneOf": [
-                {
-                  "type": "string"
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "items": {
+                  "oneOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "boolean"
+                    }
+                  ]
                 },
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "boolean"
-                }
-              ]
-            },
-            "type": "array"
+                "type": "array"
+              }
+            ]
           },
           "minProperties": 1,
           "propertyNames": {

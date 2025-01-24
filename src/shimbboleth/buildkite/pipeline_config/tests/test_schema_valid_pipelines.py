@@ -26,6 +26,7 @@ NOTE: Because of the "multiple ways to test a valid pipeline" this module is a b
 # @TODOs:
 #   - Test actual nulls in the pipeline
 from typing import cast
+import yaml
 
 from shimbboleth.buildkite.pipeline_config import (
     BuildkitePipeline,
@@ -59,7 +60,7 @@ class PipelineTestBase:
     def test_upstream_json_schema(self, config, upstream_schema, request):
         meta = request.node.get_closest_marker("meta")
         if meta and not meta.kwargs.get("upstream_schema_valid", True):
-            pytest.xfail("Upstream bug")
+            pytest.xfail("Upstream schema bug")
 
         # @UPSTREAM: No support for non-object pipelines
         if not isinstance(config, dict):
@@ -67,11 +68,16 @@ class PipelineTestBase:
         upstream_schema.validate(config)
 
     @pytest.mark.integration
-    def test_upstream_API(self, config):
-        pass  # @TODO: Implement
+    def test_upstream_API(self, config, cached_bk_api):
+        response = cached_bk_api.patch(
+            "/organizations/thejcannon/pipelines/step-blaster",
+            json={"configuration": yaml.dump(config, default_flow_style=False)},
+        )
+        print(response.json())
+        response.raise_for_status()
 
 
-class StepTestBase:
+class StepTestBase(PipelineTestBase):
     def get_step(self, step, steptype_param):
         """
         Helper to get the (full) step.
@@ -83,25 +89,22 @@ class StepTestBase:
         """
         return {**step, **steptype_param.dumped_default}
 
-    def test_model_load(self, step, steptype_param):
+    def test_model_load(self, step, steptype_param):  # type: ignore
         step = self.get_step(step, steptype_param)
-        BuildkitePipeline.model_load({"steps": [step]})
+        super().test_model_load({"steps": [step]})
 
-    def test_generated_json_schema(self, step, steptype_param, generated_schema):
+    def test_generated_json_schema(self, step, steptype_param, generated_schema):  # type: ignore
         step = self.get_step(step, steptype_param)
-        generated_schema.validate({"steps": [step]})
+        super().test_generated_json_schema({"steps": [step]}, generated_schema)
 
-    def test_upstream_json_schema(self, step, steptype_param, upstream_schema, request):
-        meta = request.node.get_closest_marker("meta")
-        if meta and not meta.kwargs.get("upstream_schema_valid", True):
-            pytest.xfail("Upstream bug")
-
+    def test_upstream_json_schema(self, step, steptype_param, upstream_schema, request):  # type: ignore
         step = self.get_step(step, steptype_param)
-        upstream_schema.validate({"steps": [step]})
+        super().test_upstream_json_schema({"steps": [step]}, upstream_schema, request)
 
     @pytest.mark.integration
-    def test_upstream_API(self, step, steptype_param):
-        pass  # @TODO: Implement
+    def test_upstream_API(self, step, steptype_param, cached_bk_api):  # type: ignore
+        step = self.get_step(step, steptype_param)
+        super().test_upstream_API({"steps": [step]}, cached_bk_api=cached_bk_api)
 
 
 @pytest.mark.parametrize(
@@ -184,7 +187,7 @@ class Test_ValidPipeline(PipelineTestBase):
             param({"allow_dependency_failure": value}, id="allow_dependency_failrue")
             for value in BOOLVALS
         ),
-        param({"if": "string"}, id="if"),
+        param({"if": "build.number == 1"}, id="if"),
         param({"depends_on": "scalar"}, id="depends_on"),
         param({"depends_on": ["string"]}, id="depends_on"),
         param({"depends_on": [{"step": "id"}]}, id="depends_on"),
@@ -265,6 +268,9 @@ class Test_AnySubstepType(StepTestBase):
 @pytest.mark.parametrize(
     "step",  # NB: type is `Callable[StepTypeParam], Step]`
     [param(lambda steptype: {steptype.stepname: steptype.ctor_defaults}, id="nested")],
+)
+@pytest.mark.skip(
+    "@TODO: Invalid upstream (`type` is not a valid property on the `block` step)"
 )
 class Test_NestedSubstep(StepTestBase):
     def get_step(self, step, steptype_param):
@@ -382,11 +388,11 @@ class Test_BlockStep(StepTestBase):
             id="env",
         ),
         param({"env": {"string": "string", "int": "0", "bool": "true"}}, id="env"),
-        param({"matrix": ["string", 0, True]}, id="matrix"),
-        param({"matrix": {"setup": ["value"]}}, id="matrix"),
+        param({"matrix": ["string", 0, True]}, id="matrix--raw-array"),
+        param({"matrix": {"setup": ["value"]}}, id="matrix--single-dim"),
         param(
             {"matrix": {"setup": ["value"], "adjustments": [{"with": "newvalue"}]}},
-            id="matrix",
+            id="matrix--single-dim-with-adjustment",
             marks=UPSTREAM_SCHEMA_INVALID,
         ),
         param(
@@ -407,15 +413,18 @@ class Test_BlockStep(StepTestBase):
                         "adjustments": [{"with": "newvalue", "skip": input}],
                     }
                 },
-                id="matrix",
+                id="matrix-single-dim---skip",
                 marks=UPSTREAM_SCHEMA_INVALID,
             )
             for input in SKIP_VALS
         ),
         param(
-            {"matrix": {"setup": {"key1": ["value"], "key2": ["value"]}}}, id="matrix"
+            {"matrix": {"setup": {"key1": ["value"], "key2": ["value"]}}}, id="matrix-multi-dim-multiple-keys"
         ),
-        param({"matrix": {"setup": {"key1": []}, "adjustments": []}}, id="matrix"),
+        param(
+            {"matrix": {"setup": {"key1": "value"}}}, id="matrix-multi-dim-scalar-value", marks=UPSTREAM_SCHEMA_INVALID
+        ),
+        param({"matrix": {"setup": {"key1": []}, "adjustments": []}}, id="matrix-multi-dim-emtpy-key-empty-adjustments"),
         param(
             {
                 "matrix": {
@@ -435,7 +444,7 @@ class Test_BlockStep(StepTestBase):
                 {
                     "matrix": {
                         "setup": {"key1": []},
-                        "adjustments": [{"with": {"key2": ""}, "skip": input}],
+                        "adjustments": [{"with": {"key1": ""}, "skip": input}],
                     }
                 },
                 id="matrix",
@@ -606,8 +615,9 @@ class Test_ManualStep__SelectField(StepTestBase):
     "step",  # NB: `step` is a misnomer, its actually the field's' option's extra keys/values.
     [
         param({}, id="bare"),
-        param({"hint": "hint"}, id="hint"),
-        *[param({"required": value}, id="required") for value in BOOLVALS],
+        # @TODO: These aren't valid upstream?
+        # param({"hint": "hint"}, id="hint"),
+        # *[param({"required": value}, id="required") for value in BOOLVALS],
     ],
 )
 class Test_ManualStep__SelectField__Option(StepTestBase):
