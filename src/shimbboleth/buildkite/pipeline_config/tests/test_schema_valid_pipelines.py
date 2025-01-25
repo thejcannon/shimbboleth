@@ -618,32 +618,6 @@ class Test_ManualStep__SelectField(StepTestBase):
     "steptype_param", [STEP_TYPE_PARAMS["block"], STEP_TYPE_PARAMS["input"]]
 )
 @pytest.mark.parametrize(
-    "step",  # NB: `step` is a misnomer, its actually the field's' option's extra keys/values.
-    [
-        param({}, id="bare"),
-        # @TODO: These aren't valid upstream?
-        # param({"hint": "hint"}, id="hint"),
-        # *[param({"required": value}, id="required") for value in BOOLVALS],
-    ],
-)
-class Test_ManualStep__SelectField__Option(StepTestBase):
-    def get_step(self, step, steptype_param):
-        return {
-            "type": steptype_param.stepname,
-            "fields": [
-                {
-                    "select": "select",
-                    "key": "key",
-                    "options": [{"label": "label", "value": "value", **step}],
-                }
-            ],
-        }
-
-
-@pytest.mark.parametrize(
-    "steptype_param", [STEP_TYPE_PARAMS["block"], STEP_TYPE_PARAMS["input"]]
-)
-@pytest.mark.parametrize(
     "step",  # NB: `step` is a misnomer, its actually the field's' extra keys/values.
     [
         param({}, id="bare"),

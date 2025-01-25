@@ -99,13 +99,13 @@
           "items": {
             "oneOf": [
               {
-                "$ref": "#/$defs/TextInput"
+                "$ref": "#/$defs/ManualStep.Text"
               },
               {
-                "$ref": "#/$defs/SingleSelectInput"
+                "$ref": "#/$defs/ManualStep.SingleSelect"
               },
               {
-                "$ref": "#/$defs/MultiSelectInput"
+                "$ref": "#/$defs/ManualStep.MultiSelect"
               }
             ]
           },
@@ -1151,13 +1151,13 @@
           "items": {
             "oneOf": [
               {
-                "$ref": "#/$defs/TextInput"
+                "$ref": "#/$defs/ManualStep.Text"
               },
               {
-                "$ref": "#/$defs/SingleSelectInput"
+                "$ref": "#/$defs/ManualStep.SingleSelect"
               },
               {
-                "$ref": "#/$defs/MultiSelectInput"
+                "$ref": "#/$defs/ManualStep.MultiSelect"
               }
             ]
           },
@@ -1231,6 +1231,213 @@
         }
       },
       "required": [],
+      "type": "object"
+    },
+    "ManualStep.MultiSelect": {
+      "additionalProperties": false,
+      "properties": {
+        "default": {
+          "default": null,
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "hint": {
+          "default": null,
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "key": {
+          "pattern": "^[a-zA-Z0-9-_]+$",
+          "type": "string"
+        },
+        "multiple": {
+          "enum": [
+            true,
+            "true"
+          ]
+        },
+        "options": {
+          "items": {
+            "$ref": "#/$defs/_Select.Option"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "required": {
+          "default": true,
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          ]
+        },
+        "select": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "select",
+        "options",
+        "multiple"
+      ],
+      "type": "object"
+    },
+    "ManualStep.SingleSelect": {
+      "additionalProperties": false,
+      "properties": {
+        "default": {
+          "default": null,
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "hint": {
+          "default": null,
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "key": {
+          "pattern": "^[a-zA-Z0-9-_]+$",
+          "type": "string"
+        },
+        "multiple": {
+          "default": false,
+          "enum": [
+            false,
+            "false"
+          ]
+        },
+        "options": {
+          "items": {
+            "$ref": "#/$defs/_Select.Option"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "required": {
+          "default": true,
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          ]
+        },
+        "select": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "select",
+        "options"
+      ],
+      "type": "object"
+    },
+    "ManualStep.Text": {
+      "additionalProperties": false,
+      "properties": {
+        "default": {
+          "default": null,
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "format": {
+          "default": null,
+          "oneOf": [
+            {
+              "format": "regex",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "hint": {
+          "default": null,
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "key": {
+          "pattern": "^[a-zA-Z0-9-_]+$",
+          "type": "string"
+        },
+        "required": {
+          "default": true,
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          ]
+        },
+        "text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "text"
+      ],
       "type": "object"
     },
     "MultiDimensionMatrix": {
@@ -1332,80 +1539,6 @@
       },
       "required": [
         "with"
-      ],
-      "type": "object"
-    },
-    "MultiSelectInput": {
-      "additionalProperties": false,
-      "properties": {
-        "default": {
-          "default": null,
-          "oneOf": [
-            {
-              "type": "string"
-            },
-            {
-              "items": {
-                "type": "string"
-              },
-              "type": "array"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "hint": {
-          "default": null,
-          "oneOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "key": {
-          "pattern": "^[a-zA-Z0-9-_]+$",
-          "type": "string"
-        },
-        "multiple": {
-          "enum": [
-            true,
-            "true"
-          ]
-        },
-        "options": {
-          "items": {
-            "$ref": "#/$defs/SelectOption"
-          },
-          "minItems": 1,
-          "type": "array"
-        },
-        "required": {
-          "default": true,
-          "oneOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "enum": [
-                "true",
-                "false"
-              ]
-            }
-          ]
-        },
-        "select": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "key",
-        "select",
-        "options",
-        "multiple"
       ],
       "type": "object"
     },
@@ -1547,47 +1680,6 @@
       ],
       "type": "object"
     },
-    "SelectOption": {
-      "additionalProperties": false,
-      "properties": {
-        "hint": {
-          "default": null,
-          "oneOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "label": {
-          "type": "string"
-        },
-        "required": {
-          "default": true,
-          "oneOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "enum": [
-                "true",
-                "false"
-              ]
-            }
-          ]
-        },
-        "value": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "label",
-        "value"
-      ],
-      "type": "object"
-    },
     "SingleDimensionMatrix": {
       "additionalProperties": false,
       "properties": {
@@ -1618,74 +1710,6 @@
       },
       "required": [
         "setup"
-      ],
-      "type": "object"
-    },
-    "SingleSelectInput": {
-      "additionalProperties": false,
-      "properties": {
-        "default": {
-          "default": null,
-          "oneOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "hint": {
-          "default": null,
-          "oneOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "key": {
-          "pattern": "^[a-zA-Z0-9-_]+$",
-          "type": "string"
-        },
-        "multiple": {
-          "default": false,
-          "enum": [
-            false,
-            "false"
-          ]
-        },
-        "options": {
-          "items": {
-            "$ref": "#/$defs/SelectOption"
-          },
-          "minItems": 1,
-          "type": "array"
-        },
-        "required": {
-          "default": true,
-          "oneOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "enum": [
-                "true",
-                "false"
-              ]
-            }
-          ]
-        },
-        "select": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "key",
-        "select",
-        "options"
       ],
       "type": "object"
     },
@@ -1772,71 +1796,6 @@
       ],
       "type": "object"
     },
-    "TextInput": {
-      "additionalProperties": false,
-      "properties": {
-        "default": {
-          "default": null,
-          "oneOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "format": {
-          "default": null,
-          "oneOf": [
-            {
-              "format": "regex",
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "hint": {
-          "default": null,
-          "oneOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "key": {
-          "pattern": "^[a-zA-Z0-9-_]+$",
-          "type": "string"
-        },
-        "required": {
-          "default": true,
-          "oneOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "enum": [
-                "true",
-                "false"
-              ]
-            }
-          ]
-        },
-        "text": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "key",
-        "text"
-      ],
-      "type": "object"
-    },
     "TriggerStep": {
       "additionalProperties": false,
       "properties": {
@@ -1886,7 +1845,7 @@
           "default": null,
           "oneOf": [
             {
-              "$ref": "#/$defs/TriggeredBuild"
+              "$ref": "#/$defs/TriggerStep.Build"
             },
             {
               "type": "null"
@@ -2000,7 +1959,7 @@
       ],
       "type": "object"
     },
-    "TriggeredBuild": {
+    "TriggerStep.Build": {
       "additionalProperties": false,
       "properties": {
         "branch": {
@@ -2201,6 +2160,22 @@
       },
       "required": [
         "webhook"
+      ],
+      "type": "object"
+    },
+    "_Select.Option": {
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "label",
+        "value"
       ],
       "type": "object"
     },

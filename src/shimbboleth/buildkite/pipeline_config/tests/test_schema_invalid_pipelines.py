@@ -218,7 +218,7 @@ class Test_ManualStep(StepTestBase):
     [
         param(
             {"text": "text"},
-            "Expected required fields `'key'` to be provided for model `TextInput`",
+            "Expected required fields `'key'` to be provided for model `ManualStep.Text`",
             ".fields[0]",
             id="missing_text_key",
         ),
@@ -281,20 +281,20 @@ class Test_ManualStep__InvalidTextField(StepTestBase):
                 "multiple": False,
                 "default": ["value"],
             },
-            "Expected `['value']` to be a string when `multiple` is `False`",
-            ".fields[0]",
+            "Expected `['value']` to be of type `str | None`",
+            ".fields[0].default",
             id="single_select_list_default",
             marks=UPSTREAM_SCHEMA_INVALID,
         ),
         param(
             {"select": "select", "options": [{"label": "label", "value": "value"}]},
-            "Expected required fields `'key'` to be provided for model `SelectInput`",
+            "Expected required fields `'key'` to be provided for model `ManualStep.SingleSelect`",
             ".fields[0]",
             id="missing_select_key",
         ),
         param(
             {"select": "select", "key": "key"},
-            "Expected required fields `'options'` to be provided for model `SelectInput`",
+            "Expected required fields `'options'` to be provided for model `ManualStep.SingleSelect`",
             ".fields[0]",
             id="missing_options",
         ),
