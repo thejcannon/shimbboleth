@@ -7,7 +7,7 @@ from shimbboleth.buildkite.pipeline_config._types import (
     list_str_from_json,
     bool_from_json,
 )
-from shimbboleth.buildkite.pipeline_config._base import Step
+from shimbboleth.buildkite.pipeline_config.step import Step
 
 
 class WaitStep(Step, extra=False):

@@ -16,7 +16,7 @@ from shimbboleth.internal.clay.validation import (
     MatchesRegex,
 )
 
-from shimbboleth.buildkite.pipeline_config._base import Step
+from shimbboleth.buildkite.pipeline_config.step import Step
 from shimbboleth.buildkite.pipeline_config._agents import agents_from_json
 from shimbboleth.buildkite.pipeline_config._types import (
     list_str_from_json,
@@ -104,11 +104,7 @@ class RetryConditions(Model, extra=False):
     """When to allow a job to be retried manually"""
 
 
-class CommandCache(Model, extra=True):
-    paths: list[str]
 
-    name: str | None = None
-    size: Annotated[str, MatchesRegex("^\\d+g$")] | None = None
 
 
 class Plugin(Model, extra=False):
@@ -131,6 +127,12 @@ class CommandStep(Step, extra=False):
     https://buildkite.com/docs/pipelines/command-step
     """
 
+    class Cache(Model, extra=True):
+        paths: list[str]
+
+        name: str | None = None
+        size: Annotated[str, MatchesRegex("^\\d+g$")] | None = None
+
     agents: dict[str, str] = field(default_factory=dict, json_loader=agents_from_json)
     """
     Query rules to target specific agents.
@@ -146,7 +148,7 @@ class CommandStep(Step, extra=False):
     branches: list[str] = field(default_factory=list, json_loader=list_str_from_json)
     """Which branches will include this step in their builds"""
 
-    cache: CommandCache = field(default_factory=lambda: CommandCache(paths=[]))
+    cache: Cache = field(default_factory=lambda: CommandStep.Cache(paths=[]))
     """(@TODO) See: https://buildkite.com/docs/pipelines/hosted-agents/linux"""
 
     cancel_on_build_failing: bool = field(default=False, json_loader=bool_from_json)
@@ -272,11 +274,11 @@ def _load_manual(
 
 
 @CommandStep._json_loader_("cache")
-def _convert_cache(value: str | list[str] | CommandCache) -> CommandCache:
+def _convert_cache(value: str | list[str] | CommandStep.Cache) -> CommandStep.Cache:
     if isinstance(value, str):
-        return CommandCache(paths=[value])
+        return CommandStep.Cache(paths=[value])
     if isinstance(value, list):
-        return CommandCache(paths=value)
+        return CommandStep.Cache(paths=value)
     return value
 
 

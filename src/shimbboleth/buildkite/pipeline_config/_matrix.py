@@ -81,10 +81,13 @@ class MultiDimensionMatrix(Model, extra=False):
 
     adjustments: list[MultiDimensionMatrixAdjustment] = field(default_factory=list)
 
+
 @MultiDimensionMatrix._json_loader_("setup")
-def _load_setup(value: NonEmptyDict[
-    Annotated[str, MatchesRegex(r"^[a-zA-Z0-9_]+$")], str | list[MatrixElementT]
-]) -> NonEmptyDict[
+def _load_setup(
+    value: NonEmptyDict[
+        Annotated[str, MatchesRegex(r"^[a-zA-Z0-9_]+$")], str | list[MatrixElementT]
+    ],
+) -> NonEmptyDict[
     Annotated[str, MatchesRegex(r"^[a-zA-Z0-9_]+$")], list[MatrixElementT]
 ]:
     return {k: v if isinstance(v, list) else [v] for k, v in value.items()}

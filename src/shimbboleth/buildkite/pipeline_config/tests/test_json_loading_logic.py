@@ -6,11 +6,10 @@ Each module tests different things.
 """
 
 from shimbboleth.buildkite.pipeline_config import BuildkitePipeline
-from shimbboleth.buildkite.pipeline_config._base import Step
+from shimbboleth.buildkite.pipeline_config.step import Step
 
 from shimbboleth.buildkite.pipeline_config.command_step import (
     CommandStep,
-    CommandCache,
     Plugin,
 )
 from shimbboleth.buildkite.pipeline_config.group_step import GroupStep
@@ -125,11 +124,11 @@ class Test_CommandStep:
         ]
 
     def test_cache(self):
-        assert CommandStep.model_load({"cache": "path"}).cache == CommandCache(
+        assert CommandStep.model_load({"cache": "path"}).cache == CommandStep.Cache(
             paths=["path"]
         )
-        assert CommandStep.model_load({"cache": []}).cache == CommandCache(paths=[])
-        assert CommandStep.model_load({"cache": ["path"]}).cache == CommandCache(
+        assert CommandStep.model_load({"cache": []}).cache == CommandStep.Cache(paths=[])
+        assert CommandStep.model_load({"cache": ["path"]}).cache == CommandStep.Cache(
             paths=["path"]
         )
 
@@ -201,8 +200,7 @@ class Test_CommandStep:
                         "setup": {"key": "scalar"},
                     }
                 }
-            )
-            .matrix.setup["key"]  # type: ignore
+            ).matrix.setup["key"]  # type: ignore
             == ["scalar"]
         )
 

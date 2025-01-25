@@ -4,7 +4,7 @@ from typing import Literal, ClassVar
 from shimbboleth.internal.clay.model import field, FieldAlias
 
 
-from shimbboleth.buildkite.pipeline_config._manual_step import ManualStep
+from shimbboleth.buildkite.pipeline_config.manual_step import ManualStep
 
 
 class BlockStep(ManualStep, extra=False):

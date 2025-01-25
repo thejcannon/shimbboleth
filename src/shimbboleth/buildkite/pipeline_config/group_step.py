@@ -18,7 +18,7 @@ from shimbboleth.buildkite.pipeline_config.wait_step import WaitStep
 from shimbboleth.buildkite.pipeline_config.trigger_step import TriggerStep
 from shimbboleth.buildkite.pipeline_config.command_step import CommandStep
 from shimbboleth.buildkite.pipeline_config._notify import StepNotifyT
-from shimbboleth.buildkite.pipeline_config._base import Step
+from shimbboleth.buildkite.pipeline_config.step import Step
 
 
 class GroupStep(Step, extra=False):

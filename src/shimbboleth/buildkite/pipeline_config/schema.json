@@ -226,44 +226,6 @@
       "required": [],
       "type": "object"
     },
-    "CommandCache": {
-      "additionalProperties": true,
-      "properties": {
-        "name": {
-          "default": null,
-          "oneOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "paths": {
-          "items": {
-            "type": "string"
-          },
-          "type": "array"
-        },
-        "size": {
-          "default": null,
-          "oneOf": [
-            {
-              "pattern": "^\\d+g$",
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        }
-      },
-      "required": [
-        "paths"
-      ],
-      "type": "object"
-    },
     "CommandStep": {
       "additionalProperties": false,
       "properties": {
@@ -339,7 +301,7 @@
               "type": "array"
             },
             {
-              "$ref": "#/$defs/CommandCache"
+              "$ref": "#/$defs/CommandStep.Cache"
             }
           ]
         },
@@ -679,6 +641,44 @@
         }
       },
       "required": [],
+      "type": "object"
+    },
+    "CommandStep.Cache": {
+      "additionalProperties": true,
+      "properties": {
+        "name": {
+          "default": null,
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "size": {
+          "default": null,
+          "oneOf": [
+            {
+              "pattern": "^\\d+g$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "paths"
+      ],
       "type": "object"
     },
     "CommandStepSignature": {

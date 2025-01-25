@@ -4,7 +4,7 @@ from typing import Literal, ClassVar
 from shimbboleth.internal.clay.model import field, FieldAlias, Model
 from shimbboleth.internal.clay.jsonT import JSONObject
 
-from shimbboleth.buildkite.pipeline_config._base import Step
+from shimbboleth.buildkite.pipeline_config.step import Step
 from shimbboleth.buildkite.pipeline_config._types import (
     bool_from_json,
     list_str_from_json,

@@ -30,6 +30,7 @@ UPSTREAM_SCHEMA_INVALID = pytest.mark.meta(upstream_schema_valid=False)
 UPSTREAM_API_500 = pytest.mark.meta(upstream_api_500=True)
 UPSTREAM_API_OK = pytest.mark.meta(upstream_api_200=True)
 
+
 class PipelineTestBase:
     def test_model_load(self, config, *, error, path):
         with pytest.raises(ValidationError) as e:
@@ -97,10 +98,16 @@ class StepTestBase(PipelineTestBase):
         )
 
     @pytest.mark.integration
-    def test_upstream_API(self, step, steptype_param, cached_bk_api, request, *, error, path):  # type: ignore
+    def test_upstream_API(
+        self, step, steptype_param, cached_bk_api, request, *, error, path
+    ):  # type: ignore
         step = self.get_step(step, steptype_param)
         super().test_upstream_API(
-            {"steps": [step]}, cached_bk_api=cached_bk_api, request=request, error=error, path=path
+            {"steps": [step]},
+            cached_bk_api=cached_bk_api,
+            request=request,
+            error=error,
+            path=path,
         )
 
 
@@ -130,7 +137,7 @@ class StepTestBase(PipelineTestBase):
             "Expected `['key']` to be of type `dict`",
             ".env",
             id="env_list",
-            marks=UPSTREAM_API_500
+            marks=UPSTREAM_API_500,
         ),
         param(
             {"steps": [], "notify": ["unknown"]},
@@ -169,7 +176,7 @@ class Test_InvalidPipeline(PipelineTestBase):
         ),
         param(
             {"depends_on": [{}]},
-            "Expected required fields `'step'` to be provided for model `Dependency`",
+            "Expected required fields `'step'` to be provided for model `Step.Dependency`",
             ".depends_on[0]",
             id="depends_on_missing_step",
             marks=UPSTREAM_SCHEMA_INVALID,
@@ -313,14 +320,14 @@ class Test_ManualStep__InvalidSelectField(StepTestBase):
             "Expected `{'key1': {}, 'key2': {}}` to have only one key",
             ".plugins[0]",
             id="plugins_multiple_props",
-            marks=UPSTREAM_API_OK
+            marks=UPSTREAM_API_OK,
         ),
         param(
             {"cache": {}},
-            "Expected required fields `'paths'` to be provided for model `CommandCache`",
+            "Expected required fields `'paths'` to be provided for model `CommandStep.Cache`",
             ".cache",
             id="cache_missing_paths",
-            marks=UPSTREAM_API_OK
+            marks=UPSTREAM_API_OK,
         ),
         param(
             {"cache": {"paths": [], "size": "1"}},

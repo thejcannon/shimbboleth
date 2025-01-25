@@ -419,12 +419,18 @@ class Test_BlockStep(StepTestBase):
             for input in SKIP_VALS
         ),
         param(
-            {"matrix": {"setup": {"key1": ["value"], "key2": ["value"]}}}, id="matrix-multi-dim-multiple-keys"
+            {"matrix": {"setup": {"key1": ["value"], "key2": ["value"]}}},
+            id="matrix-multi-dim-multiple-keys",
         ),
         param(
-            {"matrix": {"setup": {"key1": "value"}}}, id="matrix-multi-dim-scalar-value", marks=UPSTREAM_SCHEMA_INVALID
+            {"matrix": {"setup": {"key1": "value"}}},
+            id="matrix-multi-dim-scalar-value",
+            marks=UPSTREAM_SCHEMA_INVALID,
         ),
-        param({"matrix": {"setup": {"key1": []}, "adjustments": []}}, id="matrix-multi-dim-emtpy-key-empty-adjustments"),
+        param(
+            {"matrix": {"setup": {"key1": []}, "adjustments": []}},
+            id="matrix-multi-dim-emtpy-key-empty-adjustments",
+        ),
         param(
             {
                 "matrix": {

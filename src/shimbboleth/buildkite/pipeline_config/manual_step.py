@@ -9,7 +9,7 @@ from shimbboleth.internal.clay.validation import (
 )
 from shimbboleth.buildkite.pipeline_config._types import bool_from_json
 from shimbboleth.buildkite.pipeline_config._types import list_str_from_json
-from shimbboleth.buildkite.pipeline_config._base import Step
+from shimbboleth.buildkite.pipeline_config.step import Step
 
 
 class _OptionBaseModel(Model):

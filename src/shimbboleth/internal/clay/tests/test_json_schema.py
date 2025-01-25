@@ -270,6 +270,7 @@ def test_model_field():
         },
     }
 
+
 def test_nested_models():
     class OuterModel(Model):
         class InnerModel(Model):
