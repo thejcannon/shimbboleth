@@ -1,5 +1,6 @@
 from typing import Literal, Any, Annotated, ClassVar
 
+from shimbboleth.buildkite.pipeline_config.notify import Notify
 from shimbboleth.internal.clay.model import (
     Model,
     field,
@@ -26,7 +27,6 @@ from shimbboleth.buildkite.pipeline_config._types import (
     soft_fail_from_json,
     soft_fail_to_json,
 )
-from shimbboleth.buildkite.pipeline_config._notify import StepNotifyT
 from shimbboleth.buildkite.pipeline_config._matrix import (
     MatrixArray,
     SingleDimensionMatrix,
@@ -165,6 +165,9 @@ class CommandStep(Step, extra=False):
     env: dict[str, str] = field(default_factory=dict)
     """Environment variables for this step"""
 
+    label: str | None = None
+    """The label that will be displayed in the pipeline visualization in Buildkite. Supports emoji."""
+
     matrix: MatrixArray | SingleDimensionMatrix | MultiDimensionMatrix | None = None
     """
     Matrix expansions for this step.
@@ -172,7 +175,7 @@ class CommandStep(Step, extra=False):
     See https://buildkite.com/docs/pipelines/configure/workflows/build-matrix
     """
 
-    notify: StepNotifyT = field(default_factory=list)
+    notify: list[Step.NotifyT] = field(default_factory=list)
     """Array of notification options for this step"""
 
     parallelism: int | None = None
@@ -206,9 +209,6 @@ class CommandStep(Step, extra=False):
     # @TODO: Zero is OK upstream?
     timeout_in_minutes: Annotated[int, Ge(1)] | None = None
     """The number of minutes to time out a job"""
-
-    label: str | None = None
-    """The label that will be displayed in the pipeline visualization in Buildkite. Supports emoji."""
 
     type: Literal["script", "command", "commands"] = "command"
 
@@ -247,6 +247,15 @@ def _load_automatic(
     return value
 
 
+@CommandStep._json_loader_("cache")
+def _load_cache(value: str | list[str] | CommandStep.Cache) -> CommandStep.Cache:
+    if isinstance(value, str):
+        return CommandStep.Cache(paths=[value])
+    if isinstance(value, list):
+        return CommandStep.Cache(paths=value)
+    return value
+
+
 @CommandStep.Retry._json_loader_("manual")
 def _load_manual(
     value: bool | Literal["true", "false"] | CommandStep.Retry.Manual,
@@ -255,15 +264,6 @@ def _load_manual(
         return CommandStep.Retry.Manual(allowed=False)
     elif value in (True, "true"):
         return CommandStep.Retry.Manual(allowed=True)
-    return value
-
-
-@CommandStep._json_loader_("cache")
-def _convert_cache(value: str | list[str] | CommandStep.Cache) -> CommandStep.Cache:
-    if isinstance(value, str):
-        return CommandStep.Cache(paths=[value])
-    if isinstance(value, list):
-        return CommandStep.Cache(paths=value)
     return value
 
 
@@ -299,13 +299,14 @@ def _load_matrix(
     # @TODO: Error on wrong type
 
 
-@CommandStep._json_loader_("notify", json_schema_type=StepNotifyT)
-def _load_notify(
-    value: list[Any],
-) -> StepNotifyT:
-    from shimbboleth.buildkite.pipeline_config._notify import parse_step_notify
-
-    return parse_step_notify(value)
+@CommandStep._json_loader_(
+    "notify",
+    json_schema_type=list[
+        Literal["github_check", "github_commit_status"] | Step.NotifyT
+    ],
+)
+def _load_notify(value: list[str | JSONObject]) -> list[Step.NotifyT]:
+    return CommandStep._parse_notify(value)
 
 
 @CommandStep._json_loader_("plugins")

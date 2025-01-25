@@ -45,6 +45,7 @@ class ValidationError(ValueError):
         self.expectation = expectation
         self.qualifier = qualifier
         self.path = []
+        # @FEAT: Add URL
         self.add_context(index=index, key=key, attr=attr)
 
     def __str__(self):

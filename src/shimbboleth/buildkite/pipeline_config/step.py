@@ -2,13 +2,15 @@
 Contains the base class for all steps: `Step`.
 """
 
+import dataclasses
 from shimbboleth.internal.clay.model import Model, field, FieldAlias
-from shimbboleth.internal.clay.validation import Not
+from shimbboleth.internal.clay.validation import Not, ValidationError
 from shimbboleth.internal.clay.jsonT import JSONObject
 from shimbboleth.internal.clay.json_load import JSONLoadError
 from shimbboleth.buildkite.pipeline_config._types import bool_from_json
+from shimbboleth.buildkite.pipeline_config.notify import Notify, _parse_notify
 from uuid import UUID
-from typing import ClassVar, final, Annotated
+from typing import ClassVar, final, Annotated, TypeAlias
 
 
 class Step(Model):
@@ -34,6 +36,14 @@ class Step(Model):
     id: ClassVar = FieldAlias("key", deprecated=True)
     identifier: ClassVar = FieldAlias("key")
 
+    # NB: Used in `GroupStep` and `CommandStep`
+    NotifyT = (
+        Notify.BasecampCampfire
+        | Notify.Slack
+        | Notify.GitHubCheck
+        | Notify.GitHubCommitStatus
+    )
+
     @final
     @classmethod
     def _get_canonical_type(cls) -> str | None:
@@ -50,6 +60,22 @@ class Step(Model):
             val["type"] = type_tag
 
         return val
+
+    @staticmethod
+    def _parse_notify(value: list[str | JSONObject]) -> list[NotifyT]:
+        ret = []
+        for index, elem in enumerate(value):
+            with ValidationError.context(index=index):
+                notify = _parse_notify(elem)
+                if isinstance(notify, (Notify.Email, Notify.Webhook, Notify.Pagerduty)):
+                    field = dataclasses.fields(notify)[1]
+                    keyname = field.metadata.get("json_alias", field.name)
+                    # NB: It IS a valid _build_ notification though
+                    raise JSONLoadError(
+                        value=keyname, expectation="be a valid step notification"
+                    )
+                ret.append(notify)
+        return ret
 
 
 @Step._json_loader_("depends_on", json_schema_type=str | list[str | Step.Dependency])
@@ -68,4 +94,4 @@ def _load_depends_on(value: str | list[str | JSONObject]) -> list[Step.Dependenc
     return ret
 
 
-# @TODO: Substep class (e.g. branches field and friends)
+# @TODO: Substep class? (e.g. branches field and friends)

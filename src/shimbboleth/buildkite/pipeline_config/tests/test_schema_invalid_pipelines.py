@@ -25,6 +25,8 @@ import jsonschema.exceptions
 from pytest import param
 
 # @TODO: Tests for extra keys!
+# @TODO: multiple aliases for the label
+#   (e.g. command/commands/scripts)
 
 UPSTREAM_SCHEMA_INVALID = pytest.mark.meta(upstream_schema_valid=False)
 UPSTREAM_API_500 = pytest.mark.meta(upstream_api_500=True)

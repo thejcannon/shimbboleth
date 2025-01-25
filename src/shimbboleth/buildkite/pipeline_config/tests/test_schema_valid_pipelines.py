@@ -153,26 +153,61 @@ class StepTestBase(PipelineTestBase):
             {"steps": [], "env": {"string": "string", "int": "0", "bool": "true"}},
             id="env_with_string_types",
         ),
+        param({"steps": [], "notify": ["github_check"]}, id="notify_github_check"),
+        param(
+            {"steps": [], "notify": ["github_commit_status"]},
+            id="notify_github_commit_status",
+        ),
+        param(
+            {"steps": [], "notify": [{"email": "email@example.com"}]}, id="notify_email"
+        ),
+        param(
+            {"steps": [], "notify": [{"webhook": "https://example.com"}]},
+            id="notify_webhook",
+        ),
         param(
             {
                 "steps": [],
-                "notify": [
-                    "github_check",
-                    "github_commit_status",
-                    {"email": "email@example.com"},
-                    {"webhook": "https://example.com"},
-                    {"pagerduty_change_event": "pagerduty_change_event"},
-                    {"basecamp_campfire": BASECAMP_CAMPFIRE_URL},
-                    {"slack": "#general"},
-                    {"slack": {"channels": ["#general"]}},
-                    {"slack": {"channels": ["#general"], "message": "message"}},
-                    {"github_commit_status": {"context": "context"}},
-                    {"github_check": {"name": "name"}},
-                ],
+                "notify": [{"pagerduty_change_event": "pagerduty_change_event"}],
             },
-            id="notify",
+            id="notify_pagerduty",
         ),
-        # @TODO: Extra keys OK
+        param(
+            {"steps": [], "notify": [{"basecamp_campfire": BASECAMP_CAMPFIRE_URL}]},
+            id="notify_basecamp",
+        ),
+        param(
+            {"steps": [], "notify": [{"slack": "#general"}]}, id="notify_slack_simple"
+        ),
+        param(
+            {"steps": [], "notify": [{"slack": {"channels": ["#general"]}}]},
+            id="notify_slack_channels",
+        ),
+        param(
+            {
+                "steps": [],
+                "notify": [{"slack": {"channels": ["#general"], "message": "message"}}],
+            },
+            id="notify_slack_full",
+        ),
+        param(
+            {"steps": [], "notify": [{"github_commit_status": {"context": "context"}}]},
+            id="notify_github_commit_status_context",
+        ),
+        param(
+            {"steps": [], "notify": [{"github_check": {}}]},
+            id="notify_github_check_empty",
+        ),
+        # @TEST: ...
+        # param(
+        #     {"steps": [], "notify": [{"github_check": None}]},
+        #     id="notify_github_check_null",
+        # ),
+        param(
+            {"steps": [], "notify": [{"github_check": {"name": "name"}}]},
+            id="notify_github_check_name",
+        ),
+        # @TEST: Extra keys OK
     ],
 )
 class Test_ValidPipeline(PipelineTestBase):

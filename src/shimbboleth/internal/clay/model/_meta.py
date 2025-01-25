@@ -14,7 +14,7 @@ T = TypeVar("T")
 @dataclass_transform(kw_only_default=True, field_specifiers=(dataclasses.field, field))
 class ModelMeta(type):
     __parent_model__: "ModelMeta | None" = None
-    __dataclass_fields__: dict[str, dataclasses.Field[Any]]
+    # __dataclass_fields__: dict[str, dataclasses.Field[Any]]
     __allow_extra_properties__: bool
     __field_aliases__: MappingProxyType[str, FieldAlias] = MappingProxyType({})
     __json_fieldnames__: frozenset[str]

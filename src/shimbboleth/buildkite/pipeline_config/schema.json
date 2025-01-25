@@ -1,28 +1,5 @@
 {
   "$defs": {
-    "BasecampCampfireNotify": {
-      "additionalProperties": false,
-      "properties": {
-        "basecamp_campfire": {
-          "type": "string"
-        },
-        "if": {
-          "default": null,
-          "oneOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        }
-      },
-      "required": [
-        "basecamp_campfire"
-      ],
-      "type": "object"
-    },
     "BlockStep": {
       "additionalProperties": false,
       "properties": {
@@ -430,16 +407,16 @@
                 ]
               },
               {
-                "$ref": "#/$defs/BasecampCampfireNotify"
+                "$ref": "#/$defs/Notify.BasecampCampfire"
               },
               {
-                "$ref": "#/$defs/SlackNotify"
+                "$ref": "#/$defs/Notify.Slack"
               },
               {
-                "$ref": "#/$defs/GitHubCommitStatusNotify"
+                "$ref": "#/$defs/Notify.GitHubCheck"
               },
               {
-                "$ref": "#/$defs/GitHubCheckNotify"
+                "$ref": "#/$defs/Notify.GitHubCommitStatus"
               }
             ]
           },
@@ -814,29 +791,6 @@
       "required": [],
       "type": "object"
     },
-    "EmailNotify": {
-      "additionalProperties": false,
-      "properties": {
-        "email": {
-          "type": "string"
-        },
-        "if": {
-          "default": null,
-          "oneOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        }
-      },
-      "required": [
-        "email"
-      ],
-      "type": "object"
-    },
     "ExitStatus": {
       "additionalProperties": true,
       "properties": {
@@ -855,62 +809,6 @@
       },
       "required": [
         "exit_status"
-      ],
-      "type": "object"
-    },
-    "GitHubCheckNotify": {
-      "additionalProperties": false,
-      "properties": {
-        "github_check": {
-          "additionalProperties": {
-            "type": "string"
-          },
-          "type": "object"
-        }
-      },
-      "required": [
-        "github_check"
-      ],
-      "type": "object"
-    },
-    "GitHubCommitStatusInfo": {
-      "additionalProperties": false,
-      "properties": {
-        "context": {
-          "default": null,
-          "oneOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        }
-      },
-      "required": [],
-      "type": "object"
-    },
-    "GitHubCommitStatusNotify": {
-      "additionalProperties": false,
-      "properties": {
-        "github_commit_status": {
-          "$ref": "#/$defs/GitHubCommitStatusInfo"
-        },
-        "if": {
-          "default": null,
-          "oneOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        }
-      },
-      "required": [
-        "github_commit_status"
       ],
       "type": "object"
     },
@@ -1011,16 +909,16 @@
                 ]
               },
               {
-                "$ref": "#/$defs/BasecampCampfireNotify"
+                "$ref": "#/$defs/Notify.BasecampCampfire"
               },
               {
-                "$ref": "#/$defs/SlackNotify"
+                "$ref": "#/$defs/Notify.Slack"
               },
               {
-                "$ref": "#/$defs/GitHubCommitStatusNotify"
+                "$ref": "#/$defs/Notify.GitHubCheck"
               },
               {
-                "$ref": "#/$defs/GitHubCheckNotify"
+                "$ref": "#/$defs/Notify.GitHubCommitStatus"
               }
             ]
           },
@@ -1614,7 +1512,118 @@
       ],
       "type": "object"
     },
-    "PagerdutyNotify": {
+    "Notify.BasecampCampfire": {
+      "additionalProperties": false,
+      "properties": {
+        "basecamp_campfire": {
+          "type": "string"
+        },
+        "if": {
+          "default": null,
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "basecamp_campfire"
+      ],
+      "type": "object"
+    },
+    "Notify.Email": {
+      "additionalProperties": false,
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "if": {
+          "default": null,
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "email"
+      ],
+      "type": "object"
+    },
+    "Notify.GitHubCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "github_check": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "default": {},
+          "type": "object"
+        },
+        "if": {
+          "default": null,
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "Notify.GitHubCommitStatus": {
+      "additionalProperties": false,
+      "properties": {
+        "github_commit_status": {
+          "$ref": "#/$defs/Notify.GitHubCommitStatus.Info",
+          "default": {}
+        },
+        "if": {
+          "default": null,
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "Notify.GitHubCommitStatus.Info": {
+      "additionalProperties": true,
+      "properties": {
+        "context": {
+          "default": null,
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "Notify.Pagerduty": {
       "additionalProperties": false,
       "properties": {
         "if": {
@@ -1634,6 +1643,86 @@
       },
       "required": [
         "pagerduty_change_event"
+      ],
+      "type": "object"
+    },
+    "Notify.Slack": {
+      "additionalProperties": false,
+      "properties": {
+        "if": {
+          "default": null,
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "slack": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Notify.Slack.Info"
+            }
+          ]
+        }
+      },
+      "required": [
+        "slack"
+      ],
+      "type": "object"
+    },
+    "Notify.Slack.Info": {
+      "additionalProperties": false,
+      "properties": {
+        "channels": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "message": {
+          "default": null,
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "channels"
+      ],
+      "type": "object"
+    },
+    "Notify.Webhook": {
+      "additionalProperties": false,
+      "properties": {
+        "if": {
+          "default": null,
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "webhook": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "webhook"
       ],
       "type": "object"
     },
@@ -1710,63 +1799,6 @@
       },
       "required": [
         "setup"
-      ],
-      "type": "object"
-    },
-    "SlackNotify": {
-      "additionalProperties": false,
-      "properties": {
-        "if": {
-          "default": null,
-          "oneOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "slack": {
-          "oneOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/SlackNotifyInfo"
-            }
-          ]
-        }
-      },
-      "required": [
-        "slack"
-      ],
-      "type": "object"
-    },
-    "SlackNotifyInfo": {
-      "additionalProperties": false,
-      "properties": {
-        "channels": {
-          "items": {
-            "type": "string"
-          },
-          "minItems": 1,
-          "type": "array"
-        },
-        "message": {
-          "default": null,
-          "oneOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        }
-      },
-      "required": [
-        "channels"
       ],
       "type": "object"
     },
@@ -2140,29 +2172,6 @@
       "required": [],
       "type": "object"
     },
-    "WebhookNotify": {
-      "additionalProperties": false,
-      "properties": {
-        "if": {
-          "default": null,
-          "oneOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "webhook": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "webhook"
-      ],
-      "type": "object"
-    },
     "_Select.Option": {
       "additionalProperties": false,
       "properties": {
@@ -2225,25 +2234,25 @@
                 ]
               },
               {
-                "$ref": "#/$defs/EmailNotify"
+                "$ref": "#/$defs/Notify.Email"
               },
               {
-                "$ref": "#/$defs/BasecampCampfireNotify"
+                "$ref": "#/$defs/Notify.BasecampCampfire"
               },
               {
-                "$ref": "#/$defs/SlackNotify"
+                "$ref": "#/$defs/Notify.Slack"
               },
               {
-                "$ref": "#/$defs/WebhookNotify"
+                "$ref": "#/$defs/Notify.Webhook"
               },
               {
-                "$ref": "#/$defs/PagerdutyNotify"
+                "$ref": "#/$defs/Notify.Pagerduty"
               },
               {
-                "$ref": "#/$defs/GitHubCommitStatusNotify"
+                "$ref": "#/$defs/Notify.GitHubCheck"
               },
               {
-                "$ref": "#/$defs/GitHubCheckNotify"
+                "$ref": "#/$defs/Notify.GitHubCommitStatus"
               }
             ]
           },

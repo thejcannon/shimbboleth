@@ -17,7 +17,6 @@ from shimbboleth.buildkite.pipeline_config.input_step import InputStep
 from shimbboleth.buildkite.pipeline_config.wait_step import WaitStep
 from shimbboleth.buildkite.pipeline_config.trigger_step import TriggerStep
 from shimbboleth.buildkite.pipeline_config.command_step import CommandStep
-from shimbboleth.buildkite.pipeline_config._notify import StepNotifyT
 from shimbboleth.buildkite.pipeline_config.step import Step
 
 
@@ -33,7 +32,8 @@ class GroupStep(Step, extra=False):
     group: str | None
     """The name to give to this group of steps"""
 
-    notify: StepNotifyT = field(default_factory=list)
+    notify: list[Step.NotifyT] = field(default_factory=list)
+    """Array of notification options for this step"""
 
     # NB: Passing an empty string is equivalent to false.
     skip: bool | str = field(default=False, json_loader=skip_from_json)
@@ -84,8 +84,11 @@ def _load_steps(
     return parse_steps(value)  # type: ignore
 
 
-@GroupStep._json_loader_("notify", json_schema_type=StepNotifyT)
-def _load_notify(value: JSONArray) -> StepNotifyT:
-    from shimbboleth.buildkite.pipeline_config._notify import parse_step_notify
-
-    return parse_step_notify(value)
+@GroupStep._json_loader_(
+    "notify",
+    json_schema_type=list[
+        Literal["github_check", "github_commit_status"] | Step.NotifyT
+    ],
+)
+def _load_notify(value: list[str | JSONObject]) -> list[Step.NotifyT]:
+    return CommandStep._parse_notify(value)

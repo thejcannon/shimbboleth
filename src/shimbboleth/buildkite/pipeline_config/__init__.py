@@ -1,5 +1,6 @@
-from typing import Any, TypeAlias, Literal, cast
+from typing import Any, TypeAlias, Literal, cast, ClassVar
 from functools import lru_cache
+
 
 from shimbboleth.internal.clay.model import Model, field
 from shimbboleth.internal.clay.jsonT import JSONArray, JSONObject
@@ -13,7 +14,7 @@ from shimbboleth.buildkite.pipeline_config.trigger_step import TriggerStep
 from shimbboleth.buildkite.pipeline_config.command_step import CommandStep
 from shimbboleth.buildkite.pipeline_config._types import rubystr
 from shimbboleth.buildkite.pipeline_config.group_step import GroupStep
-from shimbboleth.buildkite.pipeline_config._notify import BuildNotifyT
+from shimbboleth.buildkite.pipeline_config.notify import Notify
 from shimbboleth.buildkite.pipeline_config._nested_steps import (
     NestedWaitStep,
     NestedInputStep,
@@ -70,7 +71,22 @@ class BuildkitePipeline(Model, extra=True):
     env: dict[str, str] = field(default_factory=dict)
     """Environment variables for this pipeline"""
 
-    notify: BuildNotifyT = field(default_factory=list)
+    NotifyT = (
+        Notify.Email
+        | Notify.BasecampCampfire
+        | Notify.Slack
+        | Notify.Webhook
+        | Notify.Pagerduty
+        | Notify.GitHubCheck
+        | Notify.GitHubCommitStatus
+    )
+
+    notify: list[NotifyT] = field(default_factory=list)
+    """
+    List of services to notify.
+
+    See https://buildkite.com/docs/pipelines/configure/notifications
+    """
 
     # @TODO: Missing cache? https://buildkite.com/docs/pipelines/hosted-agents/linux#cache-volumes
 
@@ -124,8 +140,22 @@ def _load_env(
     return {k: rubystr(v) for k, v in value.items()}
 
 
-@BuildkitePipeline._json_loader_("notify", json_schema_type=BuildNotifyT)
-def _load_notify(value: list[Any]) -> BuildNotifyT:
-    from ._notify import parse_build_notify
+@BuildkitePipeline._json_loader_(
+    "notify",
+    json_schema_type=list[
+        Literal["github_check", "github_commit_status"] | BuildkitePipeline.NotifyT
+    ],
+)
+def _load_notify(
+    value: list[str | JSONObject],
+) -> list[BuildkitePipeline.NotifyT]:
+    from shimbboleth.buildkite.pipeline_config.notify import _parse_notify
 
-    return parse_build_notify(value)
+    ret = []
+    for index, elem in enumerate(value):
+        with ValidationError.context(index=index):
+            ret.append(_parse_notify(elem))
+    return ret
+
+
+# @TODO: We could just have one mondo _json_loader module, and import it here...

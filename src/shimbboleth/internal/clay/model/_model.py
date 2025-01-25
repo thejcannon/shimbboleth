@@ -2,7 +2,7 @@
 Module defining the `Model` base class for all shimbboleth modeling.
 """
 
-from typing import Any, Self, TypeVar, Callable
+from typing import Any, Self, TypeVar, Callable, ClassVar
 import dataclasses
 
 from shimbboleth.internal.clay.jsonT import JSON, JSONObject
@@ -20,9 +20,13 @@ class _ModelBase:
 
 
 class Model(_ModelBase, metaclass=ModelMeta):
+    __dataclass_fields__: ClassVar[dict[str, dataclasses.Field[Any]]]
+
     @classmethod
-    def _json_loader_(cls, field: str, *, json_schema_type=None) -> Callable[[T], T]:
-        field = cls.__dataclass_fields__[field]
+    def _json_loader_(
+        cls, fieldname: str, *, json_schema_type=None
+    ) -> Callable[[T], T]:
+        field = cls.__dataclass_fields__[fieldname]
 
         assert isinstance(field, dataclasses.Field), "Did you forget to = field(...)?"
         assert (
