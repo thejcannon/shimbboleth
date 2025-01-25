@@ -425,14 +425,14 @@ class Test_CommandStep__Notify(StepTestBase):
         param(
             {"setup": [""], "adjustments": [{}]},
             # @TODO: "with" in message
-            "Expected required fields `'with_value'` to be provided for model `ScalarAdjustment`",
+            "Expected required fields `'with_value'` to be provided for model `SingleDimensionMatrix.Adjustment`",
             ".matrix.adjustments[0]",
             id="matrix_single_empty_adj",
         ),
         param(
             {"setup": {"a": ["b"]}, "adjustments": [{}]},
             # @TODO: "with" in message
-            "Expected required fields `'with_value'` to be provided for model `MultiDimensionMatrixAdjustment`",
+            "Expected required fields `'with_value'` to be provided for model `MultiDimensionMatrix.Adjustment`",
             ".matrix.adjustments[0]",
             id="matrix_multi_empty_adj",
         ),

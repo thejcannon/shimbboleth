@@ -1344,7 +1344,7 @@
         "adjustments": {
           "default": [],
           "items": {
-            "$ref": "#/$defs/MultiDimensionMatrixAdjustment"
+            "$ref": "#/$defs/MultiDimensionMatrix.Adjustment"
           },
           "type": "array"
         },
@@ -1384,7 +1384,7 @@
       ],
       "type": "object"
     },
-    "MultiDimensionMatrixAdjustment": {
+    "MultiDimensionMatrix.Adjustment": {
       "additionalProperties": false,
       "properties": {
         "skip": {
@@ -1726,7 +1726,40 @@
       ],
       "type": "object"
     },
-    "ScalarAdjustment": {
+    "SingleDimensionMatrix": {
+      "additionalProperties": false,
+      "properties": {
+        "adjustments": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/SingleDimensionMatrix.Adjustment"
+          },
+          "type": "array"
+        },
+        "setup": {
+          "items": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
+          },
+          "minItems": 1,
+          "type": "array"
+        }
+      },
+      "required": [
+        "setup"
+      ],
+      "type": "object"
+    },
+    "SingleDimensionMatrix.Adjustment": {
       "additionalProperties": false,
       "properties": {
         "skip": {
@@ -1766,39 +1799,6 @@
       },
       "required": [
         "with"
-      ],
-      "type": "object"
-    },
-    "SingleDimensionMatrix": {
-      "additionalProperties": false,
-      "properties": {
-        "adjustments": {
-          "default": [],
-          "items": {
-            "$ref": "#/$defs/ScalarAdjustment"
-          },
-          "type": "array"
-        },
-        "setup": {
-          "items": {
-            "oneOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "integer"
-              },
-              {
-                "type": "boolean"
-              }
-            ]
-          },
-          "minItems": 1,
-          "type": "array"
-        }
-      },
-      "required": [
-        "setup"
       ],
       "type": "object"
     },

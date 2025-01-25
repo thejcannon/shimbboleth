@@ -1,10 +1,4 @@
 # @TODO: Validate limits? https://buildkite.com/docs/pipelines/configure/workflows/build-matrix#matrix-limits
-#
-# !!!!!!!!! DO THIS ONE
-# @TODO: Should adjustment classes be inner classes?
-#   I think so. I think we could nest classes and give them good names.
-#   E.g. `Step.Dependency`, `CommandStep.Matrix`, etc.
-
 """
 Support for Command matrices.
 
@@ -31,7 +25,7 @@ MatrixElementT: TypeAlias = str | int | bool
 MatrixArray: TypeAlias = list[MatrixElementT]
 
 
-class _AdjustmentBase(Model):
+class _Adjustment(Model):
     # NB: Passing an empty string is equivalent to false.
     skip: bool | str = field(default=False, json_loader=skip_from_json)
     """Whether to skip this step or not. Passing a string provides a reason for skipping this command."""
@@ -45,41 +39,39 @@ class _AdjustmentBase(Model):
     """Allow specified non-zero exit statuses not to fail the build."""
 
 
-class ScalarAdjustment(_AdjustmentBase, Model, extra=False):
-    """An adjustment to a Build Matrix scalar element (e.g. single-dimension matrix)."""
-
-    with_value: str = field(json_alias="with")
-    """An existing (or new) element to adjust"""
-
-
 class SingleDimensionMatrix(Model, extra=False):
     """Configuration for single-dimension Build Matrix (e.g. list of elements/adjustments)."""
 
+    class Adjustment(_Adjustment, extra=False):
+        """An adjustment to a Build Matrix scalar element (e.g. single-dimension matrix)."""
+
+        with_value: str = field(json_alias="with")
+        """An existing (or new) element to adjust"""
+
     setup: NonEmptyList[MatrixElementT]
 
-    adjustments: list[ScalarAdjustment] = field(default_factory=list)
-
-
-class MultiDimensionMatrixAdjustment(_AdjustmentBase, Model):
-    """An adjustment to a multi-dimension Build Matrix"""
-
-    # @TODO: Each key in a `matrix.adjustments.with` must exist in the associated `matrix.setup`;
-    #   new dimensions may not be created by an adjustment, only new elements; missing [...]
-    # @TODO: Techincally, we could do the same MatchesRegex, but due to the above it's kind of pointless
-    #   (but also this would be schema-invalid vs the above is logic-invalid)
-    with_value: dict[str, MatrixElementT] = field(json_alias="with")
-    """Specification of a new or existing Build Matrix combination"""
+    adjustments: list[Adjustment] = field(default_factory=list)
 
 
 class MultiDimensionMatrix(Model, extra=False):
     """Configuration for multi-dimension Build Matrix (e.g. map of elements/adjustments)."""
+
+    class Adjustment(_Adjustment, Model):
+        """An adjustment to a multi-dimension Build Matrix"""
+
+        # @TODO: Each key in a `matrix.adjustments.with` must exist in the associated `matrix.setup`;
+        #   new dimensions may not be created by an adjustment, only new elements; missing [...]
+        # @TODO: Techincally, we could do the same MatchesRegex, but due to the above it's kind of pointless
+        #   (but also this would be schema-invalid vs the above is logic-invalid)
+        with_value: dict[str, MatrixElementT] = field(json_alias="with")
+        """Specification of a new or existing Build Matrix combination"""
 
     setup: NonEmptyDict[
         Annotated[str, MatchesRegex(r"^[a-zA-Z0-9_]+$")], list[MatrixElementT]
     ]
     """Maps dimension names to a lists of elements"""
 
-    adjustments: list[MultiDimensionMatrixAdjustment] = field(default_factory=list)
+    adjustments: list[Adjustment] = field(default_factory=list)
 
 
 @MultiDimensionMatrix._json_loader_("setup")
