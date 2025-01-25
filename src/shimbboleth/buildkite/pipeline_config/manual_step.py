@@ -104,9 +104,9 @@ class SelectInput(_OptionBaseModel, extra=False):
         default: str | list[str] | None = None,
         multiple: bool = False,
     ):
-        if not multiple and isinstance(default, list):
+        if not multiple and default is not None and not isinstance(default, str):
             raise ValidationError(
-                value=default, expectation="be a list when `multiple` is `False`"
+                value=default, expectation="be a string when `multiple` is `False`"
             )
 
         instance = object.__new__(MultiSelectInput if multiple else SingleSelectInput)

@@ -13,9 +13,8 @@ T = TypeVar("T")
 
 @dataclass_transform(kw_only_default=True, field_specifiers=(dataclasses.field, field))
 class ModelMeta(type):
-    __modelname__: str
-    """The 'model name'. Usually __name__, but in the case of a nest model, the dotted names."""
-    __dataclass_fields__: ClassVar[dict[str, dataclasses.Field[Any]]]
+    __parent_model__: "ModelMeta | None" = None
+    __dataclass_fields__: dict[str, dataclasses.Field[Any]]
     __allow_extra_properties__: bool
     __field_aliases__: MappingProxyType[str, FieldAlias] = MappingProxyType({})
     __json_fieldnames__: frozenset[str]
@@ -40,14 +39,14 @@ class ModelMeta(type):
         if "__dataclass_fields__" in cls.__dict__:
             return cls
 
-        for attrname, attrvalue in namespace.items():
-            if isinstance(attrvalue, ModelMeta):
-                attrvalue.__modelname__ = f"{name}.{attrvalue.__name__}"
-
         return dataclasses.dataclass(slots=True, kw_only=True)(cls)
 
     def __init__(cls, name, bases, namespace, *, extra: bool | None = None):
-        cls.__modelname__ = cls.__name__
+        for attrname, attrvalue in namespace.items():
+            if isinstance(attrvalue, ModelMeta):
+                # @TODO: This doesn't work for triply nested models.
+                attrvalue.__parent_model__ = cls
+
         cls.__allow_extra_properties__ = bool(extra)
 
         cls.__field_aliases__ = MappingProxyType(
@@ -77,6 +76,15 @@ class ModelMeta(type):
                         getattr(cls, field_attr.name), field_validators
                     ),
                 )
+
+    @property
+    def __modelname__(cls) -> str:
+        names = [cls.__name__]
+        while cls:
+            cls = cls.__parent_model__
+            if cls:
+                names.insert(0, cls.__name__)
+        return ".".join(names)
 
     @property
     def model_json_schema(cls) -> JSONObject:

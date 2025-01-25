@@ -281,7 +281,7 @@ class Test_ManualStep__InvalidTextField(StepTestBase):
                 "multiple": False,
                 "default": ["value"],
             },
-            "Expected `['value']` to be a list when `multiple` is `False`",
+            "Expected `['value']` to be a string when `multiple` is `False`",
             ".fields[0]",
             id="single_select_list_default",
             marks=UPSTREAM_SCHEMA_INVALID,

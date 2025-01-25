@@ -34,92 +34,6 @@ from shimbboleth.buildkite.pipeline_config._matrix import (
 )
 
 
-class CommandStepSignature(Model, extra=True):
-    """
-    The signature of the command step, generally injected by agents at pipeline upload
-    """
-
-    algorithm: str | None = None
-    """The algorithm used to generate the signature"""
-
-    signed_fields: list[str] = field(default_factory=list)
-    """The fields that were signed to form the signature value"""
-
-    value: str | None = None
-    """The signature value, a JWS compact signature with a detached body"""
-
-
-class ManualRetry(Model, extra=False):
-    """See https://buildkite.com/docs/pipelines/configure/step-types/command-step#retry-attributes-manual-retry-attributes"""
-
-    allowed: bool = field(default=True, json_loader=bool_from_json)
-    """Whether or not this job can be retried manually"""
-
-    permit_on_passed: bool = field(default=True, json_loader=bool_from_json)
-    """Whether or not this job can be retried after it has passed"""
-
-    reason: str | None = None
-    """
-    A string that will be displayed in a tooltip on the Retry button in Buildkite.
-
-    This will only be displayed if the `allowed` attribute is set to false.
-    """
-
-
-SignalReasons = Literal[
-    "*",
-    "none",
-    "agent_refused",
-    "agent_stop",
-    "cancel",
-    "process_run_error",
-    "signature_rejected",
-]
-
-
-class AutomaticRetry(Model, extra=False):
-    """See https://buildkite.com/docs/pipelines/configure/step-types/command-step#retry-attributes-automatic-retry-attributes"""
-
-    exit_status: Literal["*"] | list[int] = field(default="*")
-    """The exit status number that will cause this job to retry"""
-
-    # @TODO: Upstram allows 0 (but not 11)
-    limit: Annotated[int, Ge(1), Le(10)] | None = None
-    """The number of times this job can be retried"""
-
-    signal: str = "*"
-    """The exit signal, that may be retried"""
-
-    signal_reason: SignalReasons = "*"
-    """The exit signal reason, that may be retried"""
-
-
-class RetryConditions(Model, extra=False):
-    automatic: list[AutomaticRetry] = field(
-        default_factory=lambda: [AutomaticRetry(limit=2)]
-    )
-    """When to allow a job to retry automatically"""
-
-    manual: ManualRetry = field(default_factory=lambda: ManualRetry(allowed=True))
-    """When to allow a job to be retried manually"""
-
-
-
-
-
-class Plugin(Model, extra=False):
-    spec: str = field()
-    """The plugin "spec". Usually in `<org>/<repo>#<tag>` format"""
-
-    config: JSONObject | None = field(default=None)
-    """The configuration to use (or None)"""
-
-    # @FEAT: parse the spec and expose properties
-
-    def model_dump(self) -> JSONObject:
-        return {self.spec: self.config}
-
-
 class CommandStep(Step, extra=False):
     """
     A command step runs one or more shell commands on one or more agents.
@@ -132,6 +46,81 @@ class CommandStep(Step, extra=False):
 
         name: str | None = None
         size: Annotated[str, MatchesRegex("^\\d+g$")] | None = None
+
+    class Plugin(Model, extra=False):
+        spec: str = field()
+        """The plugin "spec". Usually in `<org>/<repo>#<tag>` format"""
+
+        config: JSONObject | None = field(default=None)
+        """The configuration to use (or None)"""
+
+        # @FEAT: parse the spec and expose properties
+
+        def model_dump(self) -> JSONObject:
+            return {self.spec: self.config}
+
+    class Retry(Model, extra=False):
+        class Automatic(Model, extra=False):
+            """See https://buildkite.com/docs/pipelines/configure/step-types/command-step#retry-attributes-automatic-retry-attributes"""
+
+            exit_status: Literal["*"] | list[int] = field(default="*")
+            """The exit status number that will cause this job to retry"""
+
+            # @TODO: Upstram allows 0 (but not 11)
+            limit: Annotated[int, Ge(1), Le(10)] | None = None
+            """The number of times this job can be retried"""
+
+            signal: str = "*"
+            """The exit signal, that may be retried"""
+
+            signal_reason: Literal[
+                "*",
+                "none",
+                "agent_refused",
+                "agent_stop",
+                "cancel",
+                "process_run_error",
+                "signature_rejected",
+            ] = "*"
+            """The exit signal reason, that may be retried"""
+
+        automatic: list[Automatic] = field(
+            default_factory=lambda: [CommandStep.Retry.Automatic(limit=2)]
+        )
+        """When to allow a job to retry automatically"""
+
+        class Manual(Model, extra=False):
+            """See https://buildkite.com/docs/pipelines/configure/step-types/command-step#retry-attributes-manual-retry-attributes"""
+
+            allowed: bool = field(default=True, json_loader=bool_from_json)
+            """Whether or not this job can be retried manually"""
+
+            permit_on_passed: bool = field(default=True, json_loader=bool_from_json)
+            """Whether or not this job can be retried after it has passed"""
+
+            reason: str | None = None
+            """
+            A string that will be displayed in a tooltip on the Retry button in Buildkite.
+
+            This will only be displayed if the `allowed` attribute is set to false.
+            """
+
+        manual: Manual = field(
+            default_factory=lambda: CommandStep.Retry.Manual(allowed=True)
+        )
+        """When to allow a job to be retried manually"""
+
+    class Signature(Model, extra=True):
+        """The signature of the command step, generally injected by agents at pipeline upload time"""
+
+        algorithm: str | None = None
+        """The algorithm used to generate the signature"""
+
+        signed_fields: list[str] = field(default_factory=list)
+        """The fields that were signed to form the signature value"""
+
+        value: str | None = None
+        """The signature value, a JWS compact signature with a detached body"""
 
     agents: dict[str, str] = field(default_factory=dict, json_loader=agents_from_json)
     """
@@ -149,7 +138,7 @@ class CommandStep(Step, extra=False):
     """Which branches will include this step in their builds"""
 
     cache: Cache = field(default_factory=lambda: CommandStep.Cache(paths=[]))
-    """(@TODO) See: https://buildkite.com/docs/pipelines/hosted-agents/linux"""
+    """See: https://buildkite.com/docs/pipelines/hosted-agents/linux"""
 
     cancel_on_build_failing: bool = field(default=False, json_loader=bool_from_json)
     """Whether to cancel the job as soon as the build is marked as failing"""
@@ -158,18 +147,24 @@ class CommandStep(Step, extra=False):
     """The commands to run on the agent"""
 
     concurrency: int | None = None
-    """The maximum number of jobs created from this step that are allowed to run at the same time. If you use this attribute, you must also define concurrency_group."""
+    """
+    The maximum number of jobs created from this step that are allowed to run at the same time.
+
+    If you use this attribute, you must also define concurrency_group.
+    """
 
     concurrency_group: str | None = None
     """A unique name for the concurrency group that you are creating with the concurrency attribute"""
 
     concurrency_method: Literal["ordered", "eager"] | None = None
-    """Control command order, allowed values are 'ordered' (default) and 'eager'. If you use this attribute, you must also define concurrency_group and concurrency."""
+    """
+    Control command order, allowed values are 'ordered' (default) and 'eager'.
+
+    If you use this attribute, you must also define concurrency_group and concurrency."""
 
     env: dict[str, str] = field(default_factory=dict)
     """Environment variables for this step"""
 
-    # @TODO: default_factory=list?
     matrix: MatrixArray | SingleDimensionMatrix | MultiDimensionMatrix | None = None
     """
     Matrix expansions for this step.
@@ -190,10 +185,10 @@ class CommandStep(Step, extra=False):
     priority: int | None = None
     """Priority of the job, higher priorities are assigned to agents"""
 
-    retry: RetryConditions | None = None
+    retry: Retry | None = None
     """The conditions for retrying this step."""
 
-    signature: CommandStepSignature | None = None
+    signature: Signature | None = None
     """@TODO (missing description)"""
 
     # NB: Passing an empty string is equivalent to false.
@@ -212,7 +207,6 @@ class CommandStep(Step, extra=False):
     timeout_in_minutes: Annotated[int, Ge(1)] | None = None
     """The number of minutes to time out a job"""
 
-    # @TODO: I think this defaults to the command?
     label: str | None = None
     """The label that will be displayed in the pipeline visualization in Buildkite. Supports emoji."""
 
@@ -221,24 +215,12 @@ class CommandStep(Step, extra=False):
     name: ClassVar = FieldAlias("label", json_mode="prepend")
     commands: ClassVar = FieldAlias("command")
 
-    # @TODO: This should just be `model_load`, but that maybe too late?
-    #   (We can add this support to FieldAlias)
-    # @model_validator(mode="before")
-    # @classmethod
-    # def _check_command_commands(cls, data: Any) -> Any:
-    #     if isinstance(data, dict):
-    #         if "command" in data and "commands" in data:
-    #             raise ValueError(
-    #                 "Step type is ambiguous: use only one of `command` or `commands`"
-    #             )
-    #     return data
-
     def __post_init__(self):
         # @TODO: Verify the concurrency_group fields (together)
         pass
 
 
-@AutomaticRetry._json_loader_("exit_status")
+@CommandStep.Retry.Automatic._json_loader_("exit_status")
 def _load_exit_status(
     value: Literal["*"] | int | list[int],
 ) -> Literal["*"] | list[int]:
@@ -249,27 +231,30 @@ def _load_exit_status(
     return value
 
 
-@RetryConditions._json_loader_("automatic")
+@CommandStep.Retry._json_loader_("automatic")
 def _load_automatic(
-    value: bool | Literal["true", "false"] | AutomaticRetry | list[AutomaticRetry],
-) -> list[AutomaticRetry]:
+    value: bool
+    | Literal["true", "false"]
+    | CommandStep.Retry.Automatic
+    | list[CommandStep.Retry.Automatic],
+) -> list[CommandStep.Retry.Automatic]:
     if value in (False, "false"):
         return []
     elif value in (True, "true"):
-        return [AutomaticRetry(limit=2)]
-    elif isinstance(value, AutomaticRetry):
+        return [CommandStep.Retry.Automatic(limit=2)]
+    elif isinstance(value, CommandStep.Retry.Automatic):
         return [value]
     return value
 
 
-@RetryConditions._json_loader_("manual")
+@CommandStep.Retry._json_loader_("manual")
 def _load_manual(
-    value: bool | Literal["true", "false"] | ManualRetry,
-) -> ManualRetry:
+    value: bool | Literal["true", "false"] | CommandStep.Retry.Manual,
+) -> CommandStep.Retry.Manual:
     if value in (False, "false"):
-        return ManualRetry(allowed=False)
+        return CommandStep.Retry.Manual(allowed=False)
     elif value in (True, "true"):
-        return ManualRetry(allowed=True)
+        return CommandStep.Retry.Manual(allowed=True)
     return value
 
 
@@ -327,13 +312,16 @@ def _load_notify(
 def _load_plugins(
     value: dict[str, JSONObject | None]
     | list[str | SingleKeyDict[str, JSONObject | None]],
-) -> list[Plugin]:
+) -> list[CommandStep.Plugin]:
     if isinstance(value, dict):
-        return [Plugin(spec=spec, config=config) for spec, config in value.items()]
+        return [
+            CommandStep.Plugin(spec=spec, config=config)
+            for spec, config in value.items()
+        ]
     ret = []
     for index, elem in enumerate(value):
         if isinstance(elem, str):
-            ret.append(Plugin(spec=elem, config=None))
+            ret.append(CommandStep.Plugin(spec=elem, config=None))
         else:
             # NB: Because we aren't _assigning_ to a 'SingleKeyDict`, the validation doesn't
             #   kick in. (Womp Womp)
@@ -342,5 +330,5 @@ def _load_plugins(
                     elem, expectation="have only one key", index=index
                 )
             spec, config = next(iter(elem.items()))
-            ret.append(Plugin(spec=spec, config=config))
+            ret.append(CommandStep.Plugin(spec=spec, config=config))
     return ret

@@ -8,10 +8,7 @@ Each module tests different things.
 from shimbboleth.buildkite.pipeline_config import BuildkitePipeline
 from shimbboleth.buildkite.pipeline_config.step import Step
 
-from shimbboleth.buildkite.pipeline_config.command_step import (
-    CommandStep,
-    Plugin,
-)
+from shimbboleth.buildkite.pipeline_config.command_step import CommandStep
 from shimbboleth.buildkite.pipeline_config.group_step import GroupStep
 from shimbboleth.buildkite.pipeline_config.tests.conftest import StepTypeParam
 
@@ -127,7 +124,9 @@ class Test_CommandStep:
         assert CommandStep.model_load({"cache": "path"}).cache == CommandStep.Cache(
             paths=["path"]
         )
-        assert CommandStep.model_load({"cache": []}).cache == CommandStep.Cache(paths=[])
+        assert CommandStep.model_load({"cache": []}).cache == CommandStep.Cache(
+            paths=[]
+        )
         assert CommandStep.model_load({"cache": ["path"]}).cache == CommandStep.Cache(
             paths=["path"]
         )
@@ -149,15 +148,15 @@ class Test_CommandStep:
         assert CommandStep.model_load(
             {"plugins": ["plugin", {"plugin": None}, {"plugin": {"key": "value"}}]}
         ).plugins == [
-            Plugin(spec="plugin"),
-            Plugin(spec="plugin"),
-            Plugin(spec="plugin", config={"key": "value"}),
+            CommandStep.Plugin(spec="plugin"),
+            CommandStep.Plugin(spec="plugin"),
+            CommandStep.Plugin(spec="plugin", config={"key": "value"}),
         ]
         assert CommandStep.model_load(
             {"plugins": {"plugin-null": None, "pluginobj": {"key": "value"}}}
         ).plugins == [
-            Plugin(spec="plugin-null"),
-            Plugin(spec="pluginobj", config={"key": "value"}),
+            CommandStep.Plugin(spec="plugin-null"),
+            CommandStep.Plugin(spec="pluginobj", config={"key": "value"}),
         ]
 
     @pytest.mark.parametrize(["input", "expected"], SKIP_VALS.items())

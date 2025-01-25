@@ -1,60 +1,5 @@
 {
   "$defs": {
-    "AutomaticRetry": {
-      "additionalProperties": false,
-      "properties": {
-        "exit_status": {
-          "default": "*",
-          "oneOf": [
-            {
-              "enum": [
-                "*"
-              ]
-            },
-            {
-              "type": "integer"
-            },
-            {
-              "items": {
-                "type": "integer"
-              },
-              "type": "array"
-            }
-          ]
-        },
-        "limit": {
-          "default": null,
-          "oneOf": [
-            {
-              "maximum": 10,
-              "minimum": 1,
-              "type": "integer"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "signal": {
-          "default": "*",
-          "type": "string"
-        },
-        "signal_reason": {
-          "default": "*",
-          "enum": [
-            "*",
-            "none",
-            "agent_refused",
-            "agent_stop",
-            "cancel",
-            "process_run_error",
-            "signature_rejected"
-          ]
-        }
-      },
-      "required": [],
-      "type": "object"
-    },
     "BasecampCampfireNotify": {
       "additionalProperties": false,
       "properties": {
@@ -570,7 +515,7 @@
           "default": null,
           "oneOf": [
             {
-              "$ref": "#/$defs/RetryConditions"
+              "$ref": "#/$defs/CommandStep.Retry"
             },
             {
               "type": "null"
@@ -581,7 +526,7 @@
           "default": null,
           "oneOf": [
             {
-              "$ref": "#/$defs/CommandStepSignature"
+              "$ref": "#/$defs/CommandStep.Signature"
             },
             {
               "type": "null"
@@ -681,7 +626,159 @@
       ],
       "type": "object"
     },
-    "CommandStepSignature": {
+    "CommandStep.Retry": {
+      "additionalProperties": false,
+      "properties": {
+        "automatic": {
+          "default": [
+            {
+              "limit": 2
+            }
+          ],
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "enum": [
+                "true",
+                "false"
+              ]
+            },
+            {
+              "$ref": "#/$defs/CommandStep.Retry.Automatic"
+            },
+            {
+              "items": {
+                "$ref": "#/$defs/CommandStep.Retry.Automatic"
+              },
+              "type": "array"
+            }
+          ]
+        },
+        "manual": {
+          "default": {},
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "enum": [
+                "true",
+                "false"
+              ]
+            },
+            {
+              "$ref": "#/$defs/CommandStep.Retry.Manual"
+            }
+          ]
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "CommandStep.Retry.Automatic": {
+      "additionalProperties": false,
+      "properties": {
+        "exit_status": {
+          "default": "*",
+          "oneOf": [
+            {
+              "enum": [
+                "*"
+              ]
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "items": {
+                "type": "integer"
+              },
+              "type": "array"
+            }
+          ]
+        },
+        "limit": {
+          "default": null,
+          "oneOf": [
+            {
+              "maximum": 10,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "signal": {
+          "default": "*",
+          "type": "string"
+        },
+        "signal_reason": {
+          "default": "*",
+          "enum": [
+            "*",
+            "none",
+            "agent_refused",
+            "agent_stop",
+            "cancel",
+            "process_run_error",
+            "signature_rejected"
+          ]
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "CommandStep.Retry.Manual": {
+      "additionalProperties": false,
+      "properties": {
+        "allowed": {
+          "default": true,
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          ]
+        },
+        "permit_on_passed": {
+          "default": true,
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          ]
+        },
+        "reason": {
+          "default": null,
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "CommandStep.Signature": {
       "additionalProperties": true,
       "properties": {
         "algorithm": {
@@ -1136,52 +1233,6 @@
       "required": [],
       "type": "object"
     },
-    "ManualRetry": {
-      "additionalProperties": false,
-      "properties": {
-        "allowed": {
-          "default": true,
-          "oneOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "enum": [
-                "true",
-                "false"
-              ]
-            }
-          ]
-        },
-        "permit_on_passed": {
-          "default": true,
-          "oneOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "enum": [
-                "true",
-                "false"
-              ]
-            }
-          ]
-        },
-        "reason": {
-          "default": null,
-          "oneOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        }
-      },
-      "required": [],
-      "type": "object"
-    },
     "MultiDimensionMatrix": {
       "additionalProperties": false,
       "properties": {
@@ -1451,57 +1502,6 @@
       "required": [
         "pagerduty_change_event"
       ],
-      "type": "object"
-    },
-    "RetryConditions": {
-      "additionalProperties": false,
-      "properties": {
-        "automatic": {
-          "default": [
-            {
-              "limit": 2
-            }
-          ],
-          "oneOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "enum": [
-                "true",
-                "false"
-              ]
-            },
-            {
-              "$ref": "#/$defs/AutomaticRetry"
-            },
-            {
-              "items": {
-                "$ref": "#/$defs/AutomaticRetry"
-              },
-              "type": "array"
-            }
-          ]
-        },
-        "manual": {
-          "default": {},
-          "oneOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "enum": [
-                "true",
-                "false"
-              ]
-            },
-            {
-              "$ref": "#/$defs/ManualRetry"
-            }
-          ]
-        }
-      },
-      "required": [],
       "type": "object"
     },
     "ScalarAdjustment": {
