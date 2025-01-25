@@ -2,7 +2,7 @@ from typing import ClassVar, Literal
 
 
 from shimbboleth.internal.clay.model import field, FieldAlias
-from shimbboleth.internal.clay.jsonT import JSONArray, JSONObject
+from shimbboleth.internal.clay.jsonT import JSONObject
 from shimbboleth.internal.clay.validation import NonEmptyList
 from shimbboleth.buildkite.pipeline_config._types import skip_from_json
 from shimbboleth.buildkite.pipeline_config._nested_steps import (

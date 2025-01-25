@@ -1,6 +1,5 @@
-from typing import Literal, Any, Annotated, ClassVar
+from typing import Literal, Annotated, ClassVar
 
-from shimbboleth.buildkite.pipeline_config.notify import Notify
 from shimbboleth.internal.clay.model import (
     Model,
     field,

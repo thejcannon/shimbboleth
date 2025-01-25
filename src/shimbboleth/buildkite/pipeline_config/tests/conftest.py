@@ -1,7 +1,6 @@
 # @TODO: Split this up (also conftest is eww, maybe just use vanilla python?)
 import pytest
 import httpx
-import hashlib
 import os
 from dataclasses import dataclass
 from typing import TypeVar, Generic, Any
@@ -19,7 +18,6 @@ from shimbboleth.buildkite.pipeline_config import (
 from shimbboleth.internal.clay.model import Model
 import jsonschema
 
-import httpx
 
 ModelT = TypeVar("ModelT", bound=Model)
 

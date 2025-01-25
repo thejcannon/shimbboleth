@@ -1,4 +1,4 @@
-from typing import Any, TypeAlias, Literal, cast, ClassVar
+from typing import Any, TypeAlias, Literal, cast
 from functools import lru_cache
 
 

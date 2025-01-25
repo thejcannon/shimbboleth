@@ -1,4 +1,4 @@
-from typing import Annotated, Literal, overload
+from typing import Annotated, Literal
 import re
 from shimbboleth.internal.clay.model import field, Model
 from shimbboleth.internal.clay.jsonT import JSONObject
@@ -137,7 +137,7 @@ def _load_fields(
             elif "select" in field_dict:
                 multiple = field_dict.pop("multiple", False)
                 field_dict["multiple"] = multiple
-                if multiple is True or multiple is "true":
+                if multiple is True or multiple == "true":
                     ret.append(ManualStep.MultiSelect.model_load(field_dict))
                 else:
                     ret.append(ManualStep.SingleSelect.model_load(field_dict))
