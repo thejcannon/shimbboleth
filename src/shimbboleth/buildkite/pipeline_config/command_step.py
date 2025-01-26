@@ -1,4 +1,4 @@
-from typing import Literal, Annotated, ClassVar, TypeAlias
+from typing import Literal, Annotated, ClassVar
 
 from shimbboleth.internal.clay.model import (
     Model,

@@ -7,7 +7,6 @@ from shimbboleth.internal.clay.model import Model, field, FieldAlias
 from shimbboleth.internal.clay.validation import Not, ValidationError
 from shimbboleth.internal.clay.jsonT import JSONObject
 from shimbboleth.internal.clay.json_load import JSONLoadError
-from shimbboleth.buildkite.pipeline_config._types import bool_from_json
 from shimbboleth.buildkite.pipeline_config.notify import Notify, _parse_notify
 from uuid import UUID
 from typing import ClassVar, final, Annotated
