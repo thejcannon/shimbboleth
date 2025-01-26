@@ -25,7 +25,7 @@ from shimbboleth.internal.clay.validation import (
     Not,
     SingleKeyDict,
     NonEmptyDict,
-    MatchesRegex
+    MatchesRegex,
 )
 from shimbboleth.buildkite.pipeline_config.block_step import BlockStep
 from shimbboleth.buildkite.pipeline_config.input_step import InputStep
@@ -36,7 +36,6 @@ from shimbboleth.buildkite.pipeline_config.command_step import CommandStep
 from shimbboleth.buildkite.pipeline_config.manual_step import ManualStep
 from shimbboleth.buildkite.pipeline_config._types import rubystr
 from shimbboleth.buildkite.pipeline_config.group_step import GroupStep
-
 
 
 class NestedBlockStep(Model, extra=False):
@@ -266,11 +265,27 @@ CommandStep._json_loader_("skip")(load_skip)
 CommandStep._json_loader_("soft_fail")(load_soft_fail)
 CommandStep._json_dumper_("soft_fail")(dump_soft_fail)
 CommandStep.Matrix.SingleDim.Adjustment._json_loader_("skip")(load_skip)
-# CommandStep.Matrix.MultiDim.Adjustment._json_loader_("skip")(load_skip)
+assert (
+    CommandStep.Matrix.MultiDim.Adjustment.__dataclass_fields__["skip"].metadata[
+        "json_loader"
+    ]
+    == load_skip
+)
 CommandStep.Matrix.SingleDim.Adjustment._json_loader_("soft_fail")(load_soft_fail)
 CommandStep.Matrix.SingleDim.Adjustment._json_dumper_("soft_fail")(dump_soft_fail)
-# CommandStep.Matrix.MultiDim.Adjustment_json_loader_("soft_fail")(load_soft_fail)
-# CommandStep.Matrix.MultiDim.Adjustment._json_dumper_("soft_fail")(dump_soft_fail)
+assert (
+    CommandStep.Matrix.MultiDim.Adjustment.__dataclass_fields__["soft_fail"].metadata[
+        "json_loader"
+    ]
+    == load_soft_fail
+)
+assert (
+    CommandStep.Matrix.MultiDim.Adjustment.__dataclass_fields__["soft_fail"].metadata[
+        "json_dumper"
+    ]
+    == dump_soft_fail
+)
+
 
 # @TODO: If there is no difference, just double-decorate above, otherwise whats the difference?
 @CommandStep._json_loader_("agents")
@@ -303,7 +318,12 @@ def _(
 @CommandStep._json_loader_("matrix", json_schema_type="return")
 def _(
     value: CommandStep.Matrix.Array | JSONObject | None,
-) -> CommandStep.Matrix.Array | CommandStep.Matrix.SingleDim | CommandStep.Matrix.MultiDim | None:
+) -> (
+    CommandStep.Matrix.Array
+    | CommandStep.Matrix.SingleDim
+    | CommandStep.Matrix.MultiDim
+    | None
+):
     if value is None:
         return None
     if isinstance(value, list):
@@ -315,10 +335,12 @@ def _(
 
     # @TODO: Error on wrong type
 
+
 @CommandStep.Matrix.MultiDim._json_loader_("setup")
 def _load_setup(
     value: NonEmptyDict[
-        Annotated[str, MatchesRegex(r"^[a-zA-Z0-9_]+$")], str | list[CommandStep.Matrix.ElementT]
+        Annotated[str, MatchesRegex(r"^[a-zA-Z0-9_]+$")],
+        str | list[CommandStep.Matrix.ElementT],
     ],
 ) -> NonEmptyDict[
     Annotated[str, MatchesRegex(r"^[a-zA-Z0-9_]+$")], list[CommandStep.Matrix.ElementT]
@@ -410,9 +432,15 @@ CommandStep.Retry.Manual._json_loader_("permit_on_passed")(load_bool)
 
 ManualStep._json_loader_("branches")(load_str_list)
 ManualStep.Text._json_loader_("required")(load_bool)
-# NB: These are already handled (@TODO: although it'd ne nice to just re-declare them)
-#ManualStep.SingleSelect._json_loader_("required")(load_bool)
-#ManualStep.MultiSelect._json_loader_("required")(load_bool)
+assert (
+    ManualStep.SingleSelect.__dataclass_fields__["required"].metadata["json_loader"]
+    == load_bool
+)
+assert (
+    ManualStep.MultiSelect.__dataclass_fields__["required"].metadata["json_loader"]
+    == load_bool
+)
+
 
 @ManualStep.SingleSelect._json_loader_("multiple")
 def _(value: Literal[False, "false"]) -> Literal[False]:

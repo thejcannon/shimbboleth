@@ -29,9 +29,7 @@ class CommandStep(Step, extra=False):  # type: ignore
 
             # NB: This differs from the upstream schema in that we "unpack"
             #  the `exit_status` object into the status.
-            soft_fail: bool | NonEmptyList[int] = field(
-                default=False
-            )
+            soft_fail: bool | NonEmptyList[int] = field(default=False)
             """Allow specified non-zero exit statuses not to fail the build."""
 
 
@@ -47,7 +45,6 @@ class CommandStep(CommandStep, extra=False):
 
         name: str | None = None
         size: Annotated[str, MatchesRegex("^\\d+g$")] | None = None
-
 
     class Matrix(CommandStep.Matrix):
         Array = list[CommandStep.Matrix.ElementT]
@@ -75,11 +72,14 @@ class CommandStep(CommandStep, extra=False):
                 #   new dimensions may not be created by an adjustment, only new elements; missing [...]
                 # @TODO: Techincally, we could do the same MatchesRegex, but due to the above it's kind of pointless
                 #   (but also this would be schema-invalid vs the above is logic-invalid)
-                with_value: dict[str, CommandStep.Matrix.ElementT] = field(json_alias="with")
+                with_value: dict[str, CommandStep.Matrix.ElementT] = field(
+                    json_alias="with"
+                )
                 """Specification of a new or existing Build Matrix combination"""
 
             setup: NonEmptyDict[
-                Annotated[str, MatchesRegex(r"^[a-zA-Z0-9_]+$")], list[CommandStep.Matrix.ElementT]
+                Annotated[str, MatchesRegex(r"^[a-zA-Z0-9_]+$")],
+                list[CommandStep.Matrix.ElementT],
             ]
             """Maps dimension names to a lists of elements"""
 
