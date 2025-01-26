@@ -246,7 +246,7 @@ def test_field_alias():
     }
 
 
-def test_nested_models():
+def test_model_field():
     class NestedModel(Model):
         pass
 
@@ -266,6 +266,33 @@ def test_nested_models():
                 "additionalProperties": False,
                 "properties": {},
                 "required": [],
+            }
+        },
+    }
+
+
+def test_nested_models():
+    class OuterModel(Model):
+        class InnerModel(Model):
+            field: str
+
+        field: InnerModel
+
+    assert OuterModel.model_json_schema == {
+        "type": "object",
+        "additionalProperties": False,
+        "properties": {
+            "field": {"$ref": "#/$defs/OuterModel.InnerModel"},
+        },
+        "required": ["field"],
+        "$defs": {
+            "OuterModel.InnerModel": {
+                "type": "object",
+                "additionalProperties": False,
+                "properties": {
+                    "field": {"type": "string"},
+                },
+                "required": ["field"],
             }
         },
     }
@@ -307,6 +334,7 @@ def test_json_schema():
 
 def test_json_loader__with_field_default(monkeypatch):
     monkeypatch.setenv("SHIMBBOLETH_TEST_DEFAULTS", "1")
+
     class MyModel(Model):
         field: str = ""
 

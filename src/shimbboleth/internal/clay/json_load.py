@@ -38,7 +38,7 @@ class ExtrasNotAllowedError(JSONLoadError):
     def __init__(self, model_type: type[Model], extras: JSONObject):
         super().__init__(
             value=extras,
-            expectation=f"not not be provided. {model_type.__name__} dosn't support extra keys.",
+            expectation=f"not not be provided. {model_type.__modelname__} dosn't support extra keys.",
             qualifier="extra keys",
         )
 
@@ -272,6 +272,7 @@ class _LoadModelHelper:
 
     @staticmethod
     def check_required_fields(model_type: type[Model], data: JSONObject):
+        # @TODO: Handle json aliases
         missing_fields = [
             field.name
             for field in dataclasses.fields(model_type)
@@ -281,7 +282,7 @@ class _LoadModelHelper:
             and field.default_factory is dataclasses.MISSING
         ]
         if missing_fields:
-            raise MissingFieldsError(model_type.__name__, *missing_fields)
+            raise MissingFieldsError(model_type.__modelname__, *missing_fields)
 
     @contextmanager
     @staticmethod

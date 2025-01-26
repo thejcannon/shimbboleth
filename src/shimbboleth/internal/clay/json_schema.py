@@ -52,7 +52,7 @@ def schema(field_type, *, model_defs: dict[str, JSONObject]) -> JSONObject:
     # NB: Dispatched manually, so we can avoid ciruclar definition with `Model.model_load`
     if issubclass(field_type, Model):
         schema_model(field_type, model_defs=model_defs)
-        return {"$ref": f"#/$defs/{field_type.__name__}"}
+        return {"$ref": f"#/$defs/{field_type.__modelname__}"}
 
     raise NotImplementedError(f"Schema generation for {field_type} is not implemented")
 
@@ -245,7 +245,8 @@ class _ModelFieldSchemaHelper:
 def schema_model(
     model_type: type[ModelT], *, model_defs: dict[str, JSONObject]
 ) -> JSONObject:
-    model_name = model_type.__name__
+    model_name = model_type.__modelname__
+
     if model_name not in model_defs:
         fields = tuple(field for field in dataclasses.fields(model_type) if field.init)
         model_defs[model_name] = {

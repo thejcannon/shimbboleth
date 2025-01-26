@@ -13,7 +13,8 @@ T = TypeVar("T")
 
 @dataclass_transform(kw_only_default=True, field_specifiers=(dataclasses.field, field))
 class ModelMeta(type):
-    __dataclass_fields__: ClassVar[dict[str, dataclasses.Field[Any]]]
+    __parent_model__: "ModelMeta | None" = None
+    # __dataclass_fields__: dict[str, dataclasses.Field[Any]]
     __allow_extra_properties__: bool
     __field_aliases__: MappingProxyType[str, FieldAlias] = MappingProxyType({})
     __json_fieldnames__: frozenset[str]
@@ -37,9 +38,15 @@ class ModelMeta(type):
         #   We can tell if it's a dataclass if it has the magic attribute.
         if "__dataclass_fields__" in cls.__dict__:
             return cls
+
         return dataclasses.dataclass(slots=True, kw_only=True)(cls)
 
     def __init__(cls, name, bases, namespace, *, extra: bool | None = None):
+        for attrname, attrvalue in namespace.items():
+            if isinstance(attrvalue, ModelMeta):
+                # @TODO: This doesn't work for triply nested models.
+                attrvalue.__parent_model__ = cls
+
         cls.__allow_extra_properties__ = bool(extra)
 
         cls.__field_aliases__ = MappingProxyType(
@@ -70,13 +77,23 @@ class ModelMeta(type):
                     ),
                 )
 
+    # @TODO: Introduce `Namespace` type, and use it for namespaces
+    @property
+    def __modelname__(cls) -> str:
+        names = [cls.__name__]
+        while cls:
+            cls = cls.__parent_model__
+            if cls:
+                names.insert(0, cls.__name__)
+        return ".".join(names)
+
     @property
     def model_json_schema(cls) -> JSONObject:
         from shimbboleth.internal.clay.json_schema import schema
 
         model_defs = {}
         schema(cls, model_defs=model_defs)
-        return {**model_defs.pop(cls.__name__), "$defs": model_defs}
+        return {**model_defs.pop(cls.__modelname__), "$defs": model_defs}
 
     def model_load(cls: T, data: Any) -> T:
         # NB: Implemented in `Model`

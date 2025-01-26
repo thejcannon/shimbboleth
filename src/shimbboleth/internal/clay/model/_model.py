@@ -2,7 +2,7 @@
 Module defining the `Model` base class for all shimbboleth modeling.
 """
 
-from typing import Any, Self, TypeVar, Callable
+from typing import Any, Self, TypeVar, Callable, ClassVar
 import dataclasses
 
 from shimbboleth.internal.clay.jsonT import JSON, JSONObject
@@ -20,9 +20,13 @@ class _ModelBase:
 
 
 class Model(_ModelBase, metaclass=ModelMeta):
+    __dataclass_fields__: ClassVar[dict[str, dataclasses.Field[Any]]]
+
     @classmethod
-    def _json_loader_(cls, field: str, *, json_schema_type=None) -> Callable[[T], T]:
-        field = cls.__dataclass_fields__[field]
+    def _json_loader_(
+        cls, fieldname: str, *, json_schema_type=None
+    ) -> Callable[[T], T]:
+        field = cls.__dataclass_fields__[fieldname]
 
         assert isinstance(field, dataclasses.Field), "Did you forget to = field(...)?"
         assert (
@@ -37,6 +41,8 @@ class Model(_ModelBase, metaclass=ModelMeta):
                     "json_loader": func,
                     "json_schema_type": func.__annotations__["value"]
                     if json_schema_type is None
+                    else func.__annotations__["return"]
+                    if json_schema_type == "return"
                     else json_schema_type,
                 }
             )
@@ -44,8 +50,9 @@ class Model(_ModelBase, metaclass=ModelMeta):
 
         return decorator
 
-    @staticmethod
-    def _json_dumper_(field) -> Callable[[T], T]:
+    @classmethod
+    def _json_dumper_(cls, fieldname: str) -> Callable[[T], T]:
+        field = cls.__dataclass_fields__[fieldname]
         assert isinstance(field, dataclasses.Field), "Did you forget to = field(...)?"
         assert (
             "json_dumper" not in field.metadata
