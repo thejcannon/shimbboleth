@@ -14,7 +14,6 @@ from typing import ClassVar, final, Annotated
 
 class Step(Model):
     class Dependency(Model, extra=False):
-        # @TODO: Make a PR upstream, this isn't required upstream?
         step: str
 
         allow_failure: bool = field(default=False)
@@ -78,4 +77,6 @@ class Step(Model):
         return ret
 
 
-# @TODO: Substep class? (e.g. branches field and friends)
+class SubStep(Step):
+    branches: list[str] = field(default_factory=list)
+    """Which branches will include this step in their builds"""

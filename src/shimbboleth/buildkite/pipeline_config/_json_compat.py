@@ -30,7 +30,7 @@ from shimbboleth.internal.clay.validation import (
 from shimbboleth.buildkite.pipeline_config.block_step import BlockStep
 from shimbboleth.buildkite.pipeline_config.input_step import InputStep
 from shimbboleth.buildkite.pipeline_config.wait_step import WaitStep
-from shimbboleth.buildkite.pipeline_config.step import Step
+from shimbboleth.buildkite.pipeline_config.step import Step, SubStep
 from shimbboleth.buildkite.pipeline_config.notify import Notify
 from shimbboleth.buildkite.pipeline_config.trigger_step import TriggerStep
 from shimbboleth.buildkite.pipeline_config.command_step import CommandStep
@@ -263,11 +263,11 @@ def _(value: str | list[str | JSONObject]) -> list[Step.Dependency]:
             )
     return ret
 
+SubStep._json_loader_("branches")(load_str_list)
 
 # ===== CommandStep ====
 
 CommandStep._json_loader_("artifact_paths")(load_str_list)
-CommandStep._json_loader_("branches")(load_str_list)
 CommandStep._json_loader_("cancel_on_build_failing")(load_bool)
 CommandStep._json_loader_("command")(load_str_list)
 CommandStep._json_loader_("skip")(load_skip)
@@ -439,7 +439,6 @@ CommandStep.Retry.Manual._json_loader_("permit_on_passed")(load_bool)
 
 # ===== ManualStep =====
 
-ManualStep._json_loader_("branches")(load_str_list)
 ManualStep.Text._json_loader_("required")(load_bool)
 assert (
     ManualStep.SingleSelect.__dataclass_fields__["required"].metadata["json_loader"]
@@ -542,11 +541,9 @@ def _(value: list[str | JSONObject]) -> list[Step.NotifyT]:
 # ===== TriggerStep =====
 
 TriggerStep._json_loader_("is_async")(load_bool)
-TriggerStep._json_loader_("branches")(load_str_list)
 TriggerStep._json_loader_("skip")(load_skip)
 TriggerStep._json_loader_("soft_fail")(load_bool)
 
 # ===== WaitStep =====
 
-WaitStep._json_loader_("branches")(load_str_list)
 WaitStep._json_loader_("continue_on_failure")(load_bool)

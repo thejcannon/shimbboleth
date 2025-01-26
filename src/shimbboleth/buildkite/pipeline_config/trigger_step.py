@@ -4,10 +4,10 @@ from typing import Literal, ClassVar
 from shimbboleth.internal.clay.model import field, FieldAlias, Model
 from shimbboleth.internal.clay.jsonT import JSONObject
 
-from shimbboleth.buildkite.pipeline_config.step import Step
+from shimbboleth.buildkite.pipeline_config.step import SubStep
 
 
-class TriggerStep(Step, extra=False):
+class TriggerStep(SubStep, extra=False):
     """
     A trigger step creates a build on another pipeline.
 
@@ -46,9 +46,6 @@ class TriggerStep(Step, extra=False):
 
     is_async: bool = field(default=False, json_alias="async")
     """Whether to continue the build without waiting for the triggered step to complete"""
-
-    branches: list[str] = field(default_factory=list)
-    """Which branches will include this step in their builds"""
 
     build: Build | None = None
     """Attributes for the triggered build"""

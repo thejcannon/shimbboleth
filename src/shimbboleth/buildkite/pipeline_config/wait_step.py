@@ -3,18 +3,15 @@ from typing import ClassVar, Literal
 
 from shimbboleth.internal.clay.model import FieldAlias, field
 
-from shimbboleth.buildkite.pipeline_config.step import Step
+from shimbboleth.buildkite.pipeline_config.step import SubStep
 
 
-class WaitStep(Step, extra=False):
+class WaitStep(SubStep, extra=False):
     """
     A wait step waits for all previous steps to have successfully completed before allowing following jobs to continue.
 
     https://buildkite.com/docs/pipelines/wait-step
     """
-
-    branches: list[str] = field(default_factory=list)
-    """Which branches will include this step in their builds"""
 
     continue_on_failure: bool = field(default=False)
     """Continue to the next steps, even if the previous group of steps fail"""

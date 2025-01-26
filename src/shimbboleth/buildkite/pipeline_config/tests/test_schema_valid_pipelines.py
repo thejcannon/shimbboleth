@@ -12,7 +12,7 @@ This module itself tries to make it easy to define new test cases, and have
 those case be tested against:
     - Model loading in Python
     - generated JSON Schema
-    - Upstream JSON Schema (TODO: link)
+    - Upstream JSON Schema (https://github.com/buildkite/pipeline-schema/blob/main/schema.json)
     - Upstream Buildkite API
 
 (I aim to to be at least as correct (if not more correct) than upstream)

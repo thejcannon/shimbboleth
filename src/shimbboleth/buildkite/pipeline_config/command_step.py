@@ -14,11 +14,11 @@ from shimbboleth.internal.clay.validation import (
     MatchesRegex,
 )
 
-from shimbboleth.buildkite.pipeline_config.step import Step
+from shimbboleth.buildkite.pipeline_config.step import SubStep, Step
 
 
 # NB: Forward-declares
-class CommandStep(Step, extra=False):  # type: ignore
+class CommandStep(SubStep, extra=False):  # type: ignore
     class Matrix(Model, extra=False):
         ElementT = str | int | bool
 
@@ -170,8 +170,7 @@ class CommandStep(CommandStep, extra=False):
     artifact_paths: list[str] = field(default_factory=list)
     """The glob paths of artifacts to upload once this step has finished running"""
 
-    branches: list[str] = field(default_factory=list)
-    """Which branches will include this step in their builds"""
+    # NB: branches from `SubStep`
 
     cache: Cache = field(default_factory=lambda: CommandStep.Cache(paths=[]))
     """See: https://buildkite.com/docs/pipelines/hosted-agents/linux"""

@@ -5,7 +5,7 @@ from shimbboleth.internal.clay.validation import (
     NonEmptyList,
     MatchesRegex,
 )
-from shimbboleth.buildkite.pipeline_config.step import Step
+from shimbboleth.buildkite.pipeline_config.step import SubStep
 
 
 class _Option(Model):
@@ -39,7 +39,7 @@ class _Select(_Option, extra=False):
     """The list of select field options."""
 
 
-class ManualStep(Step, extra=False):
+class ManualStep(SubStep, extra=False):
     """
     (The base of both Input and Block steps)
     """
@@ -88,9 +88,6 @@ class ManualStep(Step, extra=False):
             super().__init__(**kwargs)
             self.default = default
             self.multiple = True
-
-    branches: list[str] = field(default_factory=list)
-    """Which branches will include this step in their builds"""
 
     fields: list[Text | SingleSelect | MultiSelect] = field(default_factory=list)
     """A list of input fields required to be filled out before unblocking the step"""
