@@ -25,6 +25,7 @@ NOTE: Because of the "multiple ways to test a valid pipeline" this module is a b
 
 # @TODOs:
 #   - Test actual nulls in the pipeline
+#   - Tets soft_fails
 from typing import cast
 import yaml
 

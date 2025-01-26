@@ -1,4 +1,4 @@
-from typing import Literal, Annotated, ClassVar
+from typing import Literal, Annotated, ClassVar, TypeAlias
 
 from shimbboleth.internal.clay.model import (
     Model,
@@ -10,18 +10,32 @@ from shimbboleth.internal.clay.validation import (
     Ge,
     Le,
     NonEmptyList,
+    NonEmptyDict,
     MatchesRegex,
 )
 
 from shimbboleth.buildkite.pipeline_config.step import Step
-from shimbboleth.buildkite.pipeline_config._matrix import (
-    MatrixArray,
-    SingleDimensionMatrix,
-    MultiDimensionMatrix,
-)
 
 
-class CommandStep(Step, extra=False):
+# NB: Forward-declares
+class CommandStep(Step, extra=False):  # type: ignore
+    class Matrix(Model, extra=False):
+        ElementT = str | int | bool
+
+        class _Adjustmenet(Model):
+            # NB: Passing an empty string is equivalent to false.
+            skip: bool | str = field(default=False)
+            """Whether to skip this step or not. Passing a string provides a reason for skipping this command."""
+
+            # NB: This differs from the upstream schema in that we "unpack"
+            #  the `exit_status` object into the status.
+            soft_fail: bool | NonEmptyList[int] = field(
+                default=False
+            )
+            """Allow specified non-zero exit statuses not to fail the build."""
+
+
+class CommandStep(CommandStep, extra=False):
     """
     A command step runs one or more shell commands on one or more agents.
 
@@ -33,6 +47,43 @@ class CommandStep(Step, extra=False):
 
         name: str | None = None
         size: Annotated[str, MatchesRegex("^\\d+g$")] | None = None
+
+
+    class Matrix(CommandStep.Matrix):
+        Array = list[CommandStep.Matrix.ElementT]
+
+        class SingleDim(Model, extra=False):
+            """Configuration for single-dimension Build Matrix (e.g. list of elements/adjustments)."""
+
+            class Adjustment(CommandStep.Matrix._Adjustmenet, extra=False):
+                """An adjustment to a Build Matrix scalar element (e.g. single-dimension matrix)."""
+
+                with_value: str = field(json_alias="with")
+                """An existing (or new) element to adjust"""
+
+            setup: NonEmptyList[CommandStep.Matrix.ElementT]
+
+            adjustments: list[Adjustment] = field(default_factory=list)
+
+        class MultiDim(Model, extra=False):
+            """Configuration for multi-dimension Build Matrix (e.g. map of elements/adjustments)."""
+
+            class Adjustment(CommandStep.Matrix._Adjustmenet, extra=False):
+                """An adjustment to a multi-dimension Build Matrix"""
+
+                # @TODO: Each key in a `matrix.adjustments.with` must exist in the associated `matrix.setup`;
+                #   new dimensions may not be created by an adjustment, only new elements; missing [...]
+                # @TODO: Techincally, we could do the same MatchesRegex, but due to the above it's kind of pointless
+                #   (but also this would be schema-invalid vs the above is logic-invalid)
+                with_value: dict[str, CommandStep.Matrix.ElementT] = field(json_alias="with")
+                """Specification of a new or existing Build Matrix combination"""
+
+            setup: NonEmptyDict[
+                Annotated[str, MatchesRegex(r"^[a-zA-Z0-9_]+$")], list[CommandStep.Matrix.ElementT]
+            ]
+            """Maps dimension names to a lists of elements"""
+
+            adjustments: list[Adjustment] = field(default_factory=list)
 
     class Plugin(Model, extra=False):
         spec: str = field()
@@ -153,7 +204,7 @@ class CommandStep(Step, extra=False):
     label: str | None = None
     """The label that will be displayed in the pipeline visualization in Buildkite. Supports emoji."""
 
-    matrix: MatrixArray | SingleDimensionMatrix | MultiDimensionMatrix | None = None
+    matrix: Matrix.Array | Matrix.SingleDim | Matrix.MultiDim | None = None
     """
     Matrix expansions for this step.
 

@@ -383,10 +383,10 @@
               "type": "array"
             },
             {
-              "$ref": "#/$defs/SingleDimensionMatrix"
+              "$ref": "#/$defs/CommandStep.Matrix.SingleDim"
             },
             {
-              "$ref": "#/$defs/MultiDimensionMatrix"
+              "$ref": "#/$defs/CommandStep.Matrix.MultiDim"
             },
             {
               "type": "null"
@@ -600,6 +600,184 @@
       },
       "required": [
         "paths"
+      ],
+      "type": "object"
+    },
+    "CommandStep.Matrix.MultiDim": {
+      "additionalProperties": false,
+      "properties": {
+        "adjustments": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/CommandStep.Matrix.MultiDim.Adjustment"
+          },
+          "type": "array"
+        },
+        "setup": {
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "items": {
+                  "oneOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "boolean"
+                    }
+                  ]
+                },
+                "type": "array"
+              }
+            ]
+          },
+          "minProperties": 1,
+          "propertyNames": {
+            "pattern": "^[a-zA-Z0-9_]+$"
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "setup"
+      ],
+      "type": "object"
+    },
+    "CommandStep.Matrix.MultiDim.Adjustment": {
+      "additionalProperties": false,
+      "properties": {
+        "skip": {
+          "default": false,
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "soft_fail": {
+          "default": false,
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "enum": [
+                "true",
+                "false"
+              ]
+            },
+            {
+              "items": {
+                "$ref": "#/$defs/ExitStatus"
+              },
+              "type": "array"
+            }
+          ]
+        },
+        "with": {
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "with"
+      ],
+      "type": "object"
+    },
+    "CommandStep.Matrix.SingleDim": {
+      "additionalProperties": false,
+      "properties": {
+        "adjustments": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/CommandStep.Matrix.SingleDim.Adjustment"
+          },
+          "type": "array"
+        },
+        "setup": {
+          "items": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
+          },
+          "minItems": 1,
+          "type": "array"
+        }
+      },
+      "required": [
+        "setup"
+      ],
+      "type": "object"
+    },
+    "CommandStep.Matrix.SingleDim.Adjustment": {
+      "additionalProperties": false,
+      "properties": {
+        "skip": {
+          "default": false,
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "soft_fail": {
+          "default": false,
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "enum": [
+                "true",
+                "false"
+              ]
+            },
+            {
+              "items": {
+                "$ref": "#/$defs/ExitStatus"
+              },
+              "type": "array"
+            }
+          ]
+        },
+        "with": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "with"
       ],
       "type": "object"
     },
@@ -1338,108 +1516,6 @@
       ],
       "type": "object"
     },
-    "MultiDimensionMatrix": {
-      "additionalProperties": false,
-      "properties": {
-        "adjustments": {
-          "default": [],
-          "items": {
-            "$ref": "#/$defs/MultiDimensionMatrix.Adjustment"
-          },
-          "type": "array"
-        },
-        "setup": {
-          "additionalProperties": {
-            "oneOf": [
-              {
-                "type": "string"
-              },
-              {
-                "items": {
-                  "oneOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "integer"
-                    },
-                    {
-                      "type": "boolean"
-                    }
-                  ]
-                },
-                "type": "array"
-              }
-            ]
-          },
-          "minProperties": 1,
-          "propertyNames": {
-            "pattern": "^[a-zA-Z0-9_]+$"
-          },
-          "type": "object"
-        }
-      },
-      "required": [
-        "setup"
-      ],
-      "type": "object"
-    },
-    "MultiDimensionMatrix.Adjustment": {
-      "additionalProperties": false,
-      "properties": {
-        "skip": {
-          "default": false,
-          "oneOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "boolean"
-            }
-          ]
-        },
-        "soft_fail": {
-          "default": false,
-          "oneOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "enum": [
-                "true",
-                "false"
-              ]
-            },
-            {
-              "items": {
-                "$ref": "#/$defs/ExitStatus"
-              },
-              "type": "array"
-            }
-          ]
-        },
-        "with": {
-          "additionalProperties": {
-            "oneOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "integer"
-              },
-              {
-                "type": "boolean"
-              }
-            ]
-          },
-          "type": "object"
-        }
-      },
-      "required": [
-        "with"
-      ],
-      "type": "object"
-    },
     "NestedBlockStep": {
       "additionalProperties": false,
       "properties": {
@@ -1723,82 +1799,6 @@
       },
       "required": [
         "webhook"
-      ],
-      "type": "object"
-    },
-    "SingleDimensionMatrix": {
-      "additionalProperties": false,
-      "properties": {
-        "adjustments": {
-          "default": [],
-          "items": {
-            "$ref": "#/$defs/SingleDimensionMatrix.Adjustment"
-          },
-          "type": "array"
-        },
-        "setup": {
-          "items": {
-            "oneOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "integer"
-              },
-              {
-                "type": "boolean"
-              }
-            ]
-          },
-          "minItems": 1,
-          "type": "array"
-        }
-      },
-      "required": [
-        "setup"
-      ],
-      "type": "object"
-    },
-    "SingleDimensionMatrix.Adjustment": {
-      "additionalProperties": false,
-      "properties": {
-        "skip": {
-          "default": false,
-          "oneOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "boolean"
-            }
-          ]
-        },
-        "soft_fail": {
-          "default": false,
-          "oneOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "enum": [
-                "true",
-                "false"
-              ]
-            },
-            {
-              "items": {
-                "$ref": "#/$defs/ExitStatus"
-              },
-              "type": "array"
-            }
-          ]
-        },
-        "with": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "with"
       ],
       "type": "object"
     },

@@ -27,6 +27,7 @@ from pytest import param
 # @TODO: Tests for extra keys!
 # @TODO: multiple aliases for the label
 #   (e.g. command/commands/scripts)
+#   - Tets soft_fails
 
 UPSTREAM_SCHEMA_INVALID = pytest.mark.meta(upstream_schema_valid=False)
 UPSTREAM_API_500 = pytest.mark.meta(upstream_api_500=True)
@@ -425,14 +426,14 @@ class Test_CommandStep__Notify(StepTestBase):
         param(
             {"setup": [""], "adjustments": [{}]},
             # @TODO: "with" in message
-            "Expected required fields `'with_value'` to be provided for model `SingleDimensionMatrix.Adjustment`",
+            "Expected required fields `'with_value'` to be provided for model `CommandStep.Matrix.SingleDim.Adjustment`",
             ".matrix.adjustments[0]",
             id="matrix_single_empty_adj",
         ),
         param(
             {"setup": {"a": ["b"]}, "adjustments": [{}]},
             # @TODO: "with" in message
-            "Expected required fields `'with_value'` to be provided for model `MultiDimensionMatrix.Adjustment`",
+            "Expected required fields `'with_value'` to be provided for model `CommandStep.Matrix.MultiDim.Adjustment`",
             ".matrix.adjustments[0]",
             id="matrix_multi_empty_adj",
         ),

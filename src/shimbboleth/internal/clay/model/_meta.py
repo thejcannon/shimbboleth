@@ -77,6 +77,7 @@ class ModelMeta(type):
                     ),
                 )
 
+    # @TODO: Introduce `Namespace` type, and use it for namespaces
     @property
     def __modelname__(cls) -> str:
         names = [cls.__name__]

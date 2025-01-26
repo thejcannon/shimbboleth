@@ -24,6 +24,8 @@ from shimbboleth.internal.clay.validation import (
     NonEmptyList,
     Not,
     SingleKeyDict,
+    NonEmptyDict,
+    MatchesRegex
 )
 from shimbboleth.buildkite.pipeline_config.block_step import BlockStep
 from shimbboleth.buildkite.pipeline_config.input_step import InputStep
@@ -34,11 +36,7 @@ from shimbboleth.buildkite.pipeline_config.command_step import CommandStep
 from shimbboleth.buildkite.pipeline_config.manual_step import ManualStep
 from shimbboleth.buildkite.pipeline_config._types import rubystr
 from shimbboleth.buildkite.pipeline_config.group_step import GroupStep
-from shimbboleth.buildkite.pipeline_config._matrix import (
-    MatrixArray,
-    SingleDimensionMatrix,
-    MultiDimensionMatrix,
-)
+
 
 
 class NestedBlockStep(Model, extra=False):
@@ -267,7 +265,12 @@ CommandStep._json_loader_("command")(load_str_list)
 CommandStep._json_loader_("skip")(load_skip)
 CommandStep._json_loader_("soft_fail")(load_soft_fail)
 CommandStep._json_dumper_("soft_fail")(dump_soft_fail)
-
+CommandStep.Matrix.SingleDim.Adjustment._json_loader_("skip")(load_skip)
+# CommandStep.Matrix.MultiDim.Adjustment._json_loader_("skip")(load_skip)
+CommandStep.Matrix.SingleDim.Adjustment._json_loader_("soft_fail")(load_soft_fail)
+CommandStep.Matrix.SingleDim.Adjustment._json_dumper_("soft_fail")(dump_soft_fail)
+# CommandStep.Matrix.MultiDim.Adjustment_json_loader_("soft_fail")(load_soft_fail)
+# CommandStep.Matrix.MultiDim.Adjustment._json_dumper_("soft_fail")(dump_soft_fail)
 
 # @TODO: If there is no difference, just double-decorate above, otherwise whats the difference?
 @CommandStep._json_loader_("agents")
@@ -299,18 +302,28 @@ def _(
 
 @CommandStep._json_loader_("matrix", json_schema_type="return")
 def _(
-    value: MatrixArray | JSONObject | None,
-) -> MatrixArray | SingleDimensionMatrix | MultiDimensionMatrix | None:
+    value: CommandStep.Matrix.Array | JSONObject | None,
+) -> CommandStep.Matrix.Array | CommandStep.Matrix.SingleDim | CommandStep.Matrix.MultiDim | None:
     if value is None:
         return None
     if isinstance(value, list):
         return value
     if isinstance(value, dict):
         if isinstance(value["setup"], list):
-            return SingleDimensionMatrix.model_load(value)
-        return MultiDimensionMatrix.model_load(value)
+            return CommandStep.Matrix.SingleDim.model_load(value)
+        return CommandStep.Matrix.MultiDim.model_load(value)
 
     # @TODO: Error on wrong type
+
+@CommandStep.Matrix.MultiDim._json_loader_("setup")
+def _load_setup(
+    value: NonEmptyDict[
+        Annotated[str, MatchesRegex(r"^[a-zA-Z0-9_]+$")], str | list[CommandStep.Matrix.ElementT]
+    ],
+) -> NonEmptyDict[
+    Annotated[str, MatchesRegex(r"^[a-zA-Z0-9_]+$")], list[CommandStep.Matrix.ElementT]
+]:
+    return {k: v if isinstance(v, list) else [v] for k, v in value.items()}
 
 
 @CommandStep._json_loader_(
