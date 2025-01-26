@@ -1,5 +1,6 @@
 from typing import Any
 
+
 def _rubystr_inner(value: Any) -> str:
     if isinstance(value, str):
         return f'"{value}"'

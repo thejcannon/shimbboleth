@@ -11,6 +11,7 @@ class _Service(Model, extra=False):
     # @TEST: Is an empty string considered a skip?
     if_condition: str | None = field(default=None, json_alias="if")
 
+
 # @TEST: __new__
 class Notify(Model, extra=False):
     class Email(_Service, extra=False):
@@ -47,36 +48,36 @@ class Notify(Model, extra=False):
         info: dict[str, str] = field(default_factory=dict, json_alias="github_check")
 
     @overload
-    def __new__(cls, *, email: str, if_condition: str | None = None):
-        ...
+    def __new__(cls, *, email: str, if_condition: str | None = None): ...
 
     @overload
-    def __new__(cls, *, basecamp_campfire: str, if_condition: str | None = None):
-        ...
+    def __new__(cls, *, basecamp_campfire: str, if_condition: str | None = None): ...
 
     @overload
-    def __new__(cls, *, slack: str | list[str] | Slack.Info, if_condition: str | None = None):
-        ...
+    def __new__(
+        cls, *, slack: str | list[str] | Slack.Info, if_condition: str | None = None
+    ): ...
 
     @overload
-    def __new__(cls, *, webhook: str, if_condition: str | None = None):
-        ...
+    def __new__(cls, *, webhook: str, if_condition: str | None = None): ...
 
     @overload
-    def __new__(cls, *, pagerduty_change_event: str, if_condition: str | None = None):
-        ...
+    def __new__(
+        cls, *, pagerduty_change_event: str, if_condition: str | None = None
+    ): ...
 
     @overload
-    def __new__(cls, *, github_commit_status: str, if_condition: str | None = None):
-        ...
+    def __new__(cls, *, github_commit_status: str, if_condition: str | None = None): ...
 
     @overload
-    def __new__(cls, *, github_check: GitHubCommitStatus.Info, if_condition: str | None = None):
-        ...
+    def __new__(
+        cls, *, github_check: GitHubCommitStatus.Info, if_condition: str | None = None
+    ): ...
 
     def __new__(cls, **kwargs):
         # @TODO: This is a hack, since the field names will be the JSON versions
         return _parse_notify(kwargs)
+
 
 def _parse_notify(
     value: str | JSONObject,

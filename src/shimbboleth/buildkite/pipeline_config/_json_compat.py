@@ -233,6 +233,7 @@ def _(
             ret.append(_parse_notify(elem))
     return ret
 
+
 # ===== Notify =====
 
 
@@ -241,6 +242,7 @@ def _load_slack(value: str | Notify.Slack.Info) -> Notify.Slack.Info:
     if isinstance(value, str):
         return Notify.Slack.Info.model_load({"channels": [value]})
     return value
+
 
 # ===== Step =====
 
@@ -262,6 +264,7 @@ def _(value: str | list[str | JSONObject]) -> list[Step.Dependency]:
                 else Step.Dependency.model_load(elem)
             )
     return ret
+
 
 SubStep._json_loader_("branches")(load_str_list)
 
