@@ -31,10 +31,11 @@ from shimbboleth.buildkite.pipeline_config.block_step import BlockStep
 from shimbboleth.buildkite.pipeline_config.input_step import InputStep
 from shimbboleth.buildkite.pipeline_config.wait_step import WaitStep
 from shimbboleth.buildkite.pipeline_config.step import Step
+from shimbboleth.buildkite.pipeline_config.notify import Notify
 from shimbboleth.buildkite.pipeline_config.trigger_step import TriggerStep
 from shimbboleth.buildkite.pipeline_config.command_step import CommandStep
 from shimbboleth.buildkite.pipeline_config.manual_step import ManualStep
-from shimbboleth.buildkite.pipeline_config._types import rubystr
+from shimbboleth.buildkite.pipeline_config._utils import rubystr
 from shimbboleth.buildkite.pipeline_config.group_step import GroupStep
 
 
@@ -232,6 +233,14 @@ def _(
             ret.append(_parse_notify(elem))
     return ret
 
+# ===== Notify =====
+
+
+@Notify.Slack._json_loader_("info")
+def _load_slack(value: str | Notify.Slack.Info) -> Notify.Slack.Info:
+    if isinstance(value, str):
+        return Notify.Slack.Info.model_load({"channels": [value]})
+    return value
 
 # ===== Step =====
 

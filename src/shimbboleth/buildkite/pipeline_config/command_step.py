@@ -68,7 +68,7 @@ class CommandStep(CommandStep, extra=False):
             class Adjustment(CommandStep.Matrix._Adjustmenet, extra=False):
                 """An adjustment to a multi-dimension Build Matrix"""
 
-                # @TODO: Each key in a `matrix.adjustments.with` must exist in the associated `matrix.setup`;
+                # @VALIDATE: Each key in a `matrix.adjustments.with` must exist in the associated `matrix.setup`;
                 #   new dimensions may not be created by an adjustment, only new elements; missing [...]
                 # @TODO: Techincally, we could do the same MatchesRegex, but due to the above it's kind of pointless
                 #   (but also this would be schema-invalid vs the above is logic-invalid)
@@ -104,7 +104,7 @@ class CommandStep(CommandStep, extra=False):
             exit_status: Literal["*"] | list[int] = field(default="*")
             """The exit status number that will cause this job to retry"""
 
-            # @TODO: Upstram allows 0 (but not 11)
+            # @TEST: Upstram allows 0 (but not 11)
             limit: Annotated[int, Ge(1), Le(10)] | None = None
             """The number of times this job can be retried"""
 
@@ -239,7 +239,7 @@ class CommandStep(CommandStep, extra=False):
     soft_fail: bool | NonEmptyList[int] = field(default=False)
     """Allow specified non-zero exit statuses not to fail the build."""
 
-    # @TODO: Zero is OK upstream?
+    # @TEST: Zero is OK upstream?
     timeout_in_minutes: Annotated[int, Ge(1)] | None = None
     """The number of minutes to time out a job"""
 

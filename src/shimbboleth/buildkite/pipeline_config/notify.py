@@ -49,13 +49,6 @@ class Notify(Model, extra=False):
         info: dict[str, str] = field(default_factory=dict, json_alias="github_check")
 
 
-@Notify.Slack._json_loader_("info")
-def _load_slack(value: str | Notify.Slack.Info) -> Notify.Slack.Info:
-    if isinstance(value, str):
-        return Notify.Slack.Info.model_load({"channels": [value]})
-    return value
-
-
 def _parse_notify(
     value: str | JSONObject,
 ) -> (
