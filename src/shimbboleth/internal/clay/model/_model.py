@@ -41,6 +41,8 @@ class Model(_ModelBase, metaclass=ModelMeta):
                     "json_loader": func,
                     "json_schema_type": func.__annotations__["value"]
                     if json_schema_type is None
+                    else func.__annotations__["return"]
+                    if json_schema_type == "return"
                     else json_schema_type,
                 }
             )
@@ -48,8 +50,9 @@ class Model(_ModelBase, metaclass=ModelMeta):
 
         return decorator
 
-    @staticmethod
-    def _json_dumper_(field) -> Callable[[T], T]:
+    @classmethod
+    def _json_dumper_(cls, fieldname: str) -> Callable[[T], T]:
+        field = cls.__dataclass_fields__[fieldname]
         assert isinstance(field, dataclasses.Field), "Did you forget to = field(...)?"
         assert (
             "json_dumper" not in field.metadata

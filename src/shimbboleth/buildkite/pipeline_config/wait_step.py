@@ -3,10 +3,6 @@ from typing import ClassVar, Literal
 
 from shimbboleth.internal.clay.model import FieldAlias, field
 
-from shimbboleth.buildkite.pipeline_config._types import (
-    list_str_from_json,
-    bool_from_json,
-)
 from shimbboleth.buildkite.pipeline_config.step import Step
 
 
@@ -17,10 +13,10 @@ class WaitStep(Step, extra=False):
     https://buildkite.com/docs/pipelines/wait-step
     """
 
-    branches: list[str] = field(default_factory=list, json_loader=list_str_from_json)
+    branches: list[str] = field(default_factory=list)
     """Which branches will include this step in their builds"""
 
-    continue_on_failure: bool = field(default=False, json_loader=bool_from_json)
+    continue_on_failure: bool = field(default=False)
     """Continue to the next steps, even if the previous group of steps fail"""
 
     wait: str | None = None

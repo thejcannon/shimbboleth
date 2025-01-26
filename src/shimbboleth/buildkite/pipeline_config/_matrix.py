@@ -5,13 +5,12 @@ Support for Command matrices.
 See: https://buildkite.com/docs/pipelines/configure/step-types/command-step#matrix-attributes
 """
 
-from typing import TypeAlias, Literal, Annotated
+from typing import TypeAlias, Annotated
 
 from shimbboleth.internal.clay.model import Model, field
 from shimbboleth.internal.clay.validation import (
     MatchesRegex,
     NonEmptyList,
-    Not,
     NonEmptyDict,
 )
 from shimbboleth.buildkite.pipeline_config._types import (
@@ -33,7 +32,7 @@ class _Adjustment(Model):
     # NB: This differs from the upstream schema in that we "unpack"
     #  the `exit_status` object into the status.
     # @TODO: Upstream allows exit status to be 0...
-    soft_fail: bool | NonEmptyList[Annotated[int, Not[Literal[0]]]] = field(
+    soft_fail: bool | NonEmptyList[int] = field(
         default=False, json_loader=soft_fail_from_json, json_dumper=soft_fail_to_json
     )
     """Allow specified non-zero exit statuses not to fail the build."""

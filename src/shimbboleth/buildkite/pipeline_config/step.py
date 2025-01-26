@@ -61,6 +61,7 @@ class Step(Model):
 
         return val
 
+    # @TODO: Move this to JSON compat
     @staticmethod
     def _parse_notify(value: list[str | JSONObject]) -> list[NotifyT]:
         ret = []

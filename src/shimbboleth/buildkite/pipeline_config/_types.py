@@ -3,6 +3,8 @@ from typing import Literal, Any, Annotated
 from shimbboleth.internal.clay.model import Model
 from shimbboleth.internal.clay.validation import NonEmptyList, Not
 
+# @TODO: Move this to be `_json_compat.py` and move ALL the loaders there/here.
+
 
 class ExitStatus(Model, extra=True):
     exit_status: Literal["*"] | int
@@ -40,7 +42,6 @@ def bool_from_json(value: bool | Literal["true", "false"]) -> bool:
     return value in (True, "true")
 
 
-# @TODO: In the Schema, also use a Liteal["true", "false"]
 def skip_from_json(value: str | bool) -> str | bool:
     if value in (True, False, "true", "false"):
         return bool_from_json(value)
@@ -55,8 +56,7 @@ def list_str_from_json(value: str | list[str]) -> list[str]:
 
 def soft_fail_from_json(
     value: bool | Literal["true", "false"] | list[ExitStatus],
-) -> bool | NonEmptyList[Annotated[int, Not[Literal[0]]]]:
-    # Non-zero?
+) -> bool | NonEmptyList[int]:
     if value in (True, "true"):
         return True
     elif value in (False, "false"):

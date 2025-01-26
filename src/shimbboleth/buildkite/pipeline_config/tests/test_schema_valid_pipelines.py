@@ -437,7 +437,8 @@ class Test_BlockStep(StepTestBase):
                     "adjustments": [{"with": "newvalue", "soft_fail": True}],
                 }
             },
-            id="matrix",
+            # @TODO: more soft_fail types
+            id="matrix--single-dim-with-adjustment-with-soft_fail",
             marks=UPSTREAM_SCHEMA_INVALID,
         ),
         *(
@@ -473,7 +474,7 @@ class Test_BlockStep(StepTestBase):
                     "adjustments": [
                         {
                             "with": {"key": "newvalue"},
-                            "soft_fail": [{"exit_status": "*"}, {"exit_status": -1}],
+                            "soft_fail": [{"exit_status": "*"}, {"exit_status": 0}],
                         }
                     ],
                 }
@@ -588,6 +589,8 @@ class Test_BlockStep(StepTestBase):
         *(param({"soft_fail": value}, id=f"soft_fail_{value}") for value in BOOLVALS),
         param({"soft_fail": []}, id="soft_fail_empty_list"),
         param({"soft_fail": [{"exit_status": "*"}]}, id="soft_fail_exit_status_any"),
+        # NB: Techincally invalid according to the docs, but the API allows it
+        param({"soft_fail": [{"exit_status": 0}]}, id="soft_fail_exit_status_zero"),
         param({"soft_fail": [{"exit_status": 1}]}, id="soft_fail_exit_status_single"),
         param(
             {"soft_fail": [{"exit_status": 1}, {"exit_status": -1}]},

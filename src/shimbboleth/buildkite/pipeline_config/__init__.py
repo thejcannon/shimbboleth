@@ -1,4 +1,4 @@
-from typing import Any, TypeAlias, Literal, cast
+from typing import cast
 from functools import lru_cache
 
 
@@ -6,23 +6,13 @@ from shimbboleth.internal.clay.model import Model, field
 from shimbboleth.internal.clay.jsonT import JSONArray, JSONObject
 from shimbboleth.internal.clay.validation import ValidationError
 
-from shimbboleth.buildkite.pipeline_config._agents import agents_from_json
 from shimbboleth.buildkite.pipeline_config.block_step import BlockStep
 from shimbboleth.buildkite.pipeline_config.input_step import InputStep
 from shimbboleth.buildkite.pipeline_config.wait_step import WaitStep
 from shimbboleth.buildkite.pipeline_config.trigger_step import TriggerStep
 from shimbboleth.buildkite.pipeline_config.command_step import CommandStep
-from shimbboleth.buildkite.pipeline_config._types import rubystr
 from shimbboleth.buildkite.pipeline_config.group_step import GroupStep
 from shimbboleth.buildkite.pipeline_config.notify import Notify
-from shimbboleth.buildkite.pipeline_config._nested_steps import (
-    NestedWaitStep,
-    NestedInputStep,
-    NestedBlockStep,
-    NestedCommandStep,
-    NestedTriggerStep,
-)
-from shimbboleth.buildkite.pipeline_config._parse_steps import parse_steps
 
 
 ALL_STEP_TYPES = (
@@ -34,9 +24,13 @@ ALL_STEP_TYPES = (
     GroupStep,
 )
 
-StepsT: TypeAlias = list[
-    BlockStep | InputStep | CommandStep | WaitStep | TriggerStep | GroupStep
-]
+ALL_SUBSTEP_TYPES = (
+    BlockStep,
+    InputStep,
+    CommandStep,
+    WaitStep,
+    TriggerStep,
+)
 
 
 @lru_cache(maxsize=1)
@@ -58,10 +52,12 @@ def get_schema():
 
 
 class BuildkitePipeline(Model, extra=True):
-    steps: StepsT = field()
+    steps: list[
+        BlockStep | InputStep | CommandStep | WaitStep | TriggerStep | GroupStep
+    ] = field()
     """A list of steps"""
 
-    agents: dict[str, str] = field(default_factory=dict, json_loader=agents_from_json)
+    agents: dict[str, str] = field(default_factory=dict)
     """
     Query rules to target specific agents.
 
@@ -102,60 +98,5 @@ class BuildkitePipeline(Model, extra=True):
         return super().model_load(value)
 
 
-@BuildkitePipeline._json_loader_(
-    "steps",
-    json_schema_type=list[
-        BlockStep
-        | InputStep
-        | CommandStep
-        | WaitStep
-        | TriggerStep
-        | GroupStep
-        | NestedWaitStep
-        | NestedInputStep
-        | NestedBlockStep
-        | NestedCommandStep
-        | NestedTriggerStep
-        | Literal[
-            "block",
-            "manual",
-            "input",
-            "command",
-            "commands",
-            "script",
-            "wait",
-            "waiter",
-        ]
-    ],
-)
-def _load_steps(value: Any) -> StepsT:
-    return parse_steps(value)
-
-
-@BuildkitePipeline._json_loader_("env")
-def _load_env(
-    # NB: Unlike Command steps, invalid value types aren't allowed
-    value: dict[str, str | int | bool],
-) -> dict[str, str]:
-    return {k: rubystr(v) for k, v in value.items()}
-
-
-@BuildkitePipeline._json_loader_(
-    "notify",
-    json_schema_type=list[
-        Literal["github_check", "github_commit_status"] | BuildkitePipeline.NotifyT
-    ],
-)
-def _load_notify(
-    value: list[str | JSONObject],
-) -> list[BuildkitePipeline.NotifyT]:
-    from shimbboleth.buildkite.pipeline_config.notify import _parse_notify
-
-    ret = []
-    for index, elem in enumerate(value):
-        with ValidationError.context(index=index):
-            ret.append(_parse_notify(elem))
-    return ret
-
-
-# @TODO: We could just have one mondo _json_loader module, and import it here...
+# NB: import this at the enc. See the module docsting for more info.
+import shimbboleth.buildkite.pipeline_config._json_compat  # noqa: E402, F401

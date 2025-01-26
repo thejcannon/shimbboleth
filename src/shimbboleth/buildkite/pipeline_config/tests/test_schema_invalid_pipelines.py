@@ -124,7 +124,7 @@ class StepTestBase(PipelineTestBase):
         ),
         param(
             [None],
-            "Expected `None` to be a valid Buildkite pipeline step",
+            "Expected `None` to be of type `str | dict[str, typing.Any]",
             "[0]",
             id="null_step",
         ),

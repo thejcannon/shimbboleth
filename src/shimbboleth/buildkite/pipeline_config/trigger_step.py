@@ -5,11 +5,6 @@ from shimbboleth.internal.clay.model import field, FieldAlias, Model
 from shimbboleth.internal.clay.jsonT import JSONObject
 
 from shimbboleth.buildkite.pipeline_config.step import Step
-from shimbboleth.buildkite.pipeline_config._types import (
-    bool_from_json,
-    list_str_from_json,
-    skip_from_json,
-)
 
 
 class TriggerStep(Step, extra=False):
@@ -49,22 +44,20 @@ class TriggerStep(Step, extra=False):
     trigger: str
     """The slug of the pipeline to create a build"""
 
-    is_async: bool = field(
-        default=False, json_alias="async", json_loader=bool_from_json
-    )
+    is_async: bool = field(default=False, json_alias="async")
     """Whether to continue the build without waiting for the triggered step to complete"""
 
-    branches: list[str] = field(default_factory=list, json_loader=list_str_from_json)
+    branches: list[str] = field(default_factory=list)
     """Which branches will include this step in their builds"""
 
     build: Build | None = None
     """Attributes for the triggered build"""
 
     # NB: Passing an empty string is equivalent to false.
-    skip: bool | str = field(default=False, json_loader=skip_from_json)
+    skip: bool | str = field(default=False)
     """Whether to skip this step or not. Passing a string provides a reason for skipping this command"""
 
-    soft_fail: bool = field(default=False, json_loader=bool_from_json)
+    soft_fail: bool = field(default=False)
     """When true, failure of the triggered build will not cause the triggering build to fail"""
 
     label: str | None = None

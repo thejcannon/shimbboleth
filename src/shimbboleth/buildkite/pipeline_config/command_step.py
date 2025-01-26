@@ -7,24 +7,15 @@ from shimbboleth.internal.clay.model import (
 )
 from shimbboleth.internal.clay.jsonT import JSONObject
 from shimbboleth.internal.clay.validation import (
-    SingleKeyDict,
-    ValidationError,
     Ge,
     Le,
-    Not,
     NonEmptyList,
     MatchesRegex,
 )
 
 from shimbboleth.buildkite.pipeline_config.step import Step
-from shimbboleth.buildkite.pipeline_config._agents import agents_from_json
 from shimbboleth.buildkite.pipeline_config._types import (
-    list_str_from_json,
     bool_from_json,
-    rubystr,
-    skip_from_json,
-    soft_fail_from_json,
-    soft_fail_to_json,
 )
 from shimbboleth.buildkite.pipeline_config._matrix import (
     MatrixArray,
@@ -121,28 +112,26 @@ class CommandStep(Step, extra=False):
         value: str | None = None
         """The signature value, a JWS compact signature with a detached body"""
 
-    agents: dict[str, str] = field(default_factory=dict, json_loader=agents_from_json)
+    agents: dict[str, str] = field(default_factory=dict)
     """
     Query rules to target specific agents.
 
     See https://buildkite.com/docs/agent/v3/cli-start#agent-targeting
     """
 
-    artifact_paths: list[str] = field(
-        default_factory=list, json_loader=list_str_from_json
-    )
+    artifact_paths: list[str] = field(default_factory=list)
     """The glob paths of artifacts to upload once this step has finished running"""
 
-    branches: list[str] = field(default_factory=list, json_loader=list_str_from_json)
+    branches: list[str] = field(default_factory=list)
     """Which branches will include this step in their builds"""
 
     cache: Cache = field(default_factory=lambda: CommandStep.Cache(paths=[]))
     """See: https://buildkite.com/docs/pipelines/hosted-agents/linux"""
 
-    cancel_on_build_failing: bool = field(default=False, json_loader=bool_from_json)
+    cancel_on_build_failing: bool = field(default=False)
     """Whether to cancel the job as soon as the build is marked as failing"""
 
-    command: list[str] = field(default_factory=list, json_loader=list_str_from_json)
+    command: list[str] = field(default_factory=list)
     """The commands to run on the agent"""
 
     concurrency: int | None = None
@@ -194,15 +183,12 @@ class CommandStep(Step, extra=False):
     """@TODO (missing description)"""
 
     # NB: Passing an empty string is equivalent to false.
-    skip: bool | str = field(default=False, json_loader=skip_from_json)
+    skip: bool | str = field(default=False)
     """Whether to skip this step or not. Passing a string provides a reason for skipping this command."""
 
     # NB: This differs from the upstream schema in that we "unpack"
     #  the `exit_status` object into the status.
-    # @TODO: Upstream allows 0
-    soft_fail: bool | NonEmptyList[Annotated[int, Not[Literal[0]]]] = field(
-        default=False, json_loader=soft_fail_from_json, json_dumper=soft_fail_to_json
-    )
+    soft_fail: bool | NonEmptyList[int] = field(default=False)
     """Allow specified non-zero exit statuses not to fail the build."""
 
     # @TODO: Zero is OK upstream?
@@ -217,118 +203,3 @@ class CommandStep(Step, extra=False):
     def __post_init__(self):
         # @TODO: Verify the concurrency_group fields (together)
         pass
-
-
-@CommandStep.Retry.Automatic._json_loader_("exit_status")
-def _load_exit_status(
-    value: Literal["*"] | int | list[int],
-) -> Literal["*"] | list[int]:
-    if isinstance(value, int):
-        return [value]
-    if value == "*":
-        return value
-    return value
-
-
-@CommandStep.Retry._json_loader_("automatic")
-def _load_automatic(
-    value: bool
-    | Literal["true", "false"]
-    | CommandStep.Retry.Automatic
-    | list[CommandStep.Retry.Automatic],
-) -> list[CommandStep.Retry.Automatic]:
-    if value in (False, "false"):
-        return []
-    elif value in (True, "true"):
-        return [CommandStep.Retry.Automatic(limit=2)]
-    elif isinstance(value, CommandStep.Retry.Automatic):
-        return [value]
-    return value
-
-
-@CommandStep._json_loader_("cache")
-def _load_cache(value: str | list[str] | CommandStep.Cache) -> CommandStep.Cache:
-    if isinstance(value, str):
-        return CommandStep.Cache(paths=[value])
-    if isinstance(value, list):
-        return CommandStep.Cache(paths=value)
-    return value
-
-
-@CommandStep.Retry._json_loader_("manual")
-def _load_manual(
-    value: bool | Literal["true", "false"] | CommandStep.Retry.Manual,
-) -> CommandStep.Retry.Manual:
-    if value in (False, "false"):
-        return CommandStep.Retry.Manual(allowed=False)
-    elif value in (True, "true"):
-        return CommandStep.Retry.Manual(allowed=True)
-    return value
-
-
-@CommandStep._json_loader_("env")
-def _convert_env(
-    # @TODO: Upstream allows value to be anything and ignores non-dict. WTF
-    value: JSONObject,
-) -> dict[str, str]:
-    return {
-        k: rubystr(v)
-        for k, v in value.items()
-        # NB: Upstream just ignores invalid types
-        if isinstance(v, (str, int, bool))
-    }
-
-
-@CommandStep._json_loader_(
-    "matrix",
-    json_schema_type=MatrixArray | SingleDimensionMatrix | MultiDimensionMatrix | None,
-)
-def _load_matrix(
-    value: MatrixArray | JSONObject | None,
-) -> MatrixArray | SingleDimensionMatrix | MultiDimensionMatrix | None:
-    if value is None:
-        return None
-    if isinstance(value, list):
-        return value
-    if isinstance(value, dict):
-        if isinstance(value["setup"], list):
-            return SingleDimensionMatrix.model_load(value)
-        return MultiDimensionMatrix.model_load(value)
-
-    # @TODO: Error on wrong type
-
-
-@CommandStep._json_loader_(
-    "notify",
-    json_schema_type=list[
-        Literal["github_check", "github_commit_status"] | Step.NotifyT
-    ],
-)
-def _load_notify(value: list[str | JSONObject]) -> list[Step.NotifyT]:
-    return CommandStep._parse_notify(value)
-
-
-@CommandStep._json_loader_("plugins")
-def _load_plugins(
-    value: dict[str, JSONObject | None]
-    | list[str | SingleKeyDict[str, JSONObject | None]],
-) -> list[CommandStep.Plugin]:
-    if isinstance(value, dict):
-        return [
-            CommandStep.Plugin(spec=spec, config=config)
-            for spec, config in value.items()
-        ]
-    ret = []
-    for index, elem in enumerate(value):
-        if isinstance(elem, str):
-            ret.append(CommandStep.Plugin(spec=elem, config=None))
-        else:
-            # NB: Because we aren't _assigning_ to a 'SingleKeyDict`, the validation doesn't
-            #   kick in. (Womp Womp)
-            if len(elem) > 1:
-                raise ValidationError(
-                    elem, expectation="have only one key", index=index
-                )
-            spec, config = next(iter(elem.items()))
-            ret.append(CommandStep.Plugin(spec=spec, config=config))
-    return ret

@@ -13,6 +13,7 @@ class _Service(Model, extra=False):
 
 # @TODO: Should we overload `__new__` (for convenience)?
 #   E.g. Notify(email="")
+#   I think so...
 class Notify(Model, extra=False):
     class Email(_Service, extra=False):
         address: str = field(json_alias="email")
