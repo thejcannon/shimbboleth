@@ -16,7 +16,6 @@ from typing import (
     cast,
 )
 
-
 from shimbboleth.buildkite.pipeline_config import BuildkitePipeline
 from shimbboleth.internal.clay.model import Model, FieldAlias
 from shimbboleth.internal.clay.jsonT import JSONObject
@@ -237,6 +236,28 @@ def _(
     return ret
 
 
+# ===== Step =====
+
+Step.Dependency._json_loader_("allow_failure")(load_bool)
+Step._json_loader_("allow_dependency_failure")(load_bool)
+
+
+@Step._json_loader_("depends_on", json_schema_type=str | list[str | Step.Dependency])
+@staticmethod
+def _(value: str | list[str | JSONObject]) -> list[Step.Dependency]:
+    if isinstance(value, str):
+        return [Step.Dependency(step=value)]
+    ret = []
+    for index, elem in enumerate(value):
+        with ValidationError.context(index=index):
+            ret.append(
+                Step.Dependency(step=elem)
+                if isinstance(elem, str)
+                else Step.Dependency.model_load(elem)
+            )
+    return ret
+
+
 # ===== CommandStep ====
 
 CommandStep._json_loader_("artifact_paths")(load_str_list)
@@ -331,17 +352,6 @@ def _(
 # ===== CommandStep.Retry =====
 
 
-@CommandStep.Retry.Automatic._json_loader_("exit_status")
-def _(
-    value: Literal["*"] | int | list[int],
-) -> Literal["*"] | list[int]:
-    if isinstance(value, int):
-        return [value]
-    if value == "*":
-        return value
-    return value
-
-
 @CommandStep.Retry._json_loader_("automatic")
 def _(
     value: bool
@@ -358,6 +368,17 @@ def _(
     return value
 
 
+@CommandStep.Retry.Automatic._json_loader_("exit_status")
+def _(
+    value: Literal["*"] | int | list[int],
+) -> Literal["*"] | list[int]:
+    if isinstance(value, int):
+        return [value]
+    if value == "*":
+        return value
+    return value
+
+
 @CommandStep.Retry._json_loader_("manual")
 def _(
     value: bool | Literal["true", "false"] | CommandStep.Retry.Manual,
@@ -369,8 +390,16 @@ def _(
     return value
 
 
+CommandStep.Retry.Manual._json_loader_("allowed")(load_bool)
+CommandStep.Retry.Manual._json_loader_("permit_on_passed")(load_bool)
+
 # ===== ManualStep =====
 
+ManualStep._json_loader_("branches")(load_str_list)
+ManualStep.Text._json_loader_("required")(load_bool)
+# NB: These are already handled (@TODO: although it'd ne nice to just re-declare them)
+#ManualStep.SingleSelect._json_loader_("required")(load_bool)
+#ManualStep.MultiSelect._json_loader_("required")(load_bool)
 
 @ManualStep.SingleSelect._json_loader_("multiple")
 def _(value: Literal[False, "false"]) -> Literal[False]:

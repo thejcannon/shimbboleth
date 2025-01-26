@@ -14,9 +14,6 @@ from shimbboleth.internal.clay.validation import (
 )
 
 from shimbboleth.buildkite.pipeline_config.step import Step
-from shimbboleth.buildkite.pipeline_config._types import (
-    bool_from_json,
-)
 from shimbboleth.buildkite.pipeline_config._matrix import (
     MatrixArray,
     SingleDimensionMatrix,
@@ -82,10 +79,10 @@ class CommandStep(Step, extra=False):
         class Manual(Model, extra=False):
             """See https://buildkite.com/docs/pipelines/configure/step-types/command-step#retry-attributes-manual-retry-attributes"""
 
-            allowed: bool = field(default=True, json_loader=bool_from_json)
+            allowed: bool = field(default=True)
             """Whether or not this job can be retried manually"""
 
-            permit_on_passed: bool = field(default=True, json_loader=bool_from_json)
+            permit_on_passed: bool = field(default=True)
             """Whether or not this job can be retried after it has passed"""
 
             reason: str | None = None

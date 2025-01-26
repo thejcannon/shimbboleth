@@ -5,8 +5,6 @@ from shimbboleth.internal.clay.validation import (
     NonEmptyList,
     MatchesRegex,
 )
-from shimbboleth.buildkite.pipeline_config._types import bool_from_json
-from shimbboleth.buildkite.pipeline_config._types import list_str_from_json
 from shimbboleth.buildkite.pipeline_config.step import Step
 
 
@@ -17,7 +15,7 @@ class _Option(Model):
     hint: str | None = None
     """The explanatory text that is shown after the label"""
 
-    required: bool = field(default=True, json_loader=bool_from_json)
+    required: bool = field(default=True)
     """Whether the field is required for form submission"""
 
 
@@ -91,7 +89,7 @@ class ManualStep(Step, extra=False):
             self.default = default
             self.multiple = True
 
-    branches: list[str] = field(default_factory=list, json_loader=list_str_from_json)
+    branches: list[str] = field(default_factory=list)
     """Which branches will include this step in their builds"""
 
     fields: list[Text | SingleSelect | MultiSelect] = field(default_factory=list)

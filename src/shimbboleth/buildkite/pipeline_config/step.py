@@ -18,12 +18,12 @@ class Step(Model):
         # @TODO: Make a PR upstream, this isn't required upstream?
         step: str
 
-        allow_failure: bool = field(default=False, json_loader=bool_from_json)
+        allow_failure: bool = field(default=False)
 
     key: Annotated[str, Not[UUID]] | None = field(default=None)
     """A unique identifier for a step, must not resemble a UUID"""
 
-    allow_dependency_failure: bool = field(default=False, json_loader=bool_from_json)
+    allow_dependency_failure: bool = field(default=False)
     """Whether to proceed with this step and further steps if a step named in the depends_on attribute fails"""
 
     depends_on: list[Dependency] = field(default_factory=list)
@@ -77,22 +77,6 @@ class Step(Model):
                     )
                 ret.append(notify)
         return ret
-
-
-@Step._json_loader_("depends_on", json_schema_type=str | list[str | Step.Dependency])
-@staticmethod
-def _load_depends_on(value: str | list[str | JSONObject]) -> list[Step.Dependency]:
-    if isinstance(value, str):
-        return [Step.Dependency(step=value)]
-    ret = []
-    for index, elem in enumerate(value):
-        with JSONLoadError.context(index=index):
-            ret.append(
-                Step.Dependency(step=elem)
-                if isinstance(elem, str)
-                else Step.Dependency.model_load(elem)
-            )
-    return ret
 
 
 # @TODO: Substep class? (e.g. branches field and friends)
