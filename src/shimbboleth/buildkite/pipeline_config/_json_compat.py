@@ -8,6 +8,12 @@ narrows them down to the specific types that the models expect (like `list[str]`
 """
 # Slaps roof of module - This baby can fit so much JSON in it.
 
+
+# @TODO: OK last one (I swear): We should use Descriptors so the Python side also accepts "wide"
+#   types. I think the hard part is the UX/ergonomics. I think maybe if we could get:
+#   `BK[T]` working it'd hit some sweet spot.
+#   E.g. `BK[bool]` accepts the stringy versions, `BK[list[str]]` accepts scalar, etc...
+
 from typing import (
     Any,
     Literal,
@@ -163,6 +169,7 @@ def dump_soft_fail(
 # @TODO: BK stores things in "k=v" format. What if there's duplicate keys?
 #   Oh God, I think they just pass those right along...
 @BuildkitePipeline._json_loader_("agents")
+# @TODO: (dict values) "Agent query rule values can't be an object or an array"
 def load_agents(value: list[str] | JSONObject) -> dict[str, str]:
     if isinstance(value, list):
         # @TODO: ignore non-strings
@@ -238,9 +245,16 @@ def _(
 
 
 @Notify.Slack._json_loader_("info")
-def _load_slack(value: str | Notify.Slack.Info) -> Notify.Slack.Info:
+def _(value: str | Notify.Slack.Info) -> Notify.Slack.Info:
     if isinstance(value, str):
         return Notify.Slack.Info.model_load({"channels": [value]})
+    return value
+
+
+@Notify.Slack.Info._json_loader_("channels")
+def _(value: str | list[str]) -> list[str]:
+    if isinstance(value, str):
+        return [value]
     return value
 
 

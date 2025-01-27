@@ -20,6 +20,7 @@ class Notify(Model, extra=False):
     class BasecampCampfire(_Service, extra=False):
         url: str = field(json_alias="basecamp_campfire")
 
+    # @TODO: Unpack "info" and repack for JSON
     class Slack(_Service, extra=False):
         class Info(Model, extra=False):
             # @VALIDATE: The `slack` notification is invalid: Each channel should be defined as
@@ -35,6 +36,7 @@ class Notify(Model, extra=False):
     class Pagerduty(_Service, extra=False):
         change_event: str = field(json_alias="pagerduty_change_event")
 
+    # @TODO: Unpack "info" and repack for JSON
     class GitHubCommitStatus(_Service, extra=False):
         class Info(Model, extra=True):
             # @TODO: JSON: allowed to be a boolean?
@@ -42,13 +44,14 @@ class Notify(Model, extra=False):
 
         info: Info = field(default_factory=Info, json_alias="github_commit_status")
 
+    # @TODO: Unpack "info" and repack for JSON
     class GitHubCheck(_Service, extra=False):
         # NB: See https://github.com/buildkite/pipeline-schema/pull/117#issuecomment-2537680177
         # @TODO: JSON can be null
         info: dict[str, str] = field(default_factory=dict, json_alias="github_check")
 
     @overload
-    def __new__(cls, *, email: str, if_condition: str | None = None): ...
+    def __new__(cls, *, email: str, if_condition: str | None = None) -> Email: ...
 
     @overload
     def __new__(cls, *, basecamp_campfire: str, if_condition: str | None = None): ...

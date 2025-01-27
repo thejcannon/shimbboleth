@@ -7,6 +7,7 @@ from typing import TypeVar, Generic, Any
 
 from shimbboleth.buildkite.pipeline_config.tests.cached_bk_api import CachedAPITransport
 from shimbboleth.buildkite.pipeline_config import (
+    BuildkitePipeline,
     BlockStep,
     InputStep,
     CommandStep,
@@ -17,6 +18,14 @@ from shimbboleth.buildkite.pipeline_config import (
 )
 from shimbboleth.internal.clay.model import Model
 import jsonschema
+
+
+# @TODO: Move this to `marks`?
+def pytest_configure(config):
+    config.addinivalue_line(
+        "markers",
+        "upstream_schema_invalid: although the config is valid, the upstream JSON Schema considers it invalid",
+    )
 
 
 ModelT = TypeVar("ModelT", bound=Model)
@@ -72,6 +81,8 @@ ALL_SUBSTEP_TYPE_PARAMS = [
     for step_type_param in STEP_TYPE_PARAMS.values()
     if step_type_param.id != "group"
 ]
+BOOLVALS = {True: True, False: False, "true": True, "false": False}
+SKIP_VALS = (True, "true", False, "false", "", "reason")
 
 # === Fixtures ===
 
@@ -114,7 +125,9 @@ def cached_bk_api(pytestconfig: pytest.Config):
     """
     Fixture for a `httpx.Client` around the Buildkite API, which caches responses.
     """
-    # @TODO: Can we mark as integration if the token isn't set?
+    # @TODO: Can we mark as skip if the token isn't set?
+    #   (and/or if we haven't pulled from the cache?')
+    # E.g. run it if we can, safely but if skip if not, and if asked to run it always run it
 
     return httpx.Client(
         base_url="https://api.buildkite.com/v2/",
@@ -122,3 +135,12 @@ def cached_bk_api(pytestconfig: pytest.Config):
         transport=CachedAPITransport(pytestconfig.cache),
     )
     # @TODO: Cache the results in the GitHub Actions workflow?
+
+
+# @TODO: move to yamlgen
+@pytest.fixture()
+def load_pipeline():
+    def inner(config, *, id=None):
+        return BuildkitePipeline.model_load(config)
+
+    return inner

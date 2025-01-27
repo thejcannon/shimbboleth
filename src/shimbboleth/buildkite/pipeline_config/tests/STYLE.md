@@ -1,0 +1,3 @@
+- Fixtures are kw-only, params are positional
+- If several cases are logically the same, use `assert x == y== z`
+- Use double underscore in test names to separate logicalparts (e.g. `test_<field_name>__<condition>`)

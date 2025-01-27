@@ -7,6 +7,8 @@ if TYPE_CHECKING:
     JSONObject: TypeAlias = MutableMapping[str, JSON]
     JSONArray: TypeAlias = Sequence[JSON]
 else:
+    # @TODO: Not techincally "Any" ("Any JSON"), but how to make that not shit
+    #   (especially in the schema)
     JSON = Any
     JSONObject: TypeAlias = dict[str, JSON]
     JSONArray: TypeAlias = list[JSON]

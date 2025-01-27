@@ -111,9 +111,6 @@ class StepTestBase(PipelineTestBase):
 @pytest.mark.parametrize(
     "config",
     [
-        param([], id="empty-steps"),
-        param(["block"], id="string-block"),
-        param(["manual"], id="string-manual", marks=UPSTREAM_SCHEMA_INVALID),
         param(["command"], id="string-command", marks=UPSTREAM_SCHEMA_INVALID),
         param(["commands"], id="string-commands", marks=UPSTREAM_SCHEMA_INVALID),
         param(["script"], id="string-script", marks=UPSTREAM_SCHEMA_INVALID),
@@ -125,128 +122,10 @@ class StepTestBase(PipelineTestBase):
         # param([{"command": None}], id="command-null"),
         param([{"input": None}], id="input-null", marks=UPSTREAM_SCHEMA_INVALID),
         param([{"wait": None}], id="wait-null", marks=UPSTREAM_SCHEMA_INVALID),
-        param(
-            {
-                "steps": [],
-                "agents": {
-                    "str": "string",
-                    "int": "0",
-                    "bool": "true",
-                    "list": '["one", "two"]',
-                    "obj": '{"key"=>"value"}',
-                    "has-an-equal": "key=value",
-                },
-            },
-            id="agents_dict",
-        ),
-        param(
-            {
-                "steps": [],
-                "env": {
-                    "string": "string",
-                    "int": 0,
-                    "bool": True,
-                },
-            },
-            id="env_with_python_types",
-        ),
-        param(
-            {"steps": [], "env": {"string": "string", "int": "0", "bool": "true"}},
-            id="env_with_string_types",
-        ),
-        param({"steps": [], "notify": ["github_check"]}, id="notify_github_check"),
-        param(
-            {"steps": [], "notify": ["github_commit_status"]},
-            id="notify_github_commit_status",
-        ),
-        param(
-            {"steps": [], "notify": [{"email": "email@example.com"}]}, id="notify_email"
-        ),
-        param(
-            {"steps": [], "notify": [{"webhook": "https://example.com"}]},
-            id="notify_webhook",
-        ),
-        param(
-            {
-                "steps": [],
-                "notify": [{"pagerduty_change_event": "pagerduty_change_event"}],
-            },
-            id="notify_pagerduty",
-        ),
-        param(
-            {"steps": [], "notify": [{"basecamp_campfire": BASECAMP_CAMPFIRE_URL}]},
-            id="notify_basecamp",
-        ),
-        param(
-            {"steps": [], "notify": [{"slack": "#general"}]}, id="notify_slack_simple"
-        ),
-        param(
-            {"steps": [], "notify": [{"slack": {"channels": ["#general"]}}]},
-            id="notify_slack_channels",
-        ),
-        param(
-            {
-                "steps": [],
-                "notify": [{"slack": {"channels": ["#general"], "message": "message"}}],
-            },
-            id="notify_slack_full",
-        ),
-        param(
-            {"steps": [], "notify": [{"github_commit_status": {"context": "context"}}]},
-            id="notify_github_commit_status_context",
-        ),
-        param(
-            {"steps": [], "notify": [{"github_check": {}}]},
-            id="notify_github_check_empty",
-        ),
-        # @TEST: ...
-        # param(
-        #     {"steps": [], "notify": [{"github_check": None}]},
-        #     id="notify_github_check_null",
-        # ),
-        param(
-            {"steps": [], "notify": [{"github_check": {"name": "name"}}]},
-            id="notify_github_check_name",
-        ),
         # @TEST: Extra keys OK
     ],
 )
 class Test_ValidPipeline(PipelineTestBase):
-    pass
-
-
-@pytest.mark.parametrize("steptype_param", ALL_STEP_TYPE_PARAMS)
-@pytest.mark.parametrize(
-    "step",
-    [
-        *(
-            param({"allow_dependency_failure": value}, id="allow_dependency_failrue")
-            for value in BOOLVALS
-        ),
-        param({"if": "build.number == 1"}, id="if"),
-        param({"depends_on": "scalar"}, id="depends_on"),
-        param({"depends_on": ["string"]}, id="depends_on"),
-        param({"depends_on": [{"step": "id"}]}, id="depends_on"),
-        *(
-            param(
-                {"depends_on": [{"step": "step_id", "allow_failure": value}]},
-                id="depends_on_allow_failure",
-            )
-            for value in BOOLVALS
-        ),
-        param({"key": "key"}, id="key-id-identifier"),
-        param({"id": "id"}, id="key-id-identifier"),
-        param({"identifier": "identifier"}, id="key-id-identifier"),
-        param({"key": "key", "id": "id"}, id="key-id-identifier"),
-        param({"key": "key", "identifier": "identifier"}, id="key-id-identifier"),
-        param({"id": "id", "identifier": "identifier"}, id="key-id-identifier"),
-        param(
-            {"key": "key", "id": "id", "identifier": "identifier"},
-            id="key-id-identifier",
-        ),
-    ],
-)
-class Test_AnyStepType(StepTestBase):
     pass
 
 
