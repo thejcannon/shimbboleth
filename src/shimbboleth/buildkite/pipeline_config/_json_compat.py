@@ -140,6 +140,8 @@ def load_skip(value: str | bool) -> str | bool:
     return value
 
 
+# @TODO: Coerce all 0s to `False` so `if soft_fail` is legit even in the case of a list
+# @TEST/@TODO: Deduplicate and sort.
 def load_soft_fail(
     value: bool | Literal["true", "false"] | list[ExitStatus],
 ) -> bool | NonEmptyList[int]:

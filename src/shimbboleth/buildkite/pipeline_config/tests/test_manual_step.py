@@ -89,10 +89,12 @@ class TestSelectField:
         assert load_select_field({"multiple": value}).multiple == expected
 
     def test_multi_select_default(self, *, load_select_field):
-        assert load_select_field({
-            "multiple": True,
-            "default": "default"
-        }, id="scalar").default == load_select_field({
-            "multiple": True,
-            "default": ["default"]
-        }, id="list").default == ["default"]
+        assert (
+            load_select_field(
+                {"multiple": True, "default": "default"}, id="scalar"
+            ).default
+            == load_select_field(
+                {"multiple": True, "default": ["default"]}, id="list"
+            ).default
+            == ["default"]
+        )

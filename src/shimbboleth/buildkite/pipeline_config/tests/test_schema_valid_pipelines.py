@@ -209,35 +209,6 @@ class StepTestBase(PipelineTestBase):
         param({"matrix": ["string", 0, True]}, id="matrix--raw-array"),
         param({"matrix": {"setup": ["value"]}}, id="matrix--single-dim"),
         param(
-            {"matrix": {"setup": ["value"], "adjustments": [{"with": "newvalue"}]}},
-            id="matrix--single-dim-with-adjustment",
-            marks=UPSTREAM_SCHEMA_INVALID,
-        ),
-        param(
-            {
-                "matrix": {
-                    "setup": ["value"],
-                    "adjustments": [{"with": "newvalue", "soft_fail": True}],
-                }
-            },
-            # @TODO: more soft_fail types
-            id="matrix--single-dim-with-adjustment-with-soft_fail",
-            marks=UPSTREAM_SCHEMA_INVALID,
-        ),
-        *(
-            param(
-                {
-                    "matrix": {
-                        "setup": ["value"],
-                        "adjustments": [{"with": "newvalue", "skip": input}],
-                    }
-                },
-                id="matrix-single-dim---skip",
-                marks=UPSTREAM_SCHEMA_INVALID,
-            )
-            for input in SKIP_VALS
-        ),
-        param(
             {"matrix": {"setup": {"key1": ["value"], "key2": ["value"]}}},
             id="matrix-multi-dim-multiple-keys",
         ),
@@ -250,32 +221,7 @@ class StepTestBase(PipelineTestBase):
             {"matrix": {"setup": {"key1": []}, "adjustments": []}},
             id="matrix-multi-dim-emtpy-key-empty-adjustments",
         ),
-        param(
-            {
-                "matrix": {
-                    "setup": {"key": ["value"]},
-                    "adjustments": [
-                        {
-                            "with": {"key": "newvalue"},
-                            "soft_fail": [{"exit_status": "*"}, {"exit_status": 0}],
-                        }
-                    ],
-                }
-            },
-            id="matrix",
-        ),
-        *(
-            param(
-                {
-                    "matrix": {
-                        "setup": {"key1": []},
-                        "adjustments": [{"with": {"key1": ""}, "skip": input}],
-                    }
-                },
-                id="matrix",
-            )
-            for input in SKIP_VALS
-        ),
+        # =====
         param(
             {
                 "notify": [

@@ -87,6 +87,11 @@ SKIP_VALS = {
     "": False,
     "reason": "reason",
 }
+SOFT_FAIL_VALS = (
+    *BOOLVALS.items(),
+    ([{"exit_status": 0}], [0]),
+    ([{"exit_status": 1}, {"exit_status": -1}], [1, -1]),
+)
 
 # === Fixtures ===
 
