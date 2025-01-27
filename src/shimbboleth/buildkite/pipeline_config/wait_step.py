@@ -19,6 +19,8 @@ class WaitStep(SubStep, extra=False):
     wait: str | None = None
     """Waits for previous steps to pass before continuing"""
 
+    # NB: We don't canonicalize this, in case someone is using this
+    #   to encode information.
     type: Literal["wait", "waiter"] = "wait"
 
     # (NB: These are somewhat meaningless, since they never appear in the UI)

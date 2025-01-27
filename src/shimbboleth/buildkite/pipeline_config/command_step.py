@@ -242,6 +242,8 @@ class CommandStep(CommandStep, extra=False):
     timeout_in_minutes: Annotated[int, Ge(1)] | None = None
     """The number of minutes to time out a job"""
 
+    # NB: We don't canonicalize this, in case someone is using this
+    #   to encode information.
     type: Literal["script", "command", "commands"] = "command"
 
     name: ClassVar = FieldAlias("label", json_mode="prepend")

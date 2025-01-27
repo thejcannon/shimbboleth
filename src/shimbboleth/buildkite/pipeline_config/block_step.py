@@ -20,6 +20,8 @@ class BlockStep(ManualStep, extra=False):
     block: str | None = field(default=None)
     """The label of the block step"""
 
+    # NB: We don't canonicalize this, in case someone is using this
+    #   to encode information.
     type: Literal["block", "manual"] = "block"
 
     label: ClassVar = FieldAlias("block", json_mode="prepend")

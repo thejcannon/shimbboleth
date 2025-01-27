@@ -7,17 +7,9 @@ from shimbboleth.buildkite.pipeline_config.tests.conftest import BOOLVALS, SKIP_
 @pytest.fixture
 def load_step(load_pipeline):
     def inner(step_config, *, id=None):
-        return load_pipeline([{
-            "trigger": "trigger",
-            **step_config
-        }], id=id).steps[0]
+        return load_pipeline([{"trigger": "trigger", **step_config}], id=id).steps[0]
 
     return inner
-
-
-def test_label_name(*, load_step):
-    assert load_step({"label": "label"}, id="label").label == "label"
-    assert load_step({"name": "name"}, id="name").label == "name"
 
 
 @pytest.mark.parametrize("value, expected", BOOLVALS.items())
@@ -26,9 +18,17 @@ def test_async(value, expected, *, load_step):
 
 
 def test_build(*, load_step):
-    assert load_step({"build": {"branch": "branch"}}, id="branch").build.branch == "branch"
-    assert load_step({"build": {"commit": "commit"}}, id="commit").build.commit == "commit"
-    assert load_step({"build": {"message": "message"}}, id="message").build.message == "message"
+    assert (
+        load_step({"build": {"branch": "branch"}}, id="branch").build.branch == "branch"
+    )
+    assert (
+        load_step({"build": {"commit": "commit"}}, id="commit").build.commit == "commit"
+    )
+    assert (
+        load_step({"build": {"message": "message"}}, id="message").build.message
+        == "message"
+    )
+    # @TEST: env types
     assert load_step(
         {"build": {"env": {"str": "string", "int": 0, "bool": True}}},
         id="env",

@@ -24,8 +24,7 @@ def load_step(load_pipeline):
 def test_label_name(*, load_step):
     assert load_step({}, id="group").group == "group"
     assert load_step({"name": "name"}, id="name").group == "name"
-    step = load_step({"label": "label", "name": "name"}, id="both")
-    assert step.group == "label"
+    assert load_step({"label": "label", "name": "name"}, id="both").group == "label"
 
 
 def test_steps(*, load_step):
