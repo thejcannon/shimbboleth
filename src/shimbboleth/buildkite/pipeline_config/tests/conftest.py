@@ -82,7 +82,11 @@ ALL_SUBSTEP_TYPE_PARAMS = [
     if step_type_param.id != "group"
 ]
 BOOLVALS = {True: True, False: False, "true": True, "false": False}
-SKIP_VALS = (True, "true", False, "false", "", "reason")
+SKIP_VALS = {
+    **BOOLVALS,
+    "": False,
+    "reason": "reason",
+}
 
 # === Fixtures ===
 

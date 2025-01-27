@@ -35,5 +35,5 @@ class GroupStep(Step, extra=False):
     ] = field()
     """A list of steps"""
 
-    name: ClassVar = FieldAlias("group", json_mode="append")
-    label: ClassVar = FieldAlias("group", json_mode="append")
+    name: ClassVar = FieldAlias("group", json_mode="prepend")
+    label: ClassVar = FieldAlias("group", json_mode="prepend")

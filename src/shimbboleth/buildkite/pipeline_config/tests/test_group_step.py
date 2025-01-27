@@ -1,45 +1,88 @@
 import pytest
-from pytest import param
 
-from shimbboleth.buildkite.pipeline_config import BuildkitePipeline, GroupStep, WaitStep
-from shimbboleth.buildkite.pipeline_config.tests.conftest import (
-    STEP_TYPE_PARAMS,
-    SKIP_VALS,
+from shimbboleth.buildkite.pipeline_config import (
+    BuildkitePipeline,
+    GroupStep,
+    WaitStep,
+    Notify,
 )
-from shimbboleth.buildkite.pipeline_config.tests.test_schema_valid_pipelines import (
-    StepTestBase,
-    BASECAMP_CAMPFIRE_URL,
-)
+from shimbboleth.buildkite.pipeline_config.tests.conftest import BOOLVALS, SKIP_VALS
+
+BASECAMP_CAMPFIRE_URL = "https://3.basecamp.com/123456/integrations/abcdef/buckets/1234567/chats/89012345/lines"
 
 
-@pytest.mark.parametrize("steptype_param", [STEP_TYPE_PARAMS["group"]])
-@pytest.mark.parametrize(
-    "step",
-    [
-        param({"group": "group", "label": "label", "steps": ["wait"]}, id="label"),
-        param({"group": "group", "name": "name", "steps": ["wait"]}, id="name"),
-        param({"group": "group", "label": "label", "name": "name", "steps": ["wait"]}, id="label_and_name"),
-        param(
-            {
-                "group": "group",
-                "notify": [
-                    "github_check",
-                    "github_commit_status",
-                    {"basecamp_campfire": BASECAMP_CAMPFIRE_URL},
-                    {"slack": "#general"},
-                    {"slack": {"channels": ["#general"]}},
-                    {"slack": {"channels": ["#general"], "message": "message"}},
-                    {"github_commit_status": {"context": "context"}},
-                    {"github_check": {"name": "name"}},
-                ],
-                "steps": ["wait"]
-            },
-            id="notify",
-        ),
-        *[param({"group": "group", "skip": value, "steps": ["wait"]}, id=f"skip_{value}") for value in SKIP_VALS],
-        param({"group": "group", "steps": ["wait"]}, id="steps_single"),
-        param({"group": "group", "steps": ["wait", "wait"]}, id="steps_multiple"),
-    ],
-)
-class Test_GroupStep(StepTestBase):
-    pass
+@pytest.fixture
+def load_step(load_pipeline):
+    def inner(step_config, *, id=None):
+        return load_pipeline(
+            [{"group": "group", "steps": ["wait"], **step_config}], id=id
+        ).steps[0]
+
+    return inner
+
+
+def test_label_name(*, load_step):
+    assert load_step({}, id="group").group == "group"
+    assert load_step({"name": "name"}, id="name").group == "name"
+    step = load_step({"label": "label", "name": "name"}, id="both")
+    assert step.group == "label"
+
+
+def test_steps(*, load_step):
+    assert load_step({}, id="single").steps == [WaitStep()]
+    assert load_step({"steps": ["wait", "wait"]}, id="multiple").steps == [
+        WaitStep(),
+        WaitStep(),
+    ]
+
+
+def test_notify__github_check(*, load_step):
+    assert (
+        load_step({"notify": ["github_check"]}, id="string").notify
+        == load_step({"notify": [{"github_check": {}}]}, id="dict").notify
+        == [Notify.GitHubCheck()]
+    )
+
+
+def test_notify__github_commit_status(*, load_step):
+    assert load_step({"notify": ["github_commit_status"]}, id="string").notify == [
+        Notify.GitHubCommitStatus()
+    ]
+    assert load_step(
+        {"notify": [{"github_commit_status": {"context": "context"}}]},
+        id="with-context",
+    ).notify == [
+        Notify.GitHubCommitStatus(
+            info=Notify.GitHubCommitStatus.Info(context="context")
+        )
+    ]
+
+
+def test_notify__basecamp_campfire(*, load_step):
+    assert load_step(
+        {"notify": [{"basecamp_campfire": BASECAMP_CAMPFIRE_URL}]}
+    ).notify == [Notify.BasecampCampfire(url=BASECAMP_CAMPFIRE_URL)]
+
+
+def test_notify__slack(*, load_step):
+    assert (
+        load_step({"notify": [{"slack": "#general"}]}, id="string").notify
+        == load_step(
+            {"notify": [{"slack": {"channels": "#general"}}]}, id="channels-string"
+        ).notify
+        == load_step(
+            {"notify": [{"slack": {"channels": ["#general"]}}]}, id="channels-list"
+        ).notify
+        == [Notify.Slack(info=Notify.Slack.Info(channels=["#general"]))]
+    )
+    assert load_step(
+        {"notify": [{"slack": {"channels": ["#general"], "message": "message"}}]},
+        id="with-message",
+    ).notify == [
+        Notify.Slack(info=Notify.Slack.Info(channels=["#general"], message="message"))
+    ]
+
+
+@pytest.mark.parametrize("value, expected", SKIP_VALS.items())
+def test_skip(value, expected, *, load_step):
+    assert load_step({"skip": value}).skip == expected

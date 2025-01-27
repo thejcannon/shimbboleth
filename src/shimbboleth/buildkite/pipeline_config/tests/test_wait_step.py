@@ -29,4 +29,7 @@ def test_wait_null(*, load_pipeline):
 
 @pytest.mark.parametrize("value, expected", BOOLVALS.items())
 def test_continue_on_failure(value, expected, *, load_step):
-    assert load_step({"type": "wait", "continue_on_failure": value}).continue_on_failure == expected
+    assert (
+        load_step({"type": "wait", "continue_on_failure": value}).continue_on_failure
+        == expected
+    )
