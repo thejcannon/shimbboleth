@@ -135,13 +135,14 @@ class TestSingleDimMatrix:
     # @TODO: helper method
 
     def test_simple(self, *, load_step):
-        assert load_step(
-            {"matrix": {"setup": ["value"]}},
-            id="no-adjustments"
-        ).matrix == load_step(
-            {"matrix": {"setup": ["value"], "adjustments": []}},
-            id="no-empty-adjustments"
-        ).matrix == CommandStep.Matrix.SingleDim(setup=["value"])
+        assert (
+            load_step({"matrix": {"setup": ["value"]}}, id="no-adjustments").matrix
+            == load_step(
+                {"matrix": {"setup": ["value"], "adjustments": []}},
+                id="no-empty-adjustments",
+            ).matrix
+            == CommandStep.Matrix.SingleDim(setup=["value"])
+        )
 
     def test_with_adjustments(self, *, load_step):
         assert load_step(

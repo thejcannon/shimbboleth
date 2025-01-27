@@ -29,28 +29,26 @@ from functools import wraps
 import pytest
 from pytest import param
 import yaml
-from shimbboleth.buildkite.pipeline_config import BuildkitePipeline, Notify
-from shimbboleth.buildkite.pipeline_config.tests.test_schema_valid_pipelines import (
-    UPSTREAM_SCHEMA_INVALID,
-)
+from shimbboleth.buildkite.pipeline_config import BuildkitePipeline
 
 PIPELINES_DIR = Path(__file__).parent / "generated-yamls"
 
 
 @pytest.fixture
-def model_load(request):
+def load_pipeline(request):
     def persistented_model_load(config, *, id=None):
         yamls_dir = PIPELINES_DIR / request.node.module.__name__
         yamls_dir.mkdir(exist_ok=True, parents=True)
         # @TODO: assert this file doesn't exist in the tempdir?
-        #   Alternatively, start adding indexes
 
-        if False:
-            # @TODO: Use id
-            (yamls_dir / request.node.name).with_suffix(".yaml").write_text(
-                # @TODO: This should match whatever formatting we expect
-                yaml.dump(config, default_flow_style=False)
-            )
+        name = request.node.name
+        if id is not None:
+            name += f"@{id}"
+
+        (yamls_dir / request.node.name).with_suffix(".yaml").write_text(
+            # @TODO: This should match whatever formatting we expect
+            yaml.dump(config, default_flow_style=False)
+        )
 
         return BuildkitePipeline.model_load(config)
 

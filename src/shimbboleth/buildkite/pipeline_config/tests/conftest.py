@@ -5,7 +5,11 @@ import os
 from dataclasses import dataclass
 from typing import TypeVar, Generic, Any
 
+
 from shimbboleth.buildkite.pipeline_config.tests.cached_bk_api import CachedAPITransport
+from shimbboleth.buildkite.pipeline_config.tests.yamlgen import (
+    load_pipeline as load_pipeline,
+)
 from shimbboleth.buildkite.pipeline_config import (
     BuildkitePipeline,
     BlockStep,
@@ -20,7 +24,6 @@ from shimbboleth.internal.clay.model import Model
 import jsonschema
 
 
-# @TODO: Move this to `marks`?
 def pytest_configure(config):
     config.addinivalue_line(
         "markers",
@@ -96,16 +99,6 @@ SOFT_FAIL_VALS = (
 # === Fixtures ===
 
 
-@pytest.fixture(params=ALL_STEP_TYPE_PARAMS)
-def all_step_types(request) -> StepTypeParam:
-    return request.param
-
-
-@pytest.fixture(params=ALL_SUBSTEP_TYPE_PARAMS)
-def all_substep_types(request) -> StepTypeParam:
-    return request.param
-
-
 @pytest.fixture(scope="session")
 def generated_schema():
     return jsonschema.Draft202012Validator(
@@ -144,12 +137,3 @@ def cached_bk_api(pytestconfig: pytest.Config):
         transport=CachedAPITransport(pytestconfig.cache),
     )
     # @TODO: Cache the results in the GitHub Actions workflow?
-
-
-# @TODO: move to yamlgen
-@pytest.fixture()
-def load_pipeline():
-    def inner(config, *, id=None):
-        return BuildkitePipeline.model_load(config)
-
-    return inner
