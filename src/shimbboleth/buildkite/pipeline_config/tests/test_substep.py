@@ -1,3 +1,6 @@
+"""
+Tests using valid pipelines for all substep types (all step types except group steps).
+"""
 import pytest
 
 from shimbboleth.buildkite.pipeline_config.tests.conftest import ALL_SUBSTEP_TYPE_PARAMS

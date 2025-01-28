@@ -8,7 +8,7 @@ from typing import TypeVar, Generic, Any
 from shimbboleth.buildkite.pipeline_config.tests.cached_bk_api import CachedAPITransport
 from shimbboleth.buildkite.pipeline_config.tests.yamlgen import (
     load_pipeline as load_pipeline,
-    load_invalid_pipeline as load_invalid_pipeline,
+    invalid_pipeline as invalid_pipeline,
 )
 from shimbboleth.buildkite.pipeline_config import (
     BlockStep,

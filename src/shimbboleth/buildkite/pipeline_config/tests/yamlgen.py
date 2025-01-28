@@ -67,17 +67,17 @@ def load_pipeline(request):
 
 
 @pytest.fixture
-def load_invalid_pipeline(request, load_pipeline):
+def invalid_pipeline(request, load_pipeline):
     def persistented_model_load(
         config,
         *,
         error,
         path,
         id=None,
-        # @TODO: upstream_schema_valid?
+        upstream_schema_valid = False
     ):
         with pytest.raises(ValidationError) as e:
-            load_pipeline(config, id=id, upstream_schema_invalid=True)
+            load_pipeline(config, id=id, upstream_schema_invalid=not upstream_schema_valid)
         assert error in str(e.value)
         assert f"Path: {path}\n" in str(e.value) + "\n"
 
