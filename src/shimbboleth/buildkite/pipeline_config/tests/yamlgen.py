@@ -42,10 +42,9 @@ def load_pipeline(request):
         yamls_dir.mkdir(exist_ok=True, parents=True)
         # @TODO: assert this file doesn't exist in the tempdir?
         docs = [config]
-        name = request.node.nodeid.split("::",1)[-1]
+        name = request.node.nodeid.split("::", 1)[-1]
         if id is not None:
             name += f"@{id}"
-
 
         if request.node.get_closest_marker("upstream_schema_invalid"):
             docs.insert(0, {})

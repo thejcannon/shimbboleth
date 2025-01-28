@@ -7,12 +7,14 @@ from shimbboleth.buildkite.pipeline_config.tests.conftest import BOOLVALS, SKIP_
 @pytest.fixture
 def load_step(load_pipeline):
     def inner(step_config, *, id=None):
-        return load_pipeline({"steps": [{"trigger": "trigger", **step_config}]}, id=id).steps[0]
+        return load_pipeline(
+            {"steps": [{"trigger": "trigger", **step_config}]}, id=id
+        ).steps[0]
 
     return inner
 
 
-@pytest.mark.parametrize("value, expected", BOOLVALS.items())
+@pytest.mark.parametrize("value, expected", BOOLVALS)
 def test_async(value, expected, *, load_step):
     assert load_step({"async": value}).is_async == expected
 
@@ -39,11 +41,11 @@ def test_build(*, load_step):
     ).build.meta_data == {"str": "string", "int": 0, "bool": True}
 
 
-@pytest.mark.parametrize("value, expected", SKIP_VALS.items())
+@pytest.mark.parametrize("value, expected", SKIP_VALS)
 def test_skip(value, expected, *, load_step):
     assert load_step({"skip": value}).skip == expected
 
 
-@pytest.mark.parametrize("value, expected", BOOLVALS.items())
+@pytest.mark.parametrize("value, expected", BOOLVALS)
 def test_soft_fail(value, expected, *, load_step):
     assert load_step({"soft_fail": value}).soft_fail == expected

@@ -22,7 +22,7 @@ def load_step(load_pipeline, request):
     return inner
 
 
-@pytest.mark.parametrize("value, expected", BOOLVALS.items())
+@pytest.mark.parametrize("value, expected", BOOLVALS)
 def test_allow_dependency_failure(value, expected, *, load_step):
     assert (
         load_step({"allow_dependency_failure": value}).allow_dependency_failure
@@ -43,7 +43,7 @@ def test_depends_on(*, load_step):
     )
 
 
-@pytest.mark.parametrize("value, expected", BOOLVALS.items())
+@pytest.mark.parametrize("value, expected", BOOLVALS)
 def test_depends_on__allow_failure(value, expected, *, load_step):
     assert (
         load_step(

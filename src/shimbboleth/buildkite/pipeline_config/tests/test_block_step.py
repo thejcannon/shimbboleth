@@ -6,7 +6,9 @@ from shimbboleth.buildkite.pipeline_config import BuildkitePipeline, BlockStep
 @pytest.fixture
 def load_step(load_pipeline):
     def inner(step_config, *, id=None):
-        return load_pipeline({"steps": [{**step_config, "type": "block"}]}, id=id).steps[0]
+        return load_pipeline(
+            {"steps": [{**step_config, "type": "block"}]}, id=id
+        ).steps[0]
 
     return inner
 

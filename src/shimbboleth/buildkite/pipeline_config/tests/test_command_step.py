@@ -14,7 +14,9 @@ from shimbboleth.buildkite.pipeline_config.tests.conftest import (
 @pytest.fixture
 def load_step(load_pipeline, request):
     def inner(step_fields, *, id=None):
-        return load_pipeline({"steps": [{**step_fields, "type": "command"}]}, id=id).steps[0]
+        return load_pipeline(
+            {"steps": [{**step_fields, "type": "command"}]}, id=id
+        ).steps[0]
 
     return inner
 
@@ -74,7 +76,7 @@ def test_cache(*, load_step):
     assert step.cache.name == "name"
 
 
-@pytest.mark.parametrize("value, expected", BOOLVALS.items())
+@pytest.mark.parametrize("value, expected", BOOLVALS)
 def test_cancel_on_build_failing(value, expected, *, load_step):
     assert (
         load_step({"cancel_on_build_failing": value}).cancel_on_build_failing
@@ -131,192 +133,202 @@ def test_matrix_array(*, load_step):
     assert load_step({"matrix": ["string", 0, True]}).matrix == ["string", 0, True]
 
 
-class TestSingleDimMatrix:
-    # @TODO: helper method
+class TestMatrix:
+    @pytest.fixture
+    @staticmethod
+    def load_matrix(load_pipeline):
+        def inner(matrix_config, **kwargs):
+            return (
+                load_pipeline({"steps": [{"matrix": matrix_config}]}, **kwargs)
+                .steps[0]
+                .matrix
+            )
 
-    def test_simple(self, *, load_step):
-        assert (
-            load_step({"matrix": {"setup": ["value"]}}, id="no-adjustments").matrix
-            == load_step(
-                {"matrix": {"setup": ["value"], "adjustments": []}},
-                id="no-empty-adjustments",
-            ).matrix
-            == CommandStep.Matrix.SingleDim(setup=["value"])
-        )
+        return inner
 
-    def test_with_adjustments(self, *, load_step):
-        assert load_step(
-            {"matrix": {"setup": ["value"], "adjustments": [{"with": "newvalue"}]}}
-        ).matrix == CommandStep.Matrix.SingleDim(
-            setup=["value"],
-            adjustments=[
-                CommandStep.Matrix.SingleDim.Adjustment(with_value="newvalue")
-            ],
-        )
+    class TestSingleDim:
+        def test_simple(self, *, load_matrix):
+            assert (
+                load_matrix({"setup": ["value"]}, id="no-adjustments")
+                == load_matrix(
+                    {"setup": ["value"], "adjustments": []},
+                    id="no-empty-adjustments",
+                )
+                == CommandStep.Matrix.SingleDim(setup=["value"])
+            )
 
-    @pytest.mark.parametrize("value, expected", SOFT_FAIL_VALS)
-    def test_with_adjustments_with_soft_fail(self, value, expected, *, load_step):
-        assert load_step(
-            {
-                "matrix": {
+        @pytest.mark.upstream_schema_invalid
+        def test_with_adjustments(self, *, load_matrix):
+            assert load_matrix(
+                {"setup": ["value"], "adjustments": [{"with": "newvalue"}]}
+            ) == CommandStep.Matrix.SingleDim(
+                setup=["value"],
+                adjustments=[
+                    CommandStep.Matrix.SingleDim.Adjustment(with_value="newvalue")
+                ],
+            )
+
+        @pytest.mark.upstream_schema_invalid
+        @pytest.mark.parametrize("value, expected", SOFT_FAIL_VALS)
+        def test_with_adjustments_with_soft_fail(self, value, expected, *, load_matrix):
+            assert load_matrix(
+                {
                     "setup": ["value"],
                     "adjustments": [{"with": "newvalue", "soft_fail": value}],
                 }
-            }
-        ).matrix == CommandStep.Matrix.SingleDim(
-            setup=["value"],
-            adjustments=[
-                CommandStep.Matrix.SingleDim.Adjustment(
-                    with_value="newvalue", soft_fail=expected
-                )
-            ],
-        )
+            ) == CommandStep.Matrix.SingleDim(
+                setup=["value"],
+                adjustments=[
+                    CommandStep.Matrix.SingleDim.Adjustment(
+                        with_value="newvalue", soft_fail=expected
+                    )
+                ],
+            )
 
-    @pytest.mark.parametrize("value, expected", SKIP_VALS.items())
-    def test_with_adjustments_with_skip(self, value, expected, *, load_step):
-        assert load_step(
-            {
-                "matrix": {
+        @pytest.mark.upstream_schema_invalid
+        @pytest.mark.parametrize("value, expected", SKIP_VALS)
+        def test_with_adjustments_with_skip(self, value, expected, *, load_matrix):
+            assert load_matrix(
+                {
                     "setup": ["value"],
                     "adjustments": [{"with": "newvalue", "skip": value}],
                 }
-            }
-        ).matrix == CommandStep.Matrix.SingleDim(
-            setup=["value"],
-            adjustments=[
-                CommandStep.Matrix.SingleDim.Adjustment(
-                    with_value="newvalue", skip=expected
-                )
-            ],
-        )
+            ) == CommandStep.Matrix.SingleDim(
+                setup=["value"],
+                adjustments=[
+                    CommandStep.Matrix.SingleDim.Adjustment(
+                        with_value="newvalue", skip=expected
+                    )
+                ],
+            )
 
+    class TestMultiDim:
+        @pytest.mark.upstream_schema_invalid
+        def test_simple_scalar(self, *, load_matrix):
+            # NB: Same as below, but Upstream schema invalid
+            assert load_matrix(
+                {
+                    "setup": {"key": "value"},
+                }
+            ) == CommandStep.Matrix.MultiDim(setup={"key": ["value"]})
 
-class TestMultiDimMatrix:
-    def test_simple(self, *, load_step):
-        assert (
-            load_step(
-                {
-                    "matrix": {
-                        "setup": {"key": "value"},
-                    }
-                },
-                id="scalar",
-            ).matrix
-            == load_step(
-                {
-                    "matrix": {
+        def test_simple(self, *, load_matrix):
+            assert (
+                load_matrix(
+                    {
                         "setup": {"key": ["value"]},
-                    }
-                },
-                id="list",
-            ).matrix
-            == load_step(
-                {
-                    "matrix": {
+                    },
+                    id="list",
+                )
+                == load_matrix(
+                    {
                         "setup": {"key": ["value"]},
                         "adjustments": [],
-                    }
-                }
-            ).matrix
-            == CommandStep.Matrix.MultiDim(setup={"key": ["value"]})
-        )
+                    },
+                    id="empty-adjustments",
+                )
+                == CommandStep.Matrix.MultiDim(setup={"key": ["value"]})
+            )
 
-    def test_with_adjustments(self, *, load_step):
-        assert load_step(
-            {
-                "matrix": {
+        def test_with_adjustments(self, *, load_matrix):
+            assert load_matrix(
+                {
                     "setup": {"key": ["value"]},
                     "adjustments": [{"with": {"key": "newvalue"}}],
                 }
-            }
-        ).matrix == CommandStep.Matrix.MultiDim(
-            setup={"key": ["value"]},
-            adjustments=[
-                CommandStep.Matrix.MultiDim.Adjustment(with_value={"key": "newvalue"})
-            ],
-        )
+            ) == CommandStep.Matrix.MultiDim(
+                setup={"key": ["value"]},
+                adjustments=[
+                    CommandStep.Matrix.MultiDim.Adjustment(
+                        with_value={"key": "newvalue"}
+                    )
+                ],
+            )
 
-    @pytest.mark.parametrize("value, expected", SOFT_FAIL_VALS)
-    def test_with_adjustments_with_soft_fail(self, value, expected, *, load_step):
-        assert load_step(
-            {
-                "matrix": {
+        @pytest.mark.parametrize("value, expected", SOFT_FAIL_VALS)
+        def test_with_adjustments_with_soft_fail(self, value, expected, *, load_matrix):
+            assert load_matrix(
+                {
                     "setup": {"key": ["value"]},
                     "adjustments": [{"with": {"key": "newvalue"}, "soft_fail": value}],
                 }
-            }
-        ).matrix == CommandStep.Matrix.MultiDim(
-            setup={"key": ["value"]},
-            adjustments=[
-                CommandStep.Matrix.MultiDim.Adjustment(
-                    with_value={"key": "newvalue"}, soft_fail=expected
-                )
-            ],
-        )
+            ) == CommandStep.Matrix.MultiDim(
+                setup={"key": ["value"]},
+                adjustments=[
+                    CommandStep.Matrix.MultiDim.Adjustment(
+                        with_value={"key": "newvalue"}, soft_fail=expected
+                    )
+                ],
+            )
 
-    @pytest.mark.parametrize("value, expected", SKIP_VALS.items())
-    def test_with_adjustments_with_skip(self, value, expected, *, load_step):
-        assert load_step(
-            {
-                "matrix": {
+        @pytest.mark.parametrize("value, expected", SKIP_VALS)
+        def test_with_adjustments_with_skip(self, value, expected, *, load_matrix):
+            assert load_matrix(
+                {
                     "setup": {"key": ["value"]},
                     "adjustments": [{"with": {"key": "newvalue"}, "skip": value}],
                 }
-            }
-        ).matrix == CommandStep.Matrix.MultiDim(
-            setup={"key": ["value"]},
-            adjustments=[
-                CommandStep.Matrix.MultiDim.Adjustment(
-                    with_value={"key": "newvalue"}, skip=expected
-                )
-            ],
-        )
+            ) == CommandStep.Matrix.MultiDim(
+                setup={"key": ["value"]},
+                adjustments=[
+                    CommandStep.Matrix.MultiDim.Adjustment(
+                        with_value={"key": "newvalue"}, skip=expected
+                    )
+                ],
+            )
 
 
 class TestNotify:
-    def test_github_check(self, *, load_step):
-        assert (
-            load_step({"notify": ["github_check"]}, id="string").notify
-            == load_step({"notify": [{"github_check": {}}]}, id="dict").notify
-            == [Notify.GitHubCheck()]
-        )
-        assert load_step({"notify": [{"github_check": {"name": "name"}}]}).notify == [
+    @pytest.fixture
+    @staticmethod
+    def load_notify(load_step):
+        def inner(notify_config, *, id=None):
+            return load_step({"notify": notify_config}, id=id).notify
+
+        return inner
+
+    def test_github_check(self, load_notify):
+        assert load_notify(["github_check"], id="string") == [Notify.GitHubCheck()]
+        assert load_notify([{"github_check": {}}], id="dict") == [Notify.GitHubCheck()]
+        assert load_notify([{"github_check": {"name": "name"}}]) == [
             Notify.GitHubCheck(info={"name": "name"})
         ]
 
-    def test_github_commit_status(self, *, load_step):
-        assert load_step({"notify": ["github_commit_status"]}, id="string").notify == [
+    def test_github_commit_status(self, load_notify):
+        assert load_notify(["github_commit_status"], id="string") == [
             Notify.GitHubCommitStatus()
         ]
-        assert load_step(
-            {"notify": [{"github_commit_status": {"context": "context"}}]},
+        assert load_notify(
+            [{"github_commit_status": {"context": "context"}}],
             id="with-context",
-        ).notify == [
+        ) == [
             Notify.GitHubCommitStatus(
                 info=Notify.GitHubCommitStatus.Info(context="context")
             )
         ]
 
-    def test_basecamp_campfire(self, *, load_step):
-        assert load_step({"notify": [{"basecamp_campfire": "url"}]}).notify == [
+    def test_basecamp_campfire(self, load_notify):
+        assert load_notify([{"basecamp_campfire": "url"}]) == [
             Notify.BasecampCampfire(url="url")
         ]
 
-    def test_slack(self, *, load_step):
+    @pytest.mark.upstream_schema_invalid
+    def test_notify__slack__scalar(self, load_notify):
+        # same as below, but upstream invalid
+        assert load_notify([{"slack": {"channels": "#general"}}]) == [
+            Notify.Slack(info=Notify.Slack.Info(channels=["#general"]))
+        ]
+
+    def test_slack(self, load_notify):
         assert (
-            load_step({"notify": [{"slack": "#general"}]}, id="string").notify
-            == load_step(
-                {"notify": [{"slack": {"channels": "#general"}}]}, id="channels-string"
-            ).notify
-            == load_step(
-                {"notify": [{"slack": {"channels": ["#general"]}}]}, id="channels-list"
-            ).notify
+            load_notify([{"slack": "#general"}], id="string")
+            == load_notify([{"slack": {"channels": ["#general"]}}], id="channels-list")
             == [Notify.Slack(info=Notify.Slack.Info(channels=["#general"]))]
         )
-        assert load_step(
-            {"notify": [{"slack": {"channels": ["#general"], "message": "message"}}]},
+        assert load_notify(
+            [{"slack": {"channels": ["#general"], "message": "message"}}],
             id="with-message",
-        ).notify == [
+        ) == [
             Notify.Slack(
                 info=Notify.Slack.Info(channels=["#general"], message="message")
             )
@@ -328,25 +340,33 @@ def test_parallelism(*, load_step):
 
 
 class TestPlugins:
-    def test_plugin_list_string(self, *, load_step):
-        step = load_step({"plugins": ["plugin"]})
-        assert step.plugins[0].spec == "plugin"
-        assert step.plugins[0].config is None
+    @pytest.fixture
+    @staticmethod
+    def load_plugins(load_step):
+        def inner(plugins_config, *, id=None):
+            return load_step({"plugins": plugins_config}, id=id).plugins
 
-    def test_plugin_list_dict(self, *, load_step):
-        step = load_step({"plugins": [{"plugin": {"key": "value"}}]})
-        assert step.plugins[0].spec == "plugin"
-        assert step.plugins[0].config == {"key": "value"}
+        return inner
 
-    def test_plugin_dict_no_config(self, *, load_step):
-        step = load_step({"plugins": [{"plugin": None}]})
-        assert step.plugins[0].spec == "plugin"
-        assert step.plugins[0].config is None
+    def test_plugin_list_string(self, *, load_plugins):
+        plugins = load_plugins(["plugin"])
+        assert plugins[0].spec == "plugin"
+        assert plugins[0].config is None
 
-    def test_plugin_dict_with_config(self, *, load_step):
-        step = load_step({"plugins": [{"plugin": {"key": "value"}}]})
-        assert step.plugins[0].spec == "plugin"
-        assert step.plugins[0].config == {"key": "value"}
+    def test_plugin_list_dict(self, *, load_plugins):
+        plugins = load_plugins([{"plugin": {"key": "value"}}])
+        assert plugins[0].spec == "plugin"
+        assert plugins[0].config == {"key": "value"}
+
+    def test_plugin_dict_no_config(self, *, load_plugins):
+        plugins = load_plugins([{"plugin": None}])
+        assert plugins[0].spec == "plugin"
+        assert plugins[0].config is None
+
+    def test_plugin_dict_with_config(self, *, load_plugins):
+        plugins = load_plugins([{"plugin": {"key": "value"}}])
+        assert plugins[0].spec == "plugin"
+        assert plugins[0].config == {"key": "value"}
 
 
 def test_priority(*, load_step):
@@ -355,30 +375,38 @@ def test_priority(*, load_step):
 
 class TestRetry:
     class TestAutomatic:
-        @pytest.mark.parametrize("value, expected", BOOLVALS.items())
-        def test_boolean_values(self, value, expected, *, load_step):
-            step = load_step({"retry": {"automatic": value}})
-            assert len(step.retry.automatic) == (1 if expected else 0)
+        @pytest.fixture
+        @staticmethod
+        def load_automatic_retry(load_step):
+            def inner(retry_config, *, id=None):
+                return load_step({"retry": {"automatic": retry_config}}, id=id).retry.automatic
 
-        def test_exit_status_scalar(self, *, load_step):
-            step = load_step({"retry": {"automatic": {"exit_status": 1}}})
-            assert step.retry.automatic[0].exit_status == [1]
+            return inner
 
-        def test_exit_status_wildcard(self, *, load_step):
-            step = load_step({"retry": {"automatic": {"exit_status": "*"}}})
-            assert step.retry.automatic[0].exit_status == "*"
+        @pytest.mark.parametrize("value, expected", BOOLVALS)
+        def test_boolean_values(self, value, expected, *, load_automatic_retry):
+            automatic_retry = load_automatic_retry(value)
+            assert len(automatic_retry) == (1 if expected else 0)
 
-        def test_exit_status_list(self, *, load_step):
-            step = load_step({"retry": {"automatic": {"exit_status": [1, 2]}}})
-            assert step.retry.automatic[0].exit_status == [1, 2]
+        def test_exit_status_scalar(self, *, load_automatic_retry):
+            automatic_retry = load_automatic_retry({"exit_status": 1})
+            assert automatic_retry[0].exit_status == [1]
 
-        def test_limit(self, *, load_step):
-            step = load_step({"retry": {"automatic": [{"limit": 5}]}})
-            assert step.retry.automatic[0].limit == 5
+        def test_exit_status_wildcard(self, *, load_automatic_retry):
+            automatic_retry = load_automatic_retry({"exit_status": "*"})
+            assert automatic_retry[0].exit_status == "*"
 
-        def test_signal(self, *, load_step):
-            step = load_step({"retry": {"automatic": [{"signal": "signal"}]}})
-            assert step.retry.automatic[0].signal == "signal"
+        def test_exit_status_list(self, *, load_automatic_retry):
+            automatic_retry = load_automatic_retry({"exit_status": [1, 2]})
+            assert automatic_retry[0].exit_status == [1, 2]
+
+        def test_limit(self, *, load_automatic_retry):
+            automatic_retry = load_automatic_retry([{"limit": 5}])
+            assert automatic_retry[0].limit == 5
+
+        def test_signal(self, *, load_automatic_retry):
+            automatic_retry = load_automatic_retry([{"signal": "signal"}])
+            assert automatic_retry[0].signal == "signal"
 
         @pytest.mark.parametrize(
             "reason",
@@ -392,32 +420,38 @@ class TestRetry:
                 "signature_rejected",
             ],
         )
-        def test_signal_reason(self, reason, *, load_step):
-            step = load_step({"retry": {"automatic": [{"signal_reason": reason}]}})
-            assert step.retry.automatic[0].signal_reason == reason
+        def test_signal_reason(self, reason, *, load_automatic_retry):
+            automatic_retry = load_automatic_retry([{"signal_reason": reason}])
+            assert automatic_retry[0].signal_reason == reason
 
     class TestManual:
-        @pytest.mark.parametrize("value, expected", BOOLVALS.items())
-        def test_boolean_values(self, value, expected, *, load_step):
-            step = load_step({"retry": {"manual": value}})
-            assert step.retry.manual.allowed == expected
+        @pytest.fixture
+        @staticmethod
+        def load_manual_retry(load_step):
+            def inner(retry_config, *, id=None):
+                return load_step({"retry": {"manual": retry_config}}, id=id).retry.manual
 
-        @pytest.mark.parametrize("value, expected", BOOLVALS.items())
-        def test_allowed(self, value, expected, *, load_step):
-            step = load_step({"retry": {"manual": {"allowed": value}}})
-            assert step.retry.manual.allowed == expected
+            return inner
 
-        @pytest.mark.parametrize("value, expected", BOOLVALS.items())
-        def test_permit_on_passed(self, value, expected, *, load_step):
-            step = load_step({"retry": {"manual": {"permit_on_passed": value}}})
-            assert step.retry.manual.permit_on_passed == expected
+        @pytest.mark.parametrize("value, expected", BOOLVALS)
+        def test_boolean_values(self, value, expected, *, load_manual_retry):
+            manual_retry = load_manual_retry(value)
+            assert manual_retry.allowed == expected
 
-        def test_reason(self, *, load_step):
-            step = load_step(
-                {"retry": {"manual": {"reason": "reason", "allowed": True}}}
-            )
-            assert step.retry.manual.reason == "reason"
-            assert step.retry.manual.allowed is True
+        @pytest.mark.parametrize("value, expected", BOOLVALS)
+        def test_allowed(self, value, expected, *, load_manual_retry):
+            manual_retry = load_manual_retry({"allowed": value})
+            assert manual_retry.allowed == expected
+
+        @pytest.mark.parametrize("value, expected", BOOLVALS)
+        def test_permit_on_passed(self, value, expected, *, load_manual_retry):
+            manual_retry = load_manual_retry({"permit_on_passed": value})
+            assert manual_retry.permit_on_passed == expected
+
+        def test_reason(self, *, load_manual_retry):
+            manual_retry = load_manual_retry({"reason": "reason", "allowed": True})
+            assert manual_retry.reason == "reason"
+            assert manual_retry.allowed is True
 
 
 def test_signature(*, load_step):
@@ -441,7 +475,7 @@ def test_signature(*, load_step):
     assert step.signature.value == "value"
 
 
-@pytest.mark.parametrize("value, expected", SKIP_VALS.items())
+@pytest.mark.parametrize("value, expected", SKIP_VALS)
 def test_skip(value, expected, *, load_step):
     assert load_step({"skip": value}).skip == expected
 

@@ -12,22 +12,19 @@ def load_step(load_pipeline):
     return inner
 
 
-@pytest.mark.upstream_schema_invalid
 def test_string__wait(*, load_pipeline):
     assert load_pipeline({"steps": ["wait"]}).steps[0] == WaitStep()
 
 
-@pytest.mark.upstream_schema_invalid
 def test_string__waiter(*, load_pipeline):
     assert load_pipeline({"steps": ["waiter"]}).steps[0] == WaitStep(type="waiter")
 
 
-@pytest.mark.upstream_schema_invalid
 def test_wait_null(*, load_pipeline):
     assert load_pipeline({"steps": [{"wait": None}]}).steps[0] == WaitStep()
 
 
-@pytest.mark.parametrize("value, expected", BOOLVALS.items())
+@pytest.mark.parametrize("value, expected", BOOLVALS)
 def test_continue_on_failure(value, expected, *, load_step):
     assert (
         load_step({"type": "wait", "continue_on_failure": value}).continue_on_failure

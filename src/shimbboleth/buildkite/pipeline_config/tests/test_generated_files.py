@@ -8,9 +8,8 @@ import pytest
 import yaml
 from shimbboleth.buildkite.pipeline_config.tests.yamlgen import PIPELINES_DIR
 
-GENERATED_YAMLS = [
+GENERATED_YAMLS = []
 
-]
 
 @pytest.fixture(
     params=(
@@ -27,8 +26,6 @@ def pipeline_config(request):
     return docs[-1]
 
 
-
-
 # @TODO: parameterize on `steps:` and `group:`
 def test_against_generated_schema(pipeline_config, *, generated_schema):
     generated_schema.validate(pipeline_config)
@@ -37,7 +34,9 @@ def test_against_generated_schema(pipeline_config, *, generated_schema):
 # @UPSTREAM: No support for non-object pipelines
 def test_upstream_json_schema(pipeline_config, *, upstream_schema, request):
     if request.node.get_closest_marker("upstream_schema_invalid") is not None:
-        request.node.add_marker(pytest.mark.xfail(reason="Upstream schema bug", strict=True))
+        request.node.add_marker(
+            pytest.mark.xfail(reason="Upstream schema bug", strict=True)
+        )
 
     upstream_schema.validate(pipeline_config)
 

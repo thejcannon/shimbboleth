@@ -70,6 +70,7 @@ def test_env(*, load_pipeline):
 # @TODO: For each notify, also test `if`
 #   (use param)
 
+
 class TestNotify:
     @pytest.fixture
     @staticmethod
@@ -80,16 +81,22 @@ class TestNotify:
         return inner
 
     def test_notify__email(self, load_notify):
-        assert load_notify([{"email": "email@example.com"}]) == [Notify.Email(address="email@example.com")]
+        assert load_notify([{"email": "email@example.com"}]) == [
+            Notify.Email(address="email@example.com")
+        ]
 
     def test_notify__basecamp_campfire(self, load_notify):
         BASECAMP_CAMPFIRE_URL = "https://3.basecamp.com/123456/integrations/abcdef/buckets/1234567/chats/89012345/lines"
-        assert load_notify([{"basecamp_campfire": BASECAMP_CAMPFIRE_URL}]) == [Notify.BasecampCampfire(url=BASECAMP_CAMPFIRE_URL)]
+        assert load_notify([{"basecamp_campfire": BASECAMP_CAMPFIRE_URL}]) == [
+            Notify.BasecampCampfire(url=BASECAMP_CAMPFIRE_URL)
+        ]
 
     @pytest.mark.upstream_schema_invalid
     def test_notify__slack__scalar(self, load_notify):
         # same as below, but upstream invalid
-        assert load_notify([{"slack": {"channels": "#general"}}]) == [Notify.Slack(info=Notify.Slack.Info(channels=["#general"]))]
+        assert load_notify([{"slack": {"channels": "#general"}}]) == [
+            Notify.Slack(info=Notify.Slack.Info(channels=["#general"]))
+        ]
 
     def test_notify__slack(self, load_notify):
         assert (
@@ -101,21 +108,29 @@ class TestNotify:
             [{"slack": {"channels": ["#general"], "message": "message"}}],
             id="with-message",
         ) == [
-            Notify.Slack(info=Notify.Slack.Info(channels=["#general"], message="message"))
+            Notify.Slack(
+                info=Notify.Slack.Info(channels=["#general"], message="message")
+            )
         ]
 
     def test_notify_webhook(self, load_notify):
-        assert load_notify([{"webhook": "https://example.com"}]) == [Notify.Webhook(url="https://example.com")]
+        assert load_notify([{"webhook": "https://example.com"}]) == [
+            Notify.Webhook(url="https://example.com")
+        ]
 
     def test_notify_pagerduty(self, load_notify):
-        assert load_notify([{"pagerduty_change_event": "pagerduty_change_event"}]) == [Notify.Pagerduty(change_event="pagerduty_change_event")]
+        assert load_notify([{"pagerduty_change_event": "pagerduty_change_event"}]) == [
+            Notify.Pagerduty(change_event="pagerduty_change_event")
+        ]
 
     def test_notify__github_check(self, load_notify):
         assert load_notify(["github_check"], id="string") == [Notify.GitHubCheck()]
         assert load_notify([{"github_check": {}}], id="dict") == [Notify.GitHubCheck()]
 
     def test_notify__github_commit_status(self, load_notify):
-        assert load_notify(["github_commit_status"], id="string") == [Notify.GitHubCommitStatus()]
+        assert load_notify(["github_commit_status"], id="string") == [
+            Notify.GitHubCommitStatus()
+        ]
         assert load_notify(
             [{"github_commit_status": {"context": "context"}}],
             id="dict",

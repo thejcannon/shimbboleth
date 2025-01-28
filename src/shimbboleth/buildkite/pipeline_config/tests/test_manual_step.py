@@ -47,7 +47,7 @@ class TestTextField:
     def test_format(self, *, load_text_field):
         assert load_text_field({"format": "^$"}).format == re.compile(r"^$")
 
-    @pytest.mark.parametrize("value, expected", BOOLVALS.items())
+    @pytest.mark.parametrize("value, expected", BOOLVALS)
     def test_required(self, value, expected, *, load_text_field):
         assert load_text_field({"required": value}).required == expected
 
@@ -84,7 +84,7 @@ class TestSelectField:
         assert field.default == "default"
         assert field.multiple is False
 
-    @pytest.mark.parametrize("value, expected", BOOLVALS.items())
+    @pytest.mark.parametrize("value, expected", BOOLVALS)
     def test_multiple_select(self, value, expected, *, load_select_field):
         assert load_select_field({"multiple": value}).multiple == expected
 

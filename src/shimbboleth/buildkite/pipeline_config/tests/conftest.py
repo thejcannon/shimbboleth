@@ -86,16 +86,25 @@ ALL_SUBSTEP_TYPE_PARAMS = [
 ]
 
 # @TODO: Turn these into params
-BOOLVALS = {True: True, False: False, "true": True, "false": False}
-SKIP_VALS = {
-    **BOOLVALS,
-    "": False,
-    "reason": "reason",
-}
+BOOLVALS = (
+    pytest.param(True, True, id="True"),
+    pytest.param(False, False, id="False"),
+    pytest.param("true", True, id="true"),
+    pytest.param("false", False, id="false"),
+)
+
+SKIP_VALS = (
+    *BOOLVALS,
+    pytest.param("", False, id="empty_string"),
+    pytest.param("reason", "reason", id="reason_string"),
+)
+
 SOFT_FAIL_VALS = (
-    *BOOLVALS.items(),
-    ([{"exit_status": 0}], [0]),
-    ([{"exit_status": 1}, {"exit_status": -1}], [1, -1]),
+    *BOOLVALS,
+    pytest.param([{"exit_status": 0}], [0], id="exit_status_0"),
+    pytest.param(
+        [{"exit_status": 1}, {"exit_status": -1}], [1, -1], id="multiple exit statuses"
+    ),
 )
 
 # === Fixtures ===
