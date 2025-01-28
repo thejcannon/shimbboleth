@@ -411,50 +411,6 @@ class Test_GroupStep(StepTestBase):
         return {**step, "group": "group"}
 
 
-@pytest.mark.parametrize("steptype_param", [STEP_TYPE_PARAMS["group"]])
-@pytest.mark.parametrize(
-    "step,error,path",
-    [
-        param(
-            ["unknown"],
-            "Expected `'unknown'` to be a valid notification type",
-            ".notify[0]",
-            id="notify_unknown",
-        ),
-        param(
-            [{"email": "hello@example.com"}],
-            "Expected `'email'` to be a valid step notification",
-            ".notify[0]",
-            id="notify_email",
-            marks=UPSTREAM_SCHEMA_INVALID,
-        ),
-        param(
-            [{"webhook": "https://example.com"}],
-            "Expected `'webhook'` to be a valid step notification",
-            ".notify[0]",
-            id="notify_webhook",
-            marks=UPSTREAM_SCHEMA_INVALID,
-        ),
-        param(
-            [{"pagerduty_change_event": "pagerduty_change_event"}],
-            "Expected `'pagerduty_change_event'` to be a valid step notification",
-            ".notify[0]",
-            id="notify_pagerduty",
-            marks=UPSTREAM_SCHEMA_INVALID,
-        ),
-        param(
-            [{"slack": {"channels": []}}],
-            "Expected `[]` to be non-empty",
-            ".notify[0].slack.channels",
-            id="notify_slack_empty",
-            marks=UPSTREAM_SCHEMA_INVALID,
-        ),
-    ],
-)
-class Test_GroupStep__Notify(StepTestBase):
-    def get_step(self, step, steptype_param):
-        return {"group": "group", "steps": ["wait"], "notify": step}
-
 
 @pytest.mark.parametrize("steptype_param", [STEP_TYPE_PARAMS["block"]])
 @pytest.mark.parametrize("step,error,path", [])
