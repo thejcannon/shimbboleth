@@ -36,7 +36,7 @@ PIPELINES_DIR = Path(__file__).parent / "generated-yamls"
 
 @pytest.fixture
 def load_pipeline(request):
-    def persistented_model_load(config, *, id=None):
+    def persistented_model_load(config, *, id=None, upstream_schema_invalid=False):
         assert isinstance(config, dict)
         yamls_dir = PIPELINES_DIR / request.node.module.__name__
         yamls_dir.mkdir(exist_ok=True, parents=True)
@@ -46,9 +46,14 @@ def load_pipeline(request):
         if id is not None:
             name += f"@{id}"
 
-        if request.node.get_closest_marker("upstream_schema_invalid"):
-            docs.insert(0, {})
-            docs[0]["upstream_schema_invalid"] = True
+        front_matter = {}
+        if upstream_schema_invalid or request.node.get_closest_marker(
+            "upstream_schema_invalid"
+        ):
+            front_matter["upstream_schema_invalid"] = True
+
+        if front_matter:
+            docs.insert(0, front_matter)
 
         (yamls_dir / name).with_suffix(".yaml").write_text(
             # @TODO: This should match whatever formatting we expect

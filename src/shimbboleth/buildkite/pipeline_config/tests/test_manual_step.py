@@ -28,7 +28,8 @@ class TestTextField:
     def load_text_field(load_step):
         def inner(text_field_fields, **kwargs):
             return load_step(
-                {"fields": [{**text_field_fields, "text": "text", "key": "key"}]}, **kwargs
+                {"fields": [{**text_field_fields, "text": "text", "key": "key"}]},
+                **kwargs,
             ).fields[0]
 
         return inner

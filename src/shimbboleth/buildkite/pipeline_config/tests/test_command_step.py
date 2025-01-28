@@ -33,15 +33,7 @@ def test_aliases(*, load_step):
 
 def test_agents(*, load_step):
     # @TODO: type coersion?
-    step = load_step(
-        {
-            "agents": {
-                "str": "string",
-                "int": "0",
-                "bool": "true",
-            }
-        }
-    )
+    step = load_step({"agents": {"str": "string", "int": "0", "bool": "true"}})
     assert step.agents == {"str": "string", "int": "0", "bool": "true"}
 
 
@@ -62,13 +54,7 @@ def test_cache(*, load_step):
     )
 
     step = load_step(
-        {
-            "cache": {
-                "paths": ["path"],
-                "size": "20g",
-                "name": "name",
-            }
-        },
+        {"cache": {"paths": ["path"], "size": "20g", "name": "name"}},
         id="dict",
     )
     assert step.cache.paths == ["path"]
@@ -85,12 +71,7 @@ def test_cancel_on_build_failing(value, expected, *, load_step):
 
 
 def test_concurrency(*, load_step):
-    step = load_step(
-        {
-            "concurrency": 1,
-            "concurrency_group": "group",
-        }
-    )
+    step = load_step({"concurrency": 1, "concurrency_group": "group"})
     assert step.concurrency == 1
     assert step.concurrency_group == "group"
     assert step.concurrency_method is None
@@ -128,18 +109,12 @@ def test_env(*, load_step):
     assert step.env == {"string": "string", "int": "0", "bool": "true"}
 
 
-
-
-
 class TestMatrix:
     @pytest.fixture
     @staticmethod
     def load_matrix(load_step):
         def inner(matrix_config, **kwargs):
-            return (
-                load_step({"matrix": matrix_config}, **kwargs)
-                .matrix
-            )
+            return load_step({"matrix": matrix_config}, **kwargs).matrix
 
         return inner
 
@@ -203,21 +178,15 @@ class TestMatrix:
             )
 
     class TestMultiDim:
-        @pytest.mark.upstream_schema_invalid
-        def test_simple_scalar(self, *, load_matrix):
-            # NB: Same as below, but Upstream schema invalid
-            assert load_matrix(
-                {
-                    "setup": {"key": "value"},
-                }
-            ) == CommandStep.Matrix.MultiDim(setup={"key": ["value"]})
-
         def test_simple(self, *, load_matrix):
             assert (
                 load_matrix(
-                    {
-                        "setup": {"key": ["value"]},
-                    },
+                    {"setup": {"key": "value"}},
+                    id="scalar",
+                    upstream_schema_invalid=True,
+                )
+                == load_matrix(
+                    {"setup": {"key": ["value"]}},
                     id="list",
                 )
                 == load_matrix(
@@ -282,8 +251,8 @@ class TestNotify:
     @pytest.fixture
     @staticmethod
     def load_notify(load_step):
-        def inner(notify_config, *, id=None):
-            return load_step({"notify": notify_config}, id=id).notify
+        def inner(notify_config, **kwargs):
+            return load_step({"notify": notify_config}, **kwargs).notify
 
         return inner
 
@@ -312,16 +281,14 @@ class TestNotify:
             Notify.BasecampCampfire(url="url")
         ]
 
-    @pytest.mark.upstream_schema_invalid
-    def test_notify__slack__scalar(self, load_notify):
-        # same as below, but upstream invalid
-        assert load_notify([{"slack": {"channels": "#general"}}]) == [
-            Notify.Slack(info=Notify.Slack.Info(channels=["#general"]))
-        ]
-
     def test_slack(self, load_notify):
         assert (
-            load_notify([{"slack": "#general"}], id="string")
+            load_notify(
+                [{"slack": {"channels": "#general"}}],
+                id="scalar",
+                upstream_schema_invalid=True,
+            )
+            == load_notify([{"slack": "#general"}], id="string")
             == load_notify([{"slack": {"channels": ["#general"]}}], id="channels-list")
             == [Notify.Slack(info=Notify.Slack.Info(channels=["#general"]))]
         )
@@ -379,7 +346,9 @@ class TestRetry:
         @staticmethod
         def load_automatic_retry(load_step):
             def inner(retry_config, *, id=None):
-                return load_step({"retry": {"automatic": retry_config}}, id=id).retry.automatic
+                return load_step(
+                    {"retry": {"automatic": retry_config}}, id=id
+                ).retry.automatic
 
             return inner
 
@@ -429,7 +398,9 @@ class TestRetry:
         @staticmethod
         def load_manual_retry(load_step):
             def inner(retry_config, *, id=None):
-                return load_step({"retry": {"manual": retry_config}}, id=id).retry.manual
+                return load_step(
+                    {"retry": {"manual": retry_config}}, id=id
+                ).retry.manual
 
             return inner
 

@@ -39,8 +39,8 @@ class TestNotify:
     @pytest.fixture
     @staticmethod
     def load_notify(load_step):
-        def inner(notify_config, *, id=None):
-            return load_step({"notify": notify_config}, id=id).notify
+        def inner(notify_config, **kwargs):
+            return load_step({"notify": notify_config}, **kwargs).notify
 
         return inner
 
@@ -66,16 +66,14 @@ class TestNotify:
             Notify.BasecampCampfire(url=BASECAMP_CAMPFIRE_URL)
         ]
 
-    @pytest.mark.upstream_schema_invalid
-    def test_notify__slack__scalar(self, load_notify):
-        # same as below, but upstream invalid
-        assert load_notify([{"slack": {"channels": "#general"}}]) == [
-            Notify.Slack(info=Notify.Slack.Info(channels=["#general"]))
-        ]
-
     def test_notify__slack(self, load_notify):
         assert (
-            load_notify([{"slack": "#general"}], id="string")
+            load_notify(
+                [{"slack": {"channels": "#general"}}],
+                id="scalar",
+                upstream_schema_invalid=True,
+            )
+            == load_notify([{"slack": "#general"}], id="string")
             == load_notify([{"slack": {"channels": ["#general"]}}], id="channels-list")
             == [Notify.Slack(info=Notify.Slack.Info(channels=["#general"]))]
         )
