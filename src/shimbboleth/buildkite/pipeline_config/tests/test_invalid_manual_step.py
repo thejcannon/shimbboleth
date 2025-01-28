@@ -134,7 +134,6 @@ class TestSelectField:
             id="empty_options",
         )
 
-
     def test_single_select_list_default(self, *, invalid_select_field):
         invalid_select_field(
             {"key": "key", "multiple": False, "default": ["value"]},

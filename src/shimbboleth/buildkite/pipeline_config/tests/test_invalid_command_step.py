@@ -12,7 +12,7 @@ def invalid_command(invalid_pipeline):
         return invalid_pipeline(
             {"steps": [{"type": "command", **step_fields}]},
             path=f".steps[0]{path}",
-            **kwargs
+            **kwargs,
         )
 
     return inner
@@ -100,7 +100,6 @@ class TestNotify:
             path="[0]",
             id="notify_pagerduty",
         )
-
 
     def test_slack_empty_channels(self, *, invalid_notify):
         invalid_notify(

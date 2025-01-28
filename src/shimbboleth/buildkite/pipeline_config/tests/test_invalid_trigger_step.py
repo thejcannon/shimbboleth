@@ -12,7 +12,7 @@ def invalid_trigger(invalid_pipeline):
         return invalid_pipeline(
             {"steps": [{"type": "trigger", **step_fields}]},
             path=f".steps[0]{path}",
-            **kwargs
+            **kwargs,
         )
 
     return inner

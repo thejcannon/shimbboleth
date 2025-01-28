@@ -12,7 +12,7 @@ def invalid_wait(invalid_pipeline):
         return invalid_pipeline(
             {"steps": [{"type": "wait", **step_fields}]},
             path=f".steps[0]{path}",
-            **kwargs
+            **kwargs,
         )
 
     return inner
