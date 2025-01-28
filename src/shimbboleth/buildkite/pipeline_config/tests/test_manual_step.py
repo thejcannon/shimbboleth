@@ -12,7 +12,7 @@ from shimbboleth.buildkite.pipeline_config.tests.conftest import (
 def load_step(load_pipeline, request):
     def inner(step_fields, *, id=None):
         return load_pipeline(
-            [{**step_fields, **request.param.dumped_default}], id=id
+            {"steps": [{**step_fields, **request.param.dumped_default}]}, id=id
         ).steps[0]
 
     return inner

@@ -1,0 +1,6 @@
+upstream_schema_invalid: true
+---
+notify:
+- slack:
+    channels: '#general'
+steps: []

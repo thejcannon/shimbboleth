@@ -84,6 +84,8 @@ ALL_SUBSTEP_TYPE_PARAMS = [
     for step_type_param in STEP_TYPE_PARAMS.values()
     if step_type_param.id != "group"
 ]
+
+# @TODO: Turn these into params
 BOOLVALS = {True: True, False: False, "true": True, "false": False}
 SKIP_VALS = {
     **BOOLVALS,

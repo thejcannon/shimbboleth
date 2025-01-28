@@ -6,7 +6,7 @@ from shimbboleth.buildkite.pipeline_config import BuildkitePipeline, BlockStep
 @pytest.fixture
 def load_step(load_pipeline):
     def inner(step_config, *, id=None):
-        return load_pipeline([step_config], id=id).steps[0]
+        return load_pipeline({"steps": [{**step_config, "type": "block"}]}, id=id).steps[0]
 
     return inner
 
@@ -16,7 +16,7 @@ def test_string__manual(*, load_pipeline):
     assert load_pipeline({"steps": ["manual"]}).steps[0] == BlockStep(type="manual")
 
 
-def test_string__block(*, load_pipeline):
+def test_string__block(*, load_pipeline, request):
     assert load_pipeline({"steps": ["block"]}).steps[0] == BlockStep()
 
 

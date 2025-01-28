@@ -1,0 +1,5 @@
+agents:
+- noequals
+- simple=1
+- with-equals=key=value
+steps: []

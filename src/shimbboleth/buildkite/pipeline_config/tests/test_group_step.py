@@ -15,7 +15,7 @@ BASECAMP_CAMPFIRE_URL = "https://3.basecamp.com/123456/integrations/abcdef/bucke
 def load_step(load_pipeline):
     def inner(step_config, *, id=None):
         return load_pipeline(
-            [{"group": "group", "steps": ["wait"], **step_config}], id=id
+            {"steps": [{"group": "group", "steps": ["wait"], **step_config}]}, id=id
         ).steps[0]
 
     return inner

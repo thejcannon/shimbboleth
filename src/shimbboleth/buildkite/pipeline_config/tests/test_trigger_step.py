@@ -7,7 +7,7 @@ from shimbboleth.buildkite.pipeline_config.tests.conftest import BOOLVALS, SKIP_
 @pytest.fixture
 def load_step(load_pipeline):
     def inner(step_config, *, id=None):
-        return load_pipeline([{"trigger": "trigger", **step_config}], id=id).steps[0]
+        return load_pipeline({"steps": [{"trigger": "trigger", **step_config}]}, id=id).steps[0]
 
     return inner
 

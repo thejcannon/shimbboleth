@@ -1,0 +1,6 @@
+notify:
+- slack:
+    channels:
+    - '#general'
+    message: message
+steps: []

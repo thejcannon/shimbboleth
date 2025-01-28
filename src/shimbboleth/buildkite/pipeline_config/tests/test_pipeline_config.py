@@ -27,7 +27,7 @@ from shimbboleth.buildkite.pipeline_config import BuildkitePipeline, Notify
 
 
 def test_empty(*, load_pipeline):
-    assert load_pipeline([]) == BuildkitePipeline(steps=[])
+    assert load_pipeline({"steps": []}) == BuildkitePipeline(steps=[])
 
 
 def test_agents_dict(*, load_pipeline):
@@ -70,82 +70,60 @@ def test_env(*, load_pipeline):
 # @TODO: For each notify, also test `if`
 #   (use param)
 
+class TestNotify:
+    @pytest.fixture
+    @staticmethod
+    def load_notify(load_pipeline):
+        def inner(notify_config, *, id=None):
+            return load_pipeline({"steps": [], "notify": notify_config}, id=id).notify
 
-def test_notify__email(*, load_pipeline):
-    assert load_pipeline(
-        {"steps": [], "notify": [{"email": "email@example.com"}]}
-    ).notify == [Notify.Email(address="email@example.com")]
+        return inner
 
+    def test_notify__email(self, load_notify):
+        assert load_notify([{"email": "email@example.com"}]) == [Notify.Email(address="email@example.com")]
 
-def test_notify__basecamp_campfire(*, load_pipeline):
-    BASECAMP_CAMPFIRE_URL = "https://3.basecamp.com/123456/integrations/abcdef/buckets/1234567/chats/89012345/lines"
-    assert load_pipeline(
-        {"steps": [], "notify": [{"basecamp_campfire": BASECAMP_CAMPFIRE_URL}]}
-    ).notify == [Notify.BasecampCampfire(url=BASECAMP_CAMPFIRE_URL)]
+    def test_notify__basecamp_campfire(self, load_notify):
+        BASECAMP_CAMPFIRE_URL = "https://3.basecamp.com/123456/integrations/abcdef/buckets/1234567/chats/89012345/lines"
+        assert load_notify([{"basecamp_campfire": BASECAMP_CAMPFIRE_URL}]) == [Notify.BasecampCampfire(url=BASECAMP_CAMPFIRE_URL)]
 
+    @pytest.mark.upstream_schema_invalid
+    def test_notify__slack__scalar(self, load_notify):
+        # same as below, but upstream invalid
+        assert load_notify([{"slack": {"channels": "#general"}}]) == [Notify.Slack(info=Notify.Slack.Info(channels=["#general"]))]
 
-def test_notify__slack(*, load_pipeline):
-    assert (
-        load_pipeline(
-            {"steps": [], "notify": [{"slack": "#general"}]}, id="string"
-        ).notify
-        == load_pipeline(
-            {"steps": [], "notify": [{"slack": {"channels": "#general"}}]},
-            id="channels-string",
-        ).notify
-        == load_pipeline(
-            {"steps": [], "notify": [{"slack": {"channels": ["#general"]}}]},
-            id="channels-list",
-        ).notify
-        == [Notify.Slack(info=Notify.Slack.Info(channels=["#general"]))]
-    )
-    assert load_pipeline(
-        {
-            "steps": [],
-            "notify": [{"slack": {"channels": ["#general"], "message": "message"}}],
-        },
-        id="with-message",
-    ).notify == [
-        Notify.Slack(info=Notify.Slack.Info(channels=["#general"], message="message"))
-    ]
-
-
-def test_notify_webhook(*, load_pipeline):
-    assert load_pipeline(
-        {"steps": [], "notify": [{"webhook": "https://example.com"}]}
-    ).notify == [Notify.Webhook(url="https://example.com")]
-
-
-def test_notify_pagerduty(*, load_pipeline):
-    assert load_pipeline(
-        {
-            "steps": [],
-            "notify": [{"pagerduty_change_event": "pagerduty_change_event"}],
-        }
-    ).notify == [Notify.Pagerduty(change_event="pagerduty_change_event")]
-
-
-def test_notify__github_check(*, load_pipeline):
-    assert load_pipeline(
-        {"steps": [], "notify": ["github_check"]}, id="string"
-    ).notify == [Notify.GitHubCheck()]
-    assert load_pipeline(
-        {"steps": [], "notify": [{"github_check": {}}]}, id="dict"
-    ).notify == [Notify.GitHubCheck()]
-
-
-def test_notify__github_commit_status(*, load_pipeline):
-    assert load_pipeline(
-        {"steps": [], "notify": ["github_commit_status"]}, id="string"
-    ).notify == [Notify.GitHubCommitStatus()]
-    assert load_pipeline(
-        {"steps": [], "notify": [{"github_commit_status": {"context": "context"}}]},
-        id="dict",
-    ).notify == [
-        Notify.GitHubCommitStatus(
-            info=Notify.GitHubCommitStatus.Info(context="context")
+    def test_notify__slack(self, load_notify):
+        assert (
+            load_notify([{"slack": "#general"}], id="string")
+            == load_notify([{"slack": {"channels": ["#general"]}}], id="channels-list")
+            == [Notify.Slack(info=Notify.Slack.Info(channels=["#general"]))]
         )
-    ]
+        assert load_notify(
+            [{"slack": {"channels": ["#general"], "message": "message"}}],
+            id="with-message",
+        ) == [
+            Notify.Slack(info=Notify.Slack.Info(channels=["#general"], message="message"))
+        ]
+
+    def test_notify_webhook(self, load_notify):
+        assert load_notify([{"webhook": "https://example.com"}]) == [Notify.Webhook(url="https://example.com")]
+
+    def test_notify_pagerduty(self, load_notify):
+        assert load_notify([{"pagerduty_change_event": "pagerduty_change_event"}]) == [Notify.Pagerduty(change_event="pagerduty_change_event")]
+
+    def test_notify__github_check(self, load_notify):
+        assert load_notify(["github_check"], id="string") == [Notify.GitHubCheck()]
+        assert load_notify([{"github_check": {}}], id="dict") == [Notify.GitHubCheck()]
+
+    def test_notify__github_commit_status(self, load_notify):
+        assert load_notify(["github_commit_status"], id="string") == [Notify.GitHubCommitStatus()]
+        assert load_notify(
+            [{"github_commit_status": {"context": "context"}}],
+            id="dict",
+        ) == [
+            Notify.GitHubCommitStatus(
+                info=Notify.GitHubCommitStatus.Info(context="context")
+            )
+        ]
 
 
 def test_extra_keys(*, load_pipeline):

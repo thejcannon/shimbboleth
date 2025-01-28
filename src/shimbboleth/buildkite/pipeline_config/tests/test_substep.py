@@ -9,7 +9,7 @@ from shimbboleth.buildkite.pipeline_config.tests.conftest import ALL_SUBSTEP_TYP
 def load_step(load_pipeline, request):
     def inner(step_fields, *, id=None):
         return load_pipeline(
-            [{**step_fields, **request.param.dumped_default}], id=id
+            {"steps": [{**step_fields, **request.param.dumped_default}]}, id=id
         ).steps[0]
 
     inner.steptype = request.param
@@ -54,7 +54,7 @@ def test_label_name(*, load_step):
 @pytest.mark.parametrize("step_param", ALL_SUBSTEP_TYPE_PARAMS)
 def test_nested_substep(step_param, *, load_pipeline):
     def load_step(step_fields, *, id=None):
-        return load_pipeline([step_fields], id=id).steps[0]
+        return load_pipeline({"steps": [step_fields]}, id=id).steps[0]
 
     # @TODO: When using nested format, type is implied by the step name
     #   (so it is rejected in the upstream API)

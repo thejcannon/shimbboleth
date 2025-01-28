@@ -1,0 +1,5 @@
+env:
+  bool: true
+  int: 0
+  string: string
+steps: []

@@ -14,7 +14,7 @@ from shimbboleth.buildkite.pipeline_config.tests.conftest import (
 @pytest.fixture
 def load_step(load_pipeline, request):
     def inner(step_fields, *, id=None):
-        return load_pipeline([{**step_fields, "type": "command"}], id=id).steps[0]
+        return load_pipeline({"steps": [{**step_fields, "type": "command"}]}, id=id).steps[0]
 
     return inner
 
@@ -155,7 +155,7 @@ class TestSingleDimMatrix:
         )
 
     @pytest.mark.parametrize("value, expected", SOFT_FAIL_VALS)
-    def test_with_adjustment_with_soft_fail(self, value, expected, *, load_step):
+    def test_with_adjustments_with_soft_fail(self, value, expected, *, load_step):
         assert load_step(
             {
                 "matrix": {
@@ -173,7 +173,7 @@ class TestSingleDimMatrix:
         )
 
     @pytest.mark.parametrize("value, expected", SKIP_VALS.items())
-    def test_with_adjustment_with_skip(self, value, expected, *, load_step):
+    def test_with_adjustments_with_skip(self, value, expected, *, load_step):
         assert load_step(
             {
                 "matrix": {

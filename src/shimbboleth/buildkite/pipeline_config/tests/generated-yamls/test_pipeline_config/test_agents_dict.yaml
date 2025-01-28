@@ -1,0 +1,5 @@
+agents:
+  bool: true
+  int: 0
+  str: Teddy
+steps: []
