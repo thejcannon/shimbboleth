@@ -2,7 +2,6 @@
 Tests using invalid pipelines for all step types.
 """
 
-
 import pytest
 from shimbboleth.buildkite.pipeline_config.step import Step
 from shimbboleth.buildkite.pipeline_config.tests.conftest import (
@@ -17,10 +16,11 @@ def invalid_step(invalid_pipeline, request):
         return invalid_pipeline(
             {"steps": [{**step_fields, **request.param.dumped_default}]},
             path=f".steps[0]{path}",
-            **kwargs
+            **kwargs,
         )
 
     return inner
+
 
 def test_invalid_key(*, invalid_step):
     invalid_step(
@@ -30,11 +30,12 @@ def test_invalid_key(*, invalid_step):
         id="key_uuid",
     )
 
+
 def test_depends_on__missing_step(*, invalid_step):
     invalid_step(
         {"depends_on": [{}]},
         error="Expected required fields `'step'` to be provided for model `Step.Dependency`",
         path=".depends_on[0]",
         id="depends_on_missing_step",
-        upstream_schema_valid=True
+        upstream_schema_valid=True,
     )

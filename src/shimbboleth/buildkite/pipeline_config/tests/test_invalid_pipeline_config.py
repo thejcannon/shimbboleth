@@ -1,4 +1,3 @@
-
 def test_unknown_step(*, invalid_pipeline):
     invalid_pipeline(
         {"steps": ["unknown"]},
@@ -18,6 +17,8 @@ def test_unknown_step(*, invalid_pipeline):
         path=".steps[0]",
         id="type-unknown",
     )
+
+
 def test_invalid_env(*, invalid_pipeline):
     invalid_pipeline(
         {"steps": [], "env": ["key"]},
@@ -25,6 +26,7 @@ def test_invalid_env(*, invalid_pipeline):
         path=".env",
         id="env_list",
     )
+
 
 def test_invalid_notify(*, invalid_pipeline):
     invalid_pipeline(

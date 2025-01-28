@@ -12,7 +12,7 @@ def invalid_group(invalid_pipeline):
         return invalid_pipeline(
             {"steps": [{"group": "group", **step_fields}]},
             path=f".steps[0]{path}",
-            **kwargs
+            **kwargs,
         )
 
     return inner
@@ -35,6 +35,7 @@ def test_empty_steps(*, invalid_group):
         id="empty_steps",
     )
 
+
 class TestNotify:
     @pytest.fixture
     @staticmethod
@@ -43,7 +44,7 @@ class TestNotify:
             return invalid_group(
                 {"steps": ["wait"], "notify": notify_config},
                 path=f".notify{path}",
-                **kwargs
+                **kwargs,
             )
 
         return inner
@@ -56,16 +57,14 @@ class TestNotify:
             id="notify_unknown",
         )
 
-
     def test_notify_email(self, invalid_notify):
         invalid_notify(
             [{"email": "hello@example.com"}],
             error="Expected `'email'` to be a valid step notification",
             path="[0]",
             id="notify_email",
-            upstream_schema_valid=True
+            upstream_schema_valid=True,
         )
-
 
     def test_notify_webhook(self, invalid_notify):
         invalid_notify(
@@ -73,9 +72,8 @@ class TestNotify:
             error="Expected `'webhook'` to be a valid step notification",
             path="[0]",
             id="notify_webhook",
-            upstream_schema_valid=True
+            upstream_schema_valid=True,
         )
-
 
     def test_notify_pagerduty(self, invalid_notify):
         invalid_notify(
@@ -83,9 +81,8 @@ class TestNotify:
             error="Expected `'pagerduty_change_event'` to be a valid step notification",
             path="[0]",
             id="notify_pagerduty",
-            upstream_schema_valid=True
+            upstream_schema_valid=True,
         )
-
 
     def test_notify_slack_empty_channels(self, invalid_notify):
         invalid_notify(
@@ -93,5 +90,5 @@ class TestNotify:
             error="Expected `[]` to be non-empty",
             path="[0].slack.channels",
             id="notify_slack_empty",
-            upstream_schema_valid=True
+            upstream_schema_valid=True,
         )
