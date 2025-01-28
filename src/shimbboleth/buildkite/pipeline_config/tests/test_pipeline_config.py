@@ -1,26 +1,3 @@
-"""
-This module is responsible for generating the pipelines in the `pipelienes` directory.
-
-We use a multi-step process for a few reasons:
-    - YAML files on disk are easier to grok than Python
-        - And closer align with Buildkite's usage
-    - It's easier to lint YAML files than Python code
-        - Ensure we aren't duplicating test cases, etc...
-    - It's easier to review changes to YAML files than Python code
-    - We can define a single test case, and it be "expanded" into multiple
-        tests scenarios
-
-However it does lead to some complications:
-    - We need to ensure we fail (especially in CI) if we don't have the right files generated
-"""
-
-# Procdure:
-#   - General the YAML into a session-wide tempdir
-#   - (if they don't match, copy it to repo dir, and fail)
-#   - At the end, compare the files/dirs from tempdir and repo
-#       (to see if there's extra files in repo not in tempdir/vice versa)
-#   - (but somehow only do this if we're running a full suite?)
-
 import pytest
 from pytest import param
 from shimbboleth.buildkite.pipeline_config import BuildkitePipeline, Notify
@@ -75,8 +52,8 @@ class TestNotify:
     @pytest.fixture
     @staticmethod
     def load_notify(load_pipeline):
-        def inner(notify_config, *, id=None):
-            return load_pipeline({"steps": [], "notify": notify_config}, id=id).notify
+        def inner(notify_config, **kwargs):
+            return load_pipeline({"steps": [], "notify": notify_config}, **kwargs).notify
 
         return inner
 

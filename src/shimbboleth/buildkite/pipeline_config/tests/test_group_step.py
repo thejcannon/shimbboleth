@@ -13,9 +13,9 @@ BASECAMP_CAMPFIRE_URL = "https://3.basecamp.com/123456/integrations/abcdef/bucke
 
 @pytest.fixture
 def load_step(load_pipeline):
-    def inner(step_config, *, id=None):
+    def inner(step_config, **kwargs):
         return load_pipeline(
-            {"steps": [{"group": "group", "steps": ["wait"], **step_config}]}, id=id
+            {"steps": [{"group": "group", "steps": ["wait"], **step_config}]}, **kwargs
         ).steps[0]
 
     return inner

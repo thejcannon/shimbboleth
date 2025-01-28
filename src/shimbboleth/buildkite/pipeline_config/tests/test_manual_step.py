@@ -10,9 +10,9 @@ from shimbboleth.buildkite.pipeline_config.tests.conftest import (
 
 @pytest.fixture(params=[STEP_TYPE_PARAMS["block"], STEP_TYPE_PARAMS["input"]])
 def load_step(load_pipeline, request):
-    def inner(step_fields, *, id=None):
+    def inner(step_fields, **kwargs):
         return load_pipeline(
-            {"steps": [{**step_fields, **request.param.dumped_default}]}, id=id
+            {"steps": [{**step_fields, **request.param.dumped_default}]}, **kwargs
         ).steps[0]
 
     return inner
@@ -26,9 +26,9 @@ class TestTextField:
     @pytest.fixture
     @staticmethod
     def load_text_field(load_step):
-        def inner(text_field_fields, *, id=None):
+        def inner(text_field_fields, **kwargs):
             return load_step(
-                {"fields": [{**text_field_fields, "text": "text", "key": "key"}]}, id=id
+                {"fields": [{**text_field_fields, "text": "text", "key": "key"}]}, **kwargs
             ).fields[0]
 
         return inner
@@ -56,7 +56,7 @@ class TestSelectField:
     @pytest.fixture
     @staticmethod
     def load_select_field(load_step):
-        def inner(select_field_fields, *, id=None):
+        def inner(select_field_fields, **kwargs):
             return load_step(
                 {
                     "fields": [
@@ -68,7 +68,7 @@ class TestSelectField:
                         }
                     ]
                 },
-                id=id,
+                **kwargs,
             ).fields[0]
 
         return inner

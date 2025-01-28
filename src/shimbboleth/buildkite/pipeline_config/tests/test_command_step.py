@@ -13,9 +13,9 @@ from shimbboleth.buildkite.pipeline_config.tests.conftest import (
 
 @pytest.fixture
 def load_step(load_pipeline, request):
-    def inner(step_fields, *, id=None):
+    def inner(step_fields, **kwargs):
         return load_pipeline(
-            {"steps": [{**step_fields, "type": "command"}]}, id=id
+            {"steps": [{**step_fields, "type": "command"}]}, **kwargs
         ).steps[0]
 
     return inner
@@ -128,23 +128,23 @@ def test_env(*, load_step):
     assert step.env == {"string": "string", "int": "0", "bool": "true"}
 
 
-def test_matrix_array(*, load_step):
-    # @TEST: test different types
-    assert load_step({"matrix": ["string", 0, True]}).matrix == ["string", 0, True]
+
 
 
 class TestMatrix:
     @pytest.fixture
     @staticmethod
-    def load_matrix(load_pipeline):
+    def load_matrix(load_step):
         def inner(matrix_config, **kwargs):
             return (
-                load_pipeline({"steps": [{"matrix": matrix_config}]}, **kwargs)
-                .steps[0]
+                load_step({"matrix": matrix_config}, **kwargs)
                 .matrix
             )
 
         return inner
+
+    def test_array(self, *, load_matrix):
+        assert load_matrix(["string", 0, True]) == ["string", 0, True]
 
     class TestSingleDim:
         def test_simple(self, *, load_matrix):

@@ -14,9 +14,9 @@ from shimbboleth.buildkite.pipeline_config.tests.conftest import (
 
 @pytest.fixture(params=ALL_STEP_TYPE_PARAMS)
 def load_step(load_pipeline, request):
-    def inner(step_fields, *, id=None):
+    def inner(step_fields, **kwargs):
         return load_pipeline(
-            {"steps": [{**step_fields, **request.param.dumped_default}]}, id=id
+            {"steps": [{**step_fields, **request.param.dumped_default}]}, **kwargs
         ).steps[0]
 
     return inner
