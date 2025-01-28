@@ -1,6 +1,5 @@
 import pytest
 
-from shimbboleth.buildkite.pipeline_config import BuildkitePipeline, TriggerStep
 from shimbboleth.buildkite.pipeline_config.tests.conftest import BOOLVALS, SKIP_VALS
 
 

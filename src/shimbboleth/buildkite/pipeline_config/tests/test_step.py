@@ -3,8 +3,6 @@
 """
 
 import pytest
-from pytest import param
-from shimbboleth.buildkite.pipeline_config import BuildkitePipeline
 from shimbboleth.buildkite.pipeline_config.step import Step
 from shimbboleth.buildkite.pipeline_config.tests.conftest import (
     ALL_STEP_TYPE_PARAMS,

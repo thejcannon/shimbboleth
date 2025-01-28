@@ -1,12 +1,10 @@
 import pytest
 
 from shimbboleth.buildkite.pipeline_config import (
-    BuildkitePipeline,
-    GroupStep,
     WaitStep,
     Notify,
 )
-from shimbboleth.buildkite.pipeline_config.tests.conftest import BOOLVALS, SKIP_VALS
+from shimbboleth.buildkite.pipeline_config.tests.conftest import SKIP_VALS
 
 BASECAMP_CAMPFIRE_URL = "https://3.basecamp.com/123456/integrations/abcdef/buckets/1234567/chats/89012345/lines"
 

@@ -1,10 +1,8 @@
 import pytest
-from pytest import param
 
 from shimbboleth.buildkite.pipeline_config import CommandStep
 from shimbboleth.buildkite.pipeline_config.notify import Notify
 from shimbboleth.buildkite.pipeline_config.tests.conftest import (
-    STEP_TYPE_PARAMS,
     BOOLVALS,
     SKIP_VALS,
     SOFT_FAIL_VALS,

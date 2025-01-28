@@ -135,6 +135,7 @@ class StepTestBase(PipelineTestBase):
             "[0]",
             id="unknown_type",
         ),
+        # === POINTER ===
         param(
             {"steps": [], "env": ["key"]},
             "Expected `['key']` to be of type `dict`",

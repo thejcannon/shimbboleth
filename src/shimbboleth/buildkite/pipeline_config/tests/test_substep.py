@@ -1,7 +1,5 @@
 import pytest
-from pytest import param
 
-from shimbboleth.buildkite.pipeline_config import BuildkitePipeline
 from shimbboleth.buildkite.pipeline_config.tests.conftest import ALL_SUBSTEP_TYPE_PARAMS
 
 

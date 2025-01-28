@@ -14,10 +14,12 @@ However it does lead to some complications:
     - We need to ensure we fail (especially in CI) if we don't have the right files generated
 """
 
-# @TODO: conftest.py this
+# @TODO: Instead, what if we ran each test in test collection,
+#   ensuring the load_pipeline fixture returned some "MockAny" object
+#   then we can generate more test cases?
 
 
-# Procdure:
+# Procedure:
 #   - General the YAML into a session-wide tempdir
 #   - (if they don't match, copy it to repo dir, and fail)
 #   - At the end, compare the files/dirs from tempdir and repo
@@ -25,11 +27,10 @@ However it does lead to some complications:
 #   - (but somehow only do this if we're running a full suite?)
 
 from pathlib import Path
-from functools import wraps
 import pytest
-from pytest import param
 import yaml
 from shimbboleth.buildkite.pipeline_config import BuildkitePipeline
+from shimbboleth.internal.clay.validation import ValidationError
 
 PIPELINES_DIR = Path(__file__).parent / "generated-yamls"
 
@@ -61,5 +62,23 @@ def load_pipeline(request):
         )
 
         return BuildkitePipeline.model_load(config)
+
+    return persistented_model_load
+
+
+@pytest.fixture
+def load_invalid_pipeline(request, load_pipeline):
+    def persistented_model_load(
+        config,
+        *,
+        error,
+        path,
+        id=None,
+        # @TODO: upstream_schema_valid?
+    ):
+        with pytest.raises(ValidationError) as e:
+            load_pipeline(config, id=id, upstream_schema_invalid=True)
+        assert error in str(e.value)
+        assert f"Path: {path}\n" in str(e.value) + "\n"
 
     return persistented_model_load

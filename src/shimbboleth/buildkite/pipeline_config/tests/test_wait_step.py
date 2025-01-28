@@ -1,6 +1,6 @@
 import pytest
 
-from shimbboleth.buildkite.pipeline_config import BuildkitePipeline, WaitStep
+from shimbboleth.buildkite.pipeline_config import WaitStep
 from shimbboleth.buildkite.pipeline_config.tests.conftest import BOOLVALS
 
 

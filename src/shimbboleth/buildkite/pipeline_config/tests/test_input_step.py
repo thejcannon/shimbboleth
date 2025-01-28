@@ -1,6 +1,6 @@
 import pytest
 
-from shimbboleth.buildkite.pipeline_config import BuildkitePipeline, InputStep
+from shimbboleth.buildkite.pipeline_config import InputStep
 
 
 @pytest.fixture

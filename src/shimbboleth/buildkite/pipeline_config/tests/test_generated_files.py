@@ -2,8 +2,6 @@
 Run tests against the generated files
 """
 
-from pathlib import Path
-
 import pytest
 import yaml
 from shimbboleth.buildkite.pipeline_config.tests.yamlgen import PIPELINES_DIR

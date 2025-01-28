@@ -1,6 +1,5 @@
 import re
 import pytest
-from pytest import param
 
 from shimbboleth.buildkite.pipeline_config.tests.conftest import (
     STEP_TYPE_PARAMS,
