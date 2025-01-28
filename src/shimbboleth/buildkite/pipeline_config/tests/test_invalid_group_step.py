@@ -3,7 +3,6 @@ Tests using invalid pipelines for group steps.
 """
 
 import pytest
-from pytest import param
 
 
 @pytest.fixture

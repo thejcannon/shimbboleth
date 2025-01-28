@@ -3,10 +3,8 @@ Tests using invalid pipelines for all step types.
 """
 
 import pytest
-from shimbboleth.buildkite.pipeline_config.step import Step
 from shimbboleth.buildkite.pipeline_config.tests.conftest import (
     ALL_STEP_TYPE_PARAMS,
-    BOOLVALS,
 )
 
 

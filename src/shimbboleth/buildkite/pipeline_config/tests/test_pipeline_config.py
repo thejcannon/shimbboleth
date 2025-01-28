@@ -1,5 +1,4 @@
 import pytest
-from pytest import param
 from shimbboleth.buildkite.pipeline_config import BuildkitePipeline, Notify
 
 

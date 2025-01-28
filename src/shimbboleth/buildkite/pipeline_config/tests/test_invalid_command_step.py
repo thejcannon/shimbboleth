@@ -3,7 +3,6 @@ Tests using invalid pipelines for command steps.
 """
 
 import pytest
-from pytest import param
 
 
 @pytest.fixture

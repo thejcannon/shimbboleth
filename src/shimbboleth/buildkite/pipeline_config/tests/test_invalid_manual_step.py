@@ -3,7 +3,6 @@ Tests using invalid pipelines for manual steps (block and input).
 """
 
 import pytest
-from pytest import param
 
 
 @pytest.fixture(params=["block", "input"])

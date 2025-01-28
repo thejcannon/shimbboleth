@@ -3,7 +3,6 @@ Tests using invalid pipelines for wait steps.
 """
 
 import pytest
-from pytest import param
 
 
 @pytest.fixture
