@@ -24,7 +24,6 @@ def test_invalid_env(*, invalid_pipeline):
         {"steps": [], "env": ["key"]},
         error="Expected `['key']` to be of type `dict`",
         path=".env",
-        id="env_list",
     )
 
 
@@ -46,4 +45,5 @@ def test_invalid_notify(*, invalid_pipeline):
         error="Expected `[]` to be non-empty",
         path=".notify[0].slack.channels",
         id="notify_slack_empty_channels",
+        upstream_schema_valid=True,
     )

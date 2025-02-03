@@ -254,7 +254,7 @@ def _(value: str | Notify.Slack.Info) -> Notify.Slack.Info:
 
 
 @Notify.Slack.Info._json_loader_("channels")
-def _(value: str | list[str]) -> NonEmptyList[str]:
+def _(value: str | NonEmptyList[str]) -> NonEmptyList[str]:
     if isinstance(value, str):
         return [value]
     return value

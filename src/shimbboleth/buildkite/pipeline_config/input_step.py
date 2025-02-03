@@ -1,5 +1,4 @@
-from typing import Literal
-from typing_extensions import ClassVar
+from typing import Literal, ClassVar
 
 from shimbboleth.internal.clay.model import FieldAlias
 from shimbboleth.buildkite.pipeline_config.manual_step import ManualStep, field

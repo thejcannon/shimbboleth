@@ -44,9 +44,7 @@ def test_depends_on(*, load_step):
 @pytest.mark.parametrize("value, expected", BOOLVALS)
 def test_depends_on__allow_failure(value, expected, *, load_step):
     assert (
-        load_step(
-            {"depends_on": [{"step": "other", "allow_failure": value}]}, id="scalar"
-        )
+        load_step({"depends_on": [{"step": "other", "allow_failure": value}]})
         .depends_on[0]
         .allow_failure
     ) == expected

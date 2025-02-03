@@ -251,4 +251,5 @@ class CommandStep(CommandStep, extra=False):
 
     def __post_init__(self):
         # @TODO: Verify the concurrency_group fields (together)
+        # See also: dependentRequired
         pass

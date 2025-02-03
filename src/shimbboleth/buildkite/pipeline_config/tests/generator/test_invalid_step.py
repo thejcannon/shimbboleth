@@ -25,7 +25,6 @@ def test_invalid_key(*, invalid_step):
         {"key": "2cb75f85-79ab-43a0-b666-91dbcb64321a"},
         error="Expected `'2cb75f85-79ab-43a0-b666-91dbcb64321a'` to not be a valid UUID",
         path=".key",
-        id="key_uuid",
     )
 
 
@@ -34,6 +33,5 @@ def test_depends_on__missing_step(*, invalid_step):
         {"depends_on": [{}]},
         error="Expected required fields `'step'` to be provided for model `Step.Dependency`",
         path=".depends_on[0]",
-        id="depends_on_missing_step",
         upstream_schema_valid=True,
     )

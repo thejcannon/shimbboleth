@@ -39,9 +39,7 @@ PIPELINES_DIR = Path(__file__).parent / "generated-yamls"
 def load_pipeline(request):
     def persistented_model_load(config, *, id=None, upstream_schema_invalid=False):
         assert isinstance(config, dict)
-        yamls_dir = PIPELINES_DIR / request.node.module.__name__
-        yamls_dir.mkdir(exist_ok=True, parents=True)
-        # @TODO: assert this file doesn't exist in the tempdir?
+
         docs = [config]
         name = request.node.nodeid.split("::", 1)[-1]
         if id is not None:
@@ -55,11 +53,6 @@ def load_pipeline(request):
 
         if front_matter:
             docs.insert(0, front_matter)
-
-        (yamls_dir / name).with_suffix(".yaml").write_text(
-            # @TODO: This should match whatever formatting we expect
-            yaml.dump_all(docs, default_flow_style=False)
-        )
 
         return BuildkitePipeline.model_load(config)
 

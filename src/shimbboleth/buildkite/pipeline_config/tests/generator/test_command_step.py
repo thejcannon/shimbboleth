@@ -37,8 +37,8 @@ def test_agents(*, load_step):
 
 def test_artifact_paths(*, load_step):
     assert (
-        load_step({"artifact_paths": "path"}).artifact_paths
-        == load_step({"artifact_paths": ["path"]}).artifact_paths
+        load_step({"artifact_paths": "path"}, id="scalar").artifact_paths
+        == load_step({"artifact_paths": ["path"]}, id="list").artifact_paths
         == ["path"]
     )
 
@@ -68,29 +68,18 @@ def test_cancel_on_build_failing(value, expected, *, load_step):
     )
 
 
-def test_concurrency(*, load_step):
-    step = load_step({"concurrency": 1, "concurrency_group": "group"})
+@pytest.mark.parametrize("method", ["ordered", "eager", None])
+def test_concurrency(method, *, load_step):
+    step = load_step(
+        {
+            "concurrency": 1,
+            "concurrency_group": "group",
+            **({} if method is None else {"concurrency_method": method}),
+        }
+    )
     assert step.concurrency == 1
     assert step.concurrency_group == "group"
-    assert step.concurrency_method is None
-
-    step = load_step(
-        {
-            "concurrency": 1,
-            "concurrency_group": "group",
-            "concurrency_method": "ordered",
-        }
-    )
-    assert step.concurrency_method == "ordered"
-
-    step = load_step(
-        {
-            "concurrency": 1,
-            "concurrency_group": "group",
-            "concurrency_method": "eager",
-        }
-    )
-    assert step.concurrency_method == "eager"
+    assert step.concurrency_method == method
 
 
 def test_env(*, load_step):
@@ -256,10 +245,12 @@ class TestNotify:
 
     def test_github_check(self, load_notify):
         assert load_notify(["github_check"], id="string") == [Notify.GitHubCheck()]
-        assert load_notify([{"github_check": {}}], id="dict") == [Notify.GitHubCheck()]
-        assert load_notify([{"github_check": {"name": "name"}}]) == [
-            Notify.GitHubCheck(info={"name": "name"})
+        assert load_notify([{"github_check": {}}], id="empty-dict") == [
+            Notify.GitHubCheck()
         ]
+        assert load_notify(
+            [{"github_check": {"name": "name"}}], id="nonempty-dict"
+        ) == [Notify.GitHubCheck(info={"name": "name"})]
 
     def test_github_commit_status(self, load_notify):
         assert load_notify(["github_commit_status"], id="string") == [
@@ -423,13 +414,15 @@ class TestRetry:
             assert manual_retry.allowed is True
 
 
-def test_signature(*, load_step):
+def test_signature__empty(*, load_step):
     # @TODO: signed_fields as scalar string?
     step = load_step({"signature": {}})
     assert step.signature.algorithm is None
     assert step.signature.signed_fields == []
     assert step.signature.value is None
 
+
+def test_signature__nonempty(*, load_step):
     step = load_step(
         {
             "signature": {

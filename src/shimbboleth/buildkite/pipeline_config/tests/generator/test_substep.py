@@ -64,5 +64,5 @@ def test_nested_substep(step_param, *, load_pipeline):
         k: v for k, v in step_param.ctor_defaults.items() if k != "type"
     }
     nested_step = {step_param.stepname: defaults_without_type}
-    step = load_step(nested_step, id="nested")
+    step = load_step(nested_step)
     assert step == step_param.ctor()

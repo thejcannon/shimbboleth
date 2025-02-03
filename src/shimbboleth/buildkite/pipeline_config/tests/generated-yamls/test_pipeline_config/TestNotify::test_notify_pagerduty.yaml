@@ -1,3 +1,0 @@
-notify:
-- pagerduty_change_event: pagerduty_change_event
-steps: []

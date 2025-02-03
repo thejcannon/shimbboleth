@@ -6,10 +6,6 @@ from dataclasses import dataclass
 from typing import TypeVar, Generic, Any
 
 from shimbboleth.buildkite.pipeline_config.tests.cached_bk_api import CachedAPITransport
-from shimbboleth.buildkite.pipeline_config.tests.yamlgen import (
-    load_pipeline as load_pipeline,
-    invalid_pipeline as invalid_pipeline,
-)
 from shimbboleth.buildkite.pipeline_config import (
     BlockStep,
     InputStep,
@@ -21,13 +17,6 @@ from shimbboleth.buildkite.pipeline_config import (
 )
 from shimbboleth.internal.clay.model import Model
 import jsonschema
-
-
-def pytest_configure(config):
-    config.addinivalue_line(
-        "markers",
-        "upstream_schema_invalid: although the config is valid, the upstream JSON Schema considers it invalid",
-    )
 
 
 ModelT = TypeVar("ModelT", bound=Model)

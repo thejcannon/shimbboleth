@@ -22,5 +22,4 @@ def test_missing_trigger(*, invalid_trigger):
         {},
         error="Expected required fields `'trigger'` to be provided for model `TriggerStep`",
         path="",
-        id="missing_trigger",
     )
