@@ -321,5 +321,7 @@ def load_model(model_type: type[ModelT], data: JSONObject) -> ModelT:
     instance._extra = extras
     return instance
 
+
 if TYPE_CHECKING:
+
     def load(field_type: type[T], *, data) -> T: ...

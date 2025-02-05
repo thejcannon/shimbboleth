@@ -18,7 +18,7 @@ from pytest import param
 
 
 def make_model(attrs, **kwargs):
-    return type(Model)("MyModel", (Model,), attrs, **kwargs)
+    return type("MyModel", (Model,), attrs, **kwargs)
 
 
 def str_to_int(value: str) -> int:
