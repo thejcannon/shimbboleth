@@ -252,7 +252,7 @@ def test_model_in_other_type():
     assert load(dict[str, MyModel], data={"key": {"field": "one king mop"}}) == {
         "key": MyModel(field="one king mop")
     }
-    assert load(MyModel | None, data=None) is None
+    assert load(MyModel | None, data=None) is None  # type: ignore
 
 
 def test_field_alias():
