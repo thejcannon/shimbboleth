@@ -20,12 +20,7 @@ class ModelMeta(type):
     __json_fieldnames__: frozenset[str]
 
     def __new__(mcls, name, bases, namespace, *, extra: bool | None = None):
-        cls = super().__new__(
-            mcls,
-            name,
-            bases,
-            namespace,
-        )
+        cls = super().__new__(mcls, name, bases, namespace)
 
         # NB: Copy the classcell so `super()` works and doesn't cause `TypeError` issues.
         if classcell := namespace.get("__classcell__"):

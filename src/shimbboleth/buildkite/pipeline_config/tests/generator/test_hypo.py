@@ -23,40 +23,59 @@ class OMITTED:
         return "OMITTED"
 
 
-@st.composite
-def str2list(draw):
-    value = draw(st.text())
-    return value, [value]
+def optional(strategy, default=None):
+    """Make a strategy optional, defaulting to None when omitted."""
+    return st.one_of(
+        st.just((OMITTED, default)),
+        strategy,
+    )
 
 
-def ident(strategy):
-    return strategy.map(lambda x: (x, x))
+str2list = st.text().map(lambda x: (x, [x]))
+list_str_strategy = optional(st.one_of(str2list, st.lists(st.text())), [])
 
+# Core strateg
 bool_strategy = st.one_of(
     st.just((True, True)),
     st.just((False, False)),
     st.just(("true", True)),
     st.just(("false", False)),
 )
+
 skip_strategy = st.one_of(
-    st.just((OMITTED, False)),
     bool_strategy,
     st.just(("", False)),
-    st.text().map(lambda x: (x, True)),
+    st.text(min_size=1),
 )
-optional_int_strategy = st.one_of(
-    st.just((OMITTED, None)),
-    st.integers().map(lambda x: (x, x)),
+
+soft_fail_strategy = optional(
+    bool_strategy,
+    st.lists(
+        st.fixed_dictionaries({"exit_status": st.one_of(st.just("*"), st.integers())}),
+        min_size=1,
+    ),
+    False,
 )
-optional_str_strategy = st.one_of(
-    st.just((OMITTED, None)),
-    st.text().map(lambda x: (x, x)),
+
+# ===== command strategies =====
+
+cache_strategy = optional(
+    st.one_of(
+        st.text().map(lambda s: (s, CommandStep.Cache(paths=[s]))),
+        st.lists(st.text()).map(lambda l: (l, CommandStep.Cache(paths=l))),
+        fixed_dictionaries(
+            dict(
+                paths=st.lists(st.text()),
+            ),
+            optional=dict(
+                name=st.text(),
+                size=st.from_regex("^\\d+g$", fullmatch=True),
+            ),
+        ).map(lambda input: (input, CommandStep.Cache(**input))),
+    ),
+    CommandStep.Cache(paths=[]),
 )
-list_str_strategy = st.one_of(
-    st.just((OMITTED, [])),
-    str2list(),
-    ident(st.lists(st.text())),
-)
+
 
 @given(
     test_case=st.builds(
@@ -64,49 +83,36 @@ list_str_strategy = st.one_of(
         # @TODO: agents
         artifact_paths=list_str_strategy,
         branches=list_str_strategy,
-        cache=st.one_of(
-            list_str_strategy.map(lambda s: (s[0], CommandStep.Cache(paths=s[1]))),
-            fixed_dictionaries(
-                dict(
-                    # @TEST: Can paths be a scalar?
-                    paths=st.lists(st.text()),
-                ),
-                optional=dict(
-                    name=st.text(),
-                    size=st.from_regex("^\\d+g$", fullmatch=True),
-                )
-            ).map(lambda input: (input, CommandStep.Cache(**input)))
-        ),
-        cancel_on_build_failing=st.one_of(
-            st.just((OMITTED, False)),
-            bool_strategy,
-        ),
+        cache=cache_strategy,
+        cancel_on_build_failing=optional(bool_strategy, False),
         command=list_str_strategy,
         # @TODO: Concurrency fields
         # @TODO: env
-        label=optional_str_strategy,
+        label=optional(st.text()),
         # @TODO: matrix
         # @TODO: notify
-        parallelism=optional_int_strategy,
+        parallelism=optional(st.integers()),
         # @TODO: plugins
-        priorotiy=optional_int_strategy,
+        priority=optional(st.integers()),
         # @TODO: retry
         # @TODO: signature
-        skip =skip_strategy,
-        # @TODO: soft_fail
-        timeout_in_minutes=st.one_of(
-            st.just((OMITTED, None)),
-            st.integers(min_value=1).map(lambda x: (x, x)),
-        ),
+        skip=optional(skip_strategy, False),
+        soft_fail=soft_fail_strategy,
+        timeout_in_minutes=optional(st.integers(min_value=1)),
     )
 )
 def test_command_step(load_step, test_case):
-    data = {}
-    for fieldname, (input, expected) in test_case.items():
-        if input is OMITTED:
-            continue
-        data[fieldname] = input
+    # @TODO: Move this to `.map`?
+    test_case = {
+        fieldname: (input if isinstance(input, tuple) else (input, input))
+        for fieldname, input in test_case.items()
+    }
+    data = {
+        fieldname: input
+        for fieldname, (input, _) in test_case.items()
+        if input is not OMITTED
+    }
 
     step = load_step(data)
-    for fieldname, (input, expected) in test_case.items():
+    for fieldname, (_, expected) in test_case.items():
         assert getattr(step, fieldname) == expected
