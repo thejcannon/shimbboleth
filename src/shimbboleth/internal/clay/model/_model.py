@@ -71,6 +71,3 @@ class Model(_ModelBase, metaclass=ModelMeta):
         from shimbboleth.internal.clay.json_dump import dump_model
 
         return dump_model(self)
-
-    def __setattr__(self, name: str, value: Any):
-        return super().__setattr__(name, value)
