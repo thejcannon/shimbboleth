@@ -21,7 +21,7 @@ jobs:
             command: run pytest
           - id: lint
             name: Lint
-            command: run ruff check --output-format=github .
+            command: run lefthook run pre-commit --all-files --force
           - id: build
             name: Build
             command: build
