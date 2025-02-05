@@ -3,6 +3,7 @@ Module defining the `Model` base class for all shimbboleth modeling.
 """
 
 from typing import Any, Self, TypeVar, Callable
+from collections.abc import Mapping
 import dataclasses
 
 from shimbboleth.internal.clay.jsonT import JSON, JSONObject
@@ -13,7 +14,7 @@ T = TypeVar("T")
 
 
 class _ModelBase:
-    _extra: dict[str, JSON]
+    _extra: Mapping[str, JSON]
     """
     If `extra` is `True`, then this contains any extra fields provided when loading.
     """

@@ -1,8 +1,9 @@
 from contextlib import contextmanager
 from functools import singledispatch
-from typing import Any, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 from types import UnionType, GenericAlias
 import re
+import copy
 import uuid
 import dataclasses
 import logging
@@ -69,7 +70,7 @@ def _ensure_is(data, expected: type[T]) -> T:
 
 
 @singledispatch
-def load(field_type, *, data):
+def load(field_type, *, data):  # type: ignore
     if field_type is bool:
         return load_bool(data)
     if field_type is int:
@@ -180,7 +181,7 @@ def load_none(data: Any) -> None:
     return _ensure_is(data, type(None))
 
 
-def load_list(data: Any, *, field_type: GenericAlias) -> list[T]:
+def load_list(data: Any, *, field_type: GenericAlias) -> list:
     data = _ensure_is(data, list)
     (argT,) = field_type.__args__
     ret = []
@@ -224,7 +225,7 @@ class _LoadModelHelper:
         for field_alias_name, field_alias in model_type.__field_aliases__.items():
             if field_alias_name in data:
                 if data_copy is data:
-                    data_copy = data.copy()
+                    data_copy = copy.copy(data)
 
                 value = data_copy.pop(field_alias_name)
                 if (
@@ -259,7 +260,7 @@ class _LoadModelHelper:
     @staticmethod
     def load_field(field: dataclasses.Field, data: JSONObject):
         json_loader = field.metadata.get("json_loader", None)
-        expected_type = (
+        expected_type: Any = (
             json_loader.__annotations__["value"] if json_loader else field.type
         )
 
@@ -319,3 +320,8 @@ def load_model(model_type: type[ModelT], data: JSONObject) -> ModelT:
 
     instance._extra = extras
     return instance
+
+
+if TYPE_CHECKING:
+
+    def load(field_type: type[T], *, data) -> T: ...

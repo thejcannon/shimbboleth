@@ -174,7 +174,7 @@ class _ModelFieldSchemaHelper:
             - We'll be getting the schema for our models
             - Schema generation isn't excpected to be as fast as possible
         """
-        input_type = field.type
+        input_type: Any = field.type
         json_loader = field.metadata.get("json_loader", None)
         if json_loader:
             input_type = field.metadata.get(

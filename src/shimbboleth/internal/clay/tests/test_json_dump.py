@@ -9,7 +9,7 @@ from shimbboleth.internal.clay.json_dump import dump
 
 
 def make_model(attrs, **kwargs):
-    return type(Model)("MyModel", (Model,), attrs, **kwargs)
+    return type("MyModel", (Model,), attrs, **kwargs)
 
 
 def int_to_str(value: int) -> str:

@@ -13,7 +13,7 @@ from shimbboleth.internal.clay.json_load import load
 
 
 def make_model(attrs, **kwargs):
-    return type(Model)("MyModel", (Model,), attrs, **kwargs)
+    return type("MyModel", (Model,), attrs, **kwargs)
 
 
 def str_to_int(value: str) -> int:
@@ -252,7 +252,7 @@ def test_model_in_other_type():
     assert load(dict[str, MyModel], data={"key": {"field": "one king mop"}}) == {
         "key": MyModel(field="one king mop")
     }
-    assert load(MyModel | None, data=None) is None
+    assert load(MyModel | None, data=None) is None  # type: ignore
 
 
 def test_field_alias():

@@ -77,7 +77,7 @@ class UUIDValidator:
 @dataclasses.dataclass(slots=True, frozen=True)
 class UnionValidator:
     # NB: This is an incomplete map, only types with validators will be included.
-    validators_by_type: Mapping[type, tuple[Validator]]
+    validators_by_type: Mapping[type, tuple[Validator, ...]]
 
     def __call__(self, value: str):
         # NB: Remember, we assume data type-correctness
