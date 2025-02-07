@@ -113,9 +113,9 @@ def get_union_type_validators(field_type: UnionType) -> Iterable[Validator]:
     }
 
     if is_shimbboleth_pytesting():
-        assert (
-            len(validators_by_type) == len(field_type.__args__)
-        ), f"Overlapping outer types in Union is unsupported: Input: `{field_type.__args__}`. Result: `{validators_by_type}`."
+        assert len(validators_by_type) == len(field_type.__args__), (
+            f"Overlapping outer types in Union is unsupported: Input: `{field_type.__args__}`. Result: `{validators_by_type}`."
+        )
 
     validators_by_type = {
         key: tuple(value) for key, value in validators_by_type.items() if value

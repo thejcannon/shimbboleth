@@ -212,9 +212,9 @@ class _ModelFieldSchemaHelper:
                 "json_schema_type", json_loader.__annotations__["value"]
             )
             output_type = json_loader.__annotations__["return"]
-            assert (
-                output_type == field.type
-            ), f"for {json_loader} {output_type=} {field.type=}"
+            assert output_type == field.type, (
+                f"for {json_loader} {output_type=} {field.type=}"
+            )
             return schema(input_type, model_defs=model_defs)
         return schema(field.type, model_defs=model_defs)
 
