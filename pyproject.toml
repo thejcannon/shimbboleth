@@ -36,3 +36,4 @@ dev-dependencies = [
 ]
 
 [tool.uv.sources]
+ruff = { git = "https://github.com/thejcannon/ruff.git", rev = "exit-non-zero-on-format" }

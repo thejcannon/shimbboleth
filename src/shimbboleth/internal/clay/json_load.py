@@ -128,9 +128,9 @@ def load_union_type(field_type: UnionType, *, data: Any):
 
     if is_shimbboleth_pytesting():
         jsontypes = {_get_jsontype(argT) for argT in field_type.__args__}
-        assert (
-            len(field_type.__args__) == len(jsontypes)
-        ), f"Overlapping outer types in Union is unsupported: Input: `{field_type.__args__}`. Result: `{jsontypes}`."
+        assert len(field_type.__args__) == len(jsontypes), (
+            f"Overlapping outer types in Union is unsupported: Input: `{field_type.__args__}`. Result: `{jsontypes}`."
+        )
 
     for argT in field_type.__args__:
         expected_type = _get_jsontype(argT)

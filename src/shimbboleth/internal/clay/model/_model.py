@@ -2,7 +2,7 @@
 Module defining the `Model` base class for all shimbboleth modeling.
 """
 
-from typing import Any, Self, TypeVar, Callable
+from typing import Self, TypeVar, Callable
 from collections.abc import Mapping
 import dataclasses
 
@@ -26,9 +26,9 @@ class Model(_ModelBase, metaclass=ModelMeta):
         field = cls.__dataclass_fields__[field]
 
         assert isinstance(field, dataclasses.Field), "Did you forget to = field(...)?"
-        assert (
-            "json_loader" not in field.metadata
-        ), f"Only one loader per field. Already: {field.metadata['json_loader']}"
+        assert "json_loader" not in field.metadata, (
+            f"Only one loader per field. Already: {field.metadata['json_loader']}"
+        )
 
         def decorator(func: T) -> T:
             # NB: `metadata` is immutable, so copy/reassign
@@ -48,9 +48,9 @@ class Model(_ModelBase, metaclass=ModelMeta):
     @staticmethod
     def _json_dumper_(field) -> Callable[[T], T]:
         assert isinstance(field, dataclasses.Field), "Did you forget to = field(...)?"
-        assert (
-            "json_dumper" not in field.metadata
-        ), f"Only one dumper per field. Already: {field.metadata['json_dumper']}"
+        assert "json_dumper" not in field.metadata, (
+            f"Only one dumper per field. Already: {field.metadata['json_dumper']}"
+        )
 
         def decorator(func: T) -> T:
             # NB: `metadata` is immutable, so copy/reassign
