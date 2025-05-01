@@ -3,8 +3,7 @@ from itertools import pairwise
 from functools import partial
 import warnings
 import pytest
-import json
-from _pytest.python import Function, Module
+from _pytest.python import Function
 from shimbboleth.buildkite.pipeline_config import BuildkitePipeline
 from shimbboleth.internal.clay.validation import ValidationError
 from shimbboleth.buildkite.pipeline_config.tests.generator.generated_tests import (

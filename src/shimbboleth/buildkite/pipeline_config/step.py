@@ -8,6 +8,7 @@ from shimbboleth.internal.clay.validation import Not, ValidationError
 from shimbboleth.internal.clay.jsonT import JSONObject
 from shimbboleth.internal.clay.json_load import JSONLoadError
 from shimbboleth.buildkite.pipeline_config.notify import Notify, _parse_notify
+from shimbboleth.buildkite.pipeline_config._types import BKStrList, BKBool
 from uuid import UUID
 from typing import ClassVar, final, Annotated
 
@@ -16,12 +17,12 @@ class Step(Model):
     class Dependency(Model, extra=False):
         step: str
 
-        allow_failure: bool = field(default=False)
+        allow_failure: BKBool = BKBool(default=False)
 
     key: Annotated[str, Not[UUID]] | None = field(default=None)
     """A unique identifier for a step, must not resemble a UUID"""
 
-    allow_dependency_failure: bool = field(default=False)
+    allow_dependency_failure: BKBool = BKBool(default=False)
     """Whether to proceed with this step and further steps if a step named in the depends_on attribute fails"""
 
     depends_on: list[Dependency] = field(default_factory=list)
@@ -78,5 +79,5 @@ class Step(Model):
 
 
 class SubStep(Step):
-    branches: list[str] = field(default_factory=list)
+    branches: BKStrList = BKStrList()
     """Which branches will include this step in their builds"""

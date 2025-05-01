@@ -78,5 +78,6 @@ class Model(_ModelBase, metaclass=ModelMeta):
 
         return dump_model(self)
 
+    # @TODO: Why is this here?
     def __setattr__(self, name: str, value: Any):
         return super().__setattr__(name, value)

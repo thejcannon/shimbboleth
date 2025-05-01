@@ -373,7 +373,6 @@ wheels = [
 
 [[package]]
 name = "shimbboleth"
-version = "0.0.2.dev161+g1a6ffc4.d20250201"
 source = { editable = "." }
 dependencies = [
     { name = "httpx" },

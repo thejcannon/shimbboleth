@@ -2,9 +2,9 @@ from typing import overload
 import dataclasses
 
 from shimbboleth.internal.clay.model import Model, field
-from shimbboleth.internal.clay.validation import NonEmptyList
 from shimbboleth.internal.clay.json_load import JSONLoadError
 from shimbboleth.internal.clay.jsonT import JSONObject
+from shimbboleth.internal.clay._types import NonEmptyList as NonEmptyList2
 
 
 class _Service(Model, extra=False):
@@ -25,7 +25,7 @@ class Notify(Model, extra=False):
         class Info(Model, extra=False):
             # @VALIDATE: The `slack` notification is invalid: Each channel should be defined as
             #   `#channel-name`, `team-name#channel-name`, 'team-name@user-name', '@user-name', 'U12345678', 'W12345678', or 'S12345678'
-            channels: NonEmptyList[str]
+            channels: NonEmptyList2[str] = NonEmptyList2()
             message: str | None = None
 
         info: Info = field(json_alias="slack")

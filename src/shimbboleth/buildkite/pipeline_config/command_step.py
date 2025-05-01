@@ -13,7 +13,12 @@ from shimbboleth.internal.clay.validation import (
     NonEmptyDict,
     MatchesRegex,
 )
-
+from shimbboleth.buildkite.pipeline_config._types import (
+    BKStrList,
+    BKBool,
+    Skip,
+    SoftFail,
+)
 from shimbboleth.buildkite.pipeline_config.step import SubStep, Step
 
 
@@ -22,14 +27,11 @@ class CommandStep(SubStep, extra=False):  # type: ignore
     class Matrix(Model, extra=False):
         ElementT = str | int | bool
 
-        class _Adjustmenet(Model):
-            # NB: Passing an empty string is equivalent to false.
-            skip: bool | str = field(default=False)
+        class _Adjustment(Model):
+            skip: Skip = Skip()
             """Whether to skip this step or not. Passing a string provides a reason for skipping this command."""
 
-            # NB: This differs from the upstream schema in that we "unpack"
-            #  the `exit_status` object into the status.
-            soft_fail: bool | NonEmptyList[int] = field(default=False)
+            soft_fail: SoftFail = SoftFail()
             """Allow specified non-zero exit statuses not to fail the build."""
 
 
@@ -52,7 +54,7 @@ class CommandStep(CommandStep, extra=False):
         class SingleDim(Model, extra=False):
             """Configuration for single-dimension Build Matrix (e.g. list of elements/adjustments)."""
 
-            class Adjustment(CommandStep.Matrix._Adjustmenet, extra=False):
+            class Adjustment(CommandStep.Matrix._Adjustment, extra=False):
                 """An adjustment to a Build Matrix scalar element (e.g. single-dimension matrix)."""
 
                 with_value: str = field(json_alias="with")
@@ -65,7 +67,7 @@ class CommandStep(CommandStep, extra=False):
         class MultiDim(Model, extra=False):
             """Configuration for multi-dimension Build Matrix (e.g. map of elements/adjustments)."""
 
-            class Adjustment(CommandStep.Matrix._Adjustmenet, extra=False):
+            class Adjustment(CommandStep.Matrix._Adjustment, extra=False):
                 """An adjustment to a multi-dimension Build Matrix"""
 
                 # @VALIDATE: Each key in a `matrix.adjustments.with` must exist in the associated `matrix.setup`;
@@ -130,10 +132,10 @@ class CommandStep(CommandStep, extra=False):
         class Manual(Model, extra=False):
             """See https://buildkite.com/docs/pipelines/configure/step-types/command-step#retry-attributes-manual-retry-attributes"""
 
-            allowed: bool = field(default=True)
+            allowed: BKBool = BKBool(default=True)
             """Whether or not this job can be retried manually"""
 
-            permit_on_passed: bool = field(default=True)
+            permit_on_passed: BKBool = BKBool(default=True)
             """Whether or not this job can be retried after it has passed"""
 
             reason: str | None = None
@@ -167,7 +169,7 @@ class CommandStep(CommandStep, extra=False):
     See https://buildkite.com/docs/agent/v3/cli-start#agent-targeting
     """
 
-    artifact_paths: list[str] = field(default_factory=list)
+    artifact_paths: BKStrList = BKStrList()
     """The glob paths of artifacts to upload once this step has finished running"""
 
     # NB: branches from `SubStep`
@@ -175,10 +177,10 @@ class CommandStep(CommandStep, extra=False):
     cache: Cache = field(default_factory=lambda: CommandStep.Cache(paths=[]))
     """See: https://buildkite.com/docs/pipelines/hosted-agents/linux"""
 
-    cancel_on_build_failing: bool = field(default=False)
+    cancel_on_build_failing: BKBool = BKBool(default=False)
     """Whether to cancel the job as soon as the build is marked as failing"""
 
-    command: list[str] = field(default_factory=list)
+    command: BKStrList = BKStrList()
     """The commands to run on the agent"""
 
     concurrency: int | None = None
@@ -229,13 +231,12 @@ class CommandStep(CommandStep, extra=False):
     signature: Signature | None = None
     """@TODO (missing description)"""
 
-    # NB: Passing an empty string is equivalent to false.
-    skip: bool | str = field(default=False)
+    skip: Skip = Skip()
     """Whether to skip this step or not. Passing a string provides a reason for skipping this command."""
 
     # NB: This differs from the upstream schema in that we "unpack"
     #  the `exit_status` object into the status.
-    soft_fail: bool | NonEmptyList[int] = field(default=False)
+    soft_fail: SoftFail = SoftFail
     """Allow specified non-zero exit statuses not to fail the build."""
 
     # @TEST: Zero is OK upstream?

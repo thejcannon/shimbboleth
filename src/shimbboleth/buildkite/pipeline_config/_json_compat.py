@@ -36,7 +36,7 @@ from shimbboleth.internal.clay.validation import (
 from shimbboleth.buildkite.pipeline_config.block_step import BlockStep
 from shimbboleth.buildkite.pipeline_config.input_step import InputStep
 from shimbboleth.buildkite.pipeline_config.wait_step import WaitStep
-from shimbboleth.buildkite.pipeline_config.step import Step, SubStep
+from shimbboleth.buildkite.pipeline_config.step import Step
 from shimbboleth.buildkite.pipeline_config.notify import Notify
 from shimbboleth.buildkite.pipeline_config.trigger_step import TriggerStep
 from shimbboleth.buildkite.pipeline_config.command_step import CommandStep
@@ -124,24 +124,6 @@ def parse_step(
     raise ValidationError(value=step, expectation="be a valid Buildkite pipeline step")
 
 
-def load_str_list(value: str | list[str]) -> list[str]:
-    return value if isinstance(value, list) else [value]
-
-
-def load_bool(value: bool | Literal["true", "false"]) -> bool:
-    return value in (True, "true")
-
-
-def load_skip(value: str | bool) -> str | bool:
-    if value in (True, False, "true", "false"):
-        return load_bool(value)
-    if value == "":
-        return False
-    return value
-
-
-# @TODO: Coerce all 0s to `False` so `if soft_fail` is legit even in the case of a list
-# @TEST/@TODO: Deduplicate and sort.
 def load_soft_fail(
     value: bool | Literal["true", "false"] | list[ExitStatus],
 ) -> bool | NonEmptyList[int]:
@@ -262,9 +244,6 @@ def _(value: str | NonEmptyList[str]) -> NonEmptyList[str]:
 
 # ===== Step =====
 
-Step.Dependency._json_loader_("allow_failure")(load_bool)
-Step._json_loader_("allow_dependency_failure")(load_bool)
-
 
 @Step._json_loader_("depends_on", json_schema_type=str | list[str | Step.Dependency])
 @staticmethod
@@ -282,37 +261,7 @@ def _(value: str | list[str | JSONObject]) -> list[Step.Dependency]:
     return ret
 
 
-SubStep._json_loader_("branches")(load_str_list)
-
 # ===== CommandStep ====
-
-CommandStep._json_loader_("artifact_paths")(load_str_list)
-CommandStep._json_loader_("cancel_on_build_failing")(load_bool)
-CommandStep._json_loader_("command")(load_str_list)
-CommandStep._json_loader_("skip")(load_skip)
-CommandStep._json_loader_("soft_fail")(load_soft_fail)
-CommandStep._json_dumper_("soft_fail")(dump_soft_fail)
-CommandStep.Matrix.SingleDim.Adjustment._json_loader_("skip")(load_skip)
-assert (
-    CommandStep.Matrix.MultiDim.Adjustment.__dataclass_fields__["skip"].metadata[
-        "json_loader"
-    ]
-    == load_skip
-)
-CommandStep.Matrix.SingleDim.Adjustment._json_loader_("soft_fail")(load_soft_fail)
-CommandStep.Matrix.SingleDim.Adjustment._json_dumper_("soft_fail")(dump_soft_fail)
-assert (
-    CommandStep.Matrix.MultiDim.Adjustment.__dataclass_fields__["soft_fail"].metadata[
-        "json_loader"
-    ]
-    == load_soft_fail
-)
-assert (
-    CommandStep.Matrix.MultiDim.Adjustment.__dataclass_fields__["soft_fail"].metadata[
-        "json_dumper"
-    ]
-    == dump_soft_fail
-)
 
 
 # @TODO: If there is no difference, just double-decorate above, otherwise whats the difference?
@@ -453,20 +402,7 @@ def _(
     return value
 
 
-CommandStep.Retry.Manual._json_loader_("allowed")(load_bool)
-CommandStep.Retry.Manual._json_loader_("permit_on_passed")(load_bool)
-
 # ===== ManualStep =====
-
-ManualStep.Text._json_loader_("required")(load_bool)
-assert (
-    ManualStep.SingleSelect.__dataclass_fields__["required"].metadata["json_loader"]
-    == load_bool
-)
-assert (
-    ManualStep.MultiSelect.__dataclass_fields__["required"].metadata["json_loader"]
-    == load_bool
-)
 
 
 @ManualStep.SingleSelect._json_loader_("multiple")
@@ -512,8 +448,6 @@ def _(
 
 # ===== GroupStep =====
 
-GroupStep._json_loader_("skip")(load_skip)
-
 
 @GroupStep._json_loader_(
     "steps",
@@ -555,14 +489,3 @@ def _(
 )
 def _(value: list[str | JSONObject]) -> list[Step.NotifyT]:
     return GroupStep._parse_notify(value)
-
-
-# ===== TriggerStep =====
-
-TriggerStep._json_loader_("is_async")(load_bool)
-TriggerStep._json_loader_("skip")(load_skip)
-TriggerStep._json_loader_("soft_fail")(load_bool)
-
-# ===== WaitStep =====
-
-WaitStep._json_loader_("continue_on_failure")(load_bool)

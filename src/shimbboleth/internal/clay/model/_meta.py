@@ -6,7 +6,7 @@ from types import MappingProxyType
 from shimbboleth.internal.clay.jsonT import JSONObject
 from shimbboleth.internal.clay.model._field_alias import FieldAlias
 from shimbboleth.internal.clay.model._field import field
-from shimbboleth.internal.clay._validators import ValidationDescriptor, get_validators
+from shimbboleth.internal.clay._validators import get_validators
 
 T = TypeVar("T")
 
@@ -34,7 +34,7 @@ class ModelMeta(type):
         if "__dataclass_fields__" in cls.__dict__:
             return cls
 
-        return dataclasses.dataclass(slots=True, kw_only=True)(cls)
+        return dataclasses.dataclass(kw_only=True)(cls)
 
     def __init__(cls, name, bases, namespace, *, extra: bool | None = None):
         for attrname, attrvalue in namespace.items():
@@ -64,17 +64,23 @@ class ModelMeta(type):
         for field_attr in dataclasses.fields(cls):  # type: ignore
             field_validators = tuple(get_validators(field_attr.type))
             if field_validators:
-                setattr(
-                    cls,
-                    field_attr.name,
-                    ValidationDescriptor(
-                        getattr(cls, field_attr.name), field_validators
-                    ),
-                )
+                pass
+                # setattr(
+                #     cls,
+                #     field_attr.name,
+                #     ValidationDescriptor(
+                #         getattr(cls, field_attr.name), field_validators
+                #     ),
+                # )
 
     # @TODO: Introduce `Namespace` type, and use it for namespaces
     @property
     def __modelname__(cls) -> str:
+        """
+        The dotted model name.
+
+        (E.g. `CommandStep.Matrix.SingleDim`)
+        """
         names = [cls.__name__]
         while cls:
             cls = cls.__parent_model__

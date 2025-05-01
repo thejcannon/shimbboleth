@@ -1,0 +1,127 @@
+from typing import Literal, overload, Generic, TypeVar
+
+from shimbboleth.internal.clay.model import Model
+from shimbboleth.internal.clay.jsonT import JSONObject
+
+T = TypeVar("T")
+
+
+class _DescriptorBase(Generic[T]):
+    def __set_name__(self, owner, name: str) -> None:
+        self.name = name
+
+    @overload
+    def __get__(self, instance: None, owner) -> None: ...
+
+    @overload
+    def __get__(self, instance: object, owner) -> T: ...
+
+    def __get__(self, instance, owner) -> T:
+        if instance is None:
+            return None
+        return instance.__dict__[self.name]
+
+
+class ExitStatus(Model, extra=True):
+    exit_status: Literal["*"] | int
+    """The exit status number that will cause this job to soft-fail"""
+
+
+class BKBool(_DescriptorBase[bool]):
+    """
+    A descriptor for Buildkite's "boolean" type.
+
+    @TODO: Mention get/set types.
+    """
+
+    def __init__(self, *, default: bool, json_alias: str | None = None) -> None:
+        self.default = default
+        self.json_alias = json_alias
+
+    def __get__(self, instance, owner) -> T:
+        if instance is None:
+            return self.default
+        return instance.__dict__[self.name]
+
+    def __set__(self, instance, value: bool | Literal["true", "false"] | None) -> None:
+        if value is None:
+            value = self.default
+        if value in (True, "true"):
+            value = True
+        elif value in (False, "false"):
+            value = False
+        else:
+            raise ValueError(f"Invalid value for bool: {value}")
+        instance.__dict__[self.name] = value
+
+    @classmethod
+    def __shimbboleth_json_schema__(cls) -> JSONObject:
+        return {"type": "boolean"}
+
+
+class Skip(_DescriptorBase[bool | str]):
+    """
+    A descriptor for Buildkite's "skip" type.
+    """
+
+    def __set__(
+        self, instance, value: bool | Literal["true", "false", ""] | str | None
+    ) -> None:
+        if value in (True, "true"):
+            instance.__dict__[self.name] = True
+        elif value in (None, False, "false", ""):
+            instance.__dict__[self.name] = False
+        else:
+            instance.__dict__[self.name] = value
+
+    @classmethod
+    def __shimbboleth_json_schema__(cls) -> JSONObject:
+        return {"type": "boolean"}  # @TODO: Wrong but gotta put something to move on
+
+
+class BKStrList(_DescriptorBase[list[str]]):
+    """
+    A descriptor for Buildkite's "list of strings"
+    """
+
+    def __set__(self, instance, value: list[str] | str | None) -> None:
+        instance.__dict__[self.name] = (
+            value if isinstance(value, list) else [value] if value is not None else []
+        )
+
+    @classmethod
+    def __shimbboleth_json_schema__(cls) -> JSONObject:
+        # @TODO: Union type of str array str or null?
+        return {"type": "array", "items": {"type": "string"}}
+
+
+# @TODO: NonEmptyList
+
+
+class SoftFail(_DescriptorBase[bool | list[ExitStatus]]):
+    """
+    A descriptor for Buildkite's "soft-fail" type.
+    """
+
+    # @TODO: Coerce all 0s to `False` so `if soft_fail` is legit even in the case of a list
+    # @TEST/@TODO: Deduplicate and sort.
+    # @TODO: Handle `list[ExitStatus]`?
+    def __set__(
+        self, instance, value: bool | Literal["true", "false"] | list[int] | None
+    ) -> None:
+        if value in (True, "true"):
+            instance.__dict__[self.name] = True
+        elif value in (False, "false", None):
+            instance.__dict__[self.name] = False
+        elif value == []:
+            instance.__dict__[self.name] = False
+        elif any(status.exit_status == "*" for status in value):
+            instance.__dict__[self.name] = True
+        else:
+            instance.__dict__[self.name] = [
+                ExitStatus(exit_status=status) for status in value
+            ]
+
+    @classmethod
+    def __shimbboleth_json_schema__(cls) -> JSONObject:
+        return {"type": "boolean"}  # @TODO: Wrong but gotta put something to move on

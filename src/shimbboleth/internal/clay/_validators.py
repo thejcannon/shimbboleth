@@ -165,6 +165,8 @@ class ValidationDescriptor:
         self.validators = validators
 
     def __get__(self, instance, owner):
+        if instance is None:
+            return self
         return self.field_descriptor.__get__(instance, owner)
 
     def __set__(self, instance, value):

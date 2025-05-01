@@ -89,6 +89,11 @@ def load(field_type, *, data):
     if issubclass(field_type, Model):
         return field_type.model_load(data)
 
+    if hasattr(field_type, "__set__"):
+        # @TODO: this doesnt do type validation
+        # we can get the `value` annotations and validate that
+        return data
+
     raise WrongTypeError(field_type, data)
 
 

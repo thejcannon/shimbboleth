@@ -4,7 +4,6 @@ from hypothesis import given
 from hypothesis import strategies as st
 
 from shimbboleth.buildkite.pipeline_config import CommandStep
-from shimbboleth.buildkite.pipeline_config.notify import Notify
 
 
 @pytest.fixture(scope="session")

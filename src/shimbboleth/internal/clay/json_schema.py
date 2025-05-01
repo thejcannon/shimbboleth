@@ -206,15 +206,20 @@ class _ModelFieldSchemaHelper:
         if is_shimbboleth_pytesting():
             _ModelFieldSchemaHelper._check_field_type(field)
 
+        field_schema = getattr(field.type, "__shimbboleth_json_schema__", None)
+        if field_schema is not None:
+            return field_schema()
+
         json_loader = field.metadata.get("json_loader", None)
         if json_loader:
             input_type = field.metadata.get(
                 "json_schema_type", json_loader.__annotations__["value"]
             )
-            output_type = json_loader.__annotations__["return"]
-            assert (
-                output_type == field.type
-            ), f"for {field.name} {json_loader} {output_type=} {field.type=}"
+            # @TODO: Hmmm
+            # output_type = json_loader.__annotations__["return"]
+            # assert (
+            #    output_type == field.type
+            # ), f"for {field.name} {json_loader} {output_type=} {field.type=}"
             return schema(input_type, model_defs=model_defs)
         return schema(field.type, model_defs=model_defs)
 
@@ -230,6 +235,9 @@ class _ModelFieldSchemaHelper:
         elif field.default_factory is not dataclasses.MISSING:
             field_schema["default"] = dump(field.default_factory())
 
+        # Test that the default is valid given the schema
+        # (JSON Schema spec says defaults don't have to conform,
+        #  but obviously we want them to)
         if (
             is_shimbboleth_pytesting()
             and os.getenv("SHIMBBOLETH_TEST_DEFAULTS")

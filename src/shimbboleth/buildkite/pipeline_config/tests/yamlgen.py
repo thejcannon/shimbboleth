@@ -28,7 +28,6 @@ However it does lead to some complications:
 
 from pathlib import Path
 import pytest
-import yaml
 from shimbboleth.buildkite.pipeline_config import BuildkitePipeline
 from shimbboleth.internal.clay.validation import ValidationError
 

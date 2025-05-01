@@ -6,6 +6,7 @@ from shimbboleth.internal.clay.validation import (
     MatchesRegex,
 )
 from shimbboleth.buildkite.pipeline_config.step import SubStep
+from shimbboleth.buildkite.pipeline_config._types import BKBool
 
 
 class _Option(Model):
@@ -15,7 +16,7 @@ class _Option(Model):
     hint: str | None = None
     """The explanatory text that is shown after the label"""
 
-    required: bool = field(default=True)
+    required: BKBool = BKBool(default=True)
     """Whether the field is required for form submission"""
 
 
