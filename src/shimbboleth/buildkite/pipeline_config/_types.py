@@ -1,5 +1,5 @@
 from typing import Literal, overload, Generic, TypeVar
-
+from dataclasses import field
 from shimbboleth.internal.clay.model import Model
 from shimbboleth.internal.clay.jsonT import JSONObject
 
@@ -54,10 +54,6 @@ class BKBool(_DescriptorBase[bool]):
             raise ValueError(f"Invalid value for bool: {value}")
         instance.__dict__[self.name] = value
 
-    @classmethod
-    def __shimbboleth_json_schema__(cls) -> JSONObject:
-        return {"type": "boolean"}
-
 
 class Skip(_DescriptorBase[bool | str]):
     """
@@ -74,25 +70,24 @@ class Skip(_DescriptorBase[bool | str]):
         else:
             instance.__dict__[self.name] = value
 
-    @classmethod
-    def __shimbboleth_json_schema__(cls) -> JSONObject:
-        return {"type": "boolean"}  # @TODO: Wrong but gotta put something to move on
-
 
 class BKStrList(_DescriptorBase[list[str]]):
     """
     A descriptor for Buildkite's "list of strings"
     """
 
+    def __get__(self, instance, owner) -> T:
+        if instance is None:
+            #return self
+            return field(default_factory=list)
+        return instance.__dict__[self.name]
+
+
     def __set__(self, instance, value: list[str] | str | None) -> None:
         instance.__dict__[self.name] = (
             value if isinstance(value, list) else [value] if value is not None else []
         )
 
-    @classmethod
-    def __shimbboleth_json_schema__(cls) -> JSONObject:
-        # @TODO: Union type of str array str or null?
-        return {"type": "array", "items": {"type": "string"}}
 
 
 # @TODO: NonEmptyList
@@ -121,7 +116,3 @@ class SoftFail(_DescriptorBase[bool | list[ExitStatus]]):
             instance.__dict__[self.name] = [
                 ExitStatus(exit_status=status) for status in value
             ]
-
-    @classmethod
-    def __shimbboleth_json_schema__(cls) -> JSONObject:
-        return {"type": "boolean"}  # @TODO: Wrong but gotta put something to move on

@@ -1,6 +1,7 @@
 from typing import ClassVar, Literal
 
 
+from shimbboleth.internal.clay.jsonT import JSON
 from shimbboleth.internal.clay.model import FieldAlias
 from shimbboleth.buildkite.pipeline_config._types import BKBool
 from shimbboleth.buildkite.pipeline_config.step import SubStep
@@ -17,9 +18,7 @@ class WaitStep(SubStep, extra=False):
     """Continue to the next steps, even if the previous group of steps fail"""
 
     # NB: Can be literally anything, since its ignored
-    # (However, looks like the "nested" logic triggers on if the value is a dict or not.
-    #   Example: `"wait": {"key": "value"}` is an error but `"wait": {"wait": {"key": "value"}}` is fine)
-    wait: str | None = None
+    wait: JSON = None
 
     # NB: We don't canonicalize this, in case someone is using this
     #   to encode information.

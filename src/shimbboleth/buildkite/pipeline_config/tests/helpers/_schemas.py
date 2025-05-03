@@ -22,7 +22,7 @@ def get_generated_schema() -> jsonschema.Draft202012Validator:
 
 @cache
 def get_upstream_schema() -> jsonschema.Draft202012Validator:
-    from shimbboleth.buildkite.pipeline_config.tests2.conftest import PYTEST_CONFIG
+    from shimbboleth.buildkite.pipeline_config.tests.conftest import PYTEST_CONFIG
 
     assert PYTEST_CONFIG is not None, "called too early!"
 

@@ -73,6 +73,12 @@ class ModelMeta(type):
                 #     ),
                 # )
 
+    # NB: Prevent deletion of attributes, this works around a bug in `dataclasses`
+    #   where you can't have a mutable default on a descriptor field.
+    #   See: https://github.com/python/cpython/issues/132946#issuecomment-2832209128
+    def __delattr__(self, name: str) -> None:
+        pass
+
     # @TODO: Introduce `Namespace` type, and use it for namespaces
     @property
     def __modelname__(cls) -> str:

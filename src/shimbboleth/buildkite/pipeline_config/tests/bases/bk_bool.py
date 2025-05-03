@@ -2,7 +2,7 @@ from shimbboleth.internal.clay.model import Model
 from typing import ClassVar, Any
 import pytest
 
-from shimbboleth.buildkite.pipeline_config.tests2.helpers import get_upstream_schema
+from shimbboleth.buildkite.pipeline_config.tests.helpers import get_upstream_schema
 
 parameterize_bk_bools = pytest.mark.parametrize(
     "value, expected",
@@ -11,6 +11,7 @@ parameterize_bk_bools = pytest.mark.parametrize(
         pytest.param("true", True, id="'true'"),
         pytest.param(False, False, id="False"),
         pytest.param("false", False, id="'false'"),
+        # @TODO: Should `None` instead be the default?
         pytest.param(None, False, id="None"),
     ],
 )
@@ -43,9 +44,6 @@ class BKBoolTest:
     # ===== TESTS =====
 
     def test__default(self):
-        """
-        Test that it defaults is correct
-        """
         assert getattr(self.model_load(), self.ATTR_NAME) is self.DEFAULT
         assert getattr(self.ctor(), self.ATTR_NAME) is self.DEFAULT
         assert (
@@ -60,18 +58,12 @@ class BKBoolTest:
         )
 
     def test__schema__not_required(self):
-        """
-        Test that the field is not required
-        """
         assert self.ATTR_NAME not in self.MODEL.model_json_schema.get("required", [])
         assert self.ATTR_NAME not in get_upstream_schema().schema["definitions"][
             self.UPSTREAM_SCHEMA_DEF_NAME
         ]["properties"].get("required", [])
 
     def test__model_dump(self):
-        """
-        Test that it is only dumped if not the default
-        """
         assert self.ATTR_NAME not in self.model_load().model_dump()
         assert (
             self.ATTR_NAME
@@ -85,25 +77,18 @@ class BKBoolTest:
 
     @parameterize_bk_bools
     def test__python_ctor(self, value, expected):
-        """
-        Test constructor setting
-        """
         instance = self.ctor(**{self.ATTR_NAME: value})
         assert getattr(instance, self.ATTR_NAME) is expected
 
     @parameterize_bk_bools
     def test__setter(self, value, expected):
-        """
-        Test setter.
-        """
         wait_step = self.ctor()
         setattr(wait_step, self.ATTR_NAME, value)
         assert getattr(wait_step, self.ATTR_NAME) is expected
 
     @parameterize_bk_bools
     def test__json_load(self, value, expected):
-        """
-        Test JSON loading
-        """
         instance = self.model_load({self.ATTR_NAME: value})
         assert getattr(instance, self.ATTR_NAME) is expected
+
+    # @TODO: Add schema valid/invalid tests

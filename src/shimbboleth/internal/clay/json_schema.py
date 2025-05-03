@@ -1,5 +1,5 @@
 from functools import singledispatch
-from typing import Any, TypeVar
+from typing import Any, TypeVar, get_type_hints
 from types import UnionType, GenericAlias
 import re
 import os
@@ -205,6 +205,10 @@ class _ModelFieldSchemaHelper:
     ) -> JSONObject:
         if is_shimbboleth_pytesting():
             _ModelFieldSchemaHelper._check_field_type(field)
+
+        if hasattr(field.type, "__set__"):
+            type_hints = get_type_hints(field.type.__set__)
+            return schema(type_hints['value'], model_defs=model_defs)
 
         field_schema = getattr(field.type, "__shimbboleth_json_schema__", None)
         if field_schema is not None:

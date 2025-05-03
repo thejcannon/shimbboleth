@@ -1,5 +1,9 @@
 # Shimbboleth Development Guide
 
+## Development
+
+- This project uses `uv`. Use `uv run python` or `uv run pytest` to run things.
+
 ## Testing
 
 ### Parameterization

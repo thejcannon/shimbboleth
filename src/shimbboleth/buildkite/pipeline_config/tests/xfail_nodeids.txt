@@ -1,0 +1,35 @@
+# Add test nodeids here that should be marked as xfail
+
+# ===== Our Schema Bugs =====
+
+# Nested Step doesn't seem to generate right
+src/shimbboleth/buildkite/pipeline_config/tests/test_wait_step.py::Test_Field__Branches::test__pipeline__generated_schema[string-asnesteddict]
+src/shimbboleth/buildkite/pipeline_config/tests/test_wait_step.py::Test_Field__Branches::test__pipeline__generated_schema[list-asnesteddict]
+src/shimbboleth/buildkite/pipeline_config/tests/test_wait_step.py::Test_Field__Branches::test__pipeline__generated_schema[none-asnesteddict]
+
+# ===== Upstream Schema Inconsistencies =====
+
+# Upstream Schema doesn't list defaults (but we do)
+src/shimbboleth/buildkite/pipeline_config/tests/test_wait_step.py::Test_Field__Branches::test__default__upstream_schema
+
+# ===== Upstream Schema Bugs =====
+
+# Upstream Schema doesn't allow top-level list-of-steps
+src/shimbboleth/buildkite/pipeline_config/tests/test_wait_step.py::Test_Field__Branches::test__pipeline__upstream_schema[list-aslist]
+src/shimbboleth/buildkite/pipeline_config/tests/test_wait_step.py::Test_Field__Branches::test__pipeline__upstream_schema[string-aslist]
+
+# Upstream Schema doesn't list `None`-able fields
+src/shimbboleth/buildkite/pipeline_config/tests/test_wait_step.py::Test_Field__Branches::test__pipeline__upstream_schema[none-aslist]
+src/shimbboleth/buildkite/pipeline_config/tests/test_wait_step.py::Test_Field__Branches::test__pipeline__upstream_schema[none-asdict]
+src/shimbboleth/buildkite/pipeline_config/tests/test_wait_step.py::Test_Field__Branches::test__pipeline__upstream_schema[none-asnesteddict]
+
+# Upstream API accepts invalid types for branches (int/list-int/dict)
+src/shimbboleth/buildkite/pipeline_config/tests/test_wait_step.py::Test_Field__Branches::test__pipeline__api[int-aslist]
+src/shimbboleth/buildkite/pipeline_config/tests/test_wait_step.py::Test_Field__Branches::test__pipeline__api[int-asdict]
+src/shimbboleth/buildkite/pipeline_config/tests/test_wait_step.py::Test_Field__Branches::test__pipeline__api[int-asnesteddict]
+src/shimbboleth/buildkite/pipeline_config/tests/test_wait_step.py::Test_Field__Branches::test__pipeline__api[list-int-aslist]
+src/shimbboleth/buildkite/pipeline_config/tests/test_wait_step.py::Test_Field__Branches::test__pipeline__api[list-int-asdict]
+src/shimbboleth/buildkite/pipeline_config/tests/test_wait_step.py::Test_Field__Branches::test__pipeline__api[list-int-asnesteddict]
+src/shimbboleth/buildkite/pipeline_config/tests/test_wait_step.py::Test_Field__Branches::test__pipeline__api[dict-aslist]
+src/shimbboleth/buildkite/pipeline_config/tests/test_wait_step.py::Test_Field__Branches::test__pipeline__api[dict-asdict]
+src/shimbboleth/buildkite/pipeline_config/tests/test_wait_step.py::Test_Field__Branches::test__pipeline__api[dict-asnesteddict]

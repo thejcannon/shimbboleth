@@ -3,6 +3,7 @@ import os
 import httpx
 import json
 import pytest
+import yaml
 from typing import Any
 
 
@@ -52,7 +53,7 @@ def cached_bk_api(api_token: str):
     #   (and/or if we haven't pulled from the cache?)
     # E.g. run it if we can, safely but if skip if not, and if asked to run it always run it
 
-    from shimbboleth.buildkite.pipeline_config.tests2.conftest import PYTEST_CONFIG
+    from shimbboleth.buildkite.pipeline_config.tests.conftest import PYTEST_CONFIG
 
     return httpx.Client(
         base_url="https://api.buildkite.com/v2/",
@@ -69,7 +70,7 @@ def is_valid_upstream(pipeline_config: dict[str, Any]) -> bool:
 
     response = cached_bk_api(api_token).patch(
         "organizations/thejcannon/pipelines/step-blaster",
-        json={"configuration": pipeline_config},
+        json={"configuration": yaml.dump(pipeline_config)},
     )
     if 500 <= response.status_code < 600:
         response.raise_for_status()

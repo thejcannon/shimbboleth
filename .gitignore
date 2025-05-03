@@ -7,3 +7,5 @@ __pycache__
 /.hypothesis
 
 /.env
+
+**/.claude/settings.local.json
