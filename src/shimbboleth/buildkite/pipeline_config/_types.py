@@ -78,7 +78,6 @@ class BKStrList(_DescriptorBase[list[str]]):
 
     def __get__(self, instance, owner) -> T:
         if instance is None:
-            #return self
             return field(default_factory=list)
         return instance.__dict__[self.name]
 

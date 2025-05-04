@@ -6,6 +6,7 @@ from shimbboleth.buildkite.pipeline_config.tests.helpers import (
 )
 
 from pytest import param
+import pytest
 
 from typing import ClassVar, Any
 
@@ -19,10 +20,10 @@ class SchemaTestBase:
     @classmethod
     def pytest_generate_tests(cls, metafunc):
         if hasattr(SchemaTestBase, metafunc.function.__name__):
+            steps = cls.INVALID_STEPS if "invalid" in metafunc.function.__name__ else cls.VALID_STEPS
             metafunc.parametrize(
-                ["step_config", "is_valid"],
-                [param(*step_param.values, True, id=step_param.id) for step_param in cls.VALID_STEPS]
-                + [param(*step_param.values, False, id=step_param.id) for step_param in cls.INVALID_STEPS],
+                "step_config",
+                steps
             )
 
             if "pipeline" in metafunc.function.__name__:
@@ -43,34 +44,37 @@ class SchemaTestBase:
                     ],
                 )
 
-    def test__step_cls__model_load(self, step_config, is_valid: bool):
-        try:
+    def test__valid__step_cls__model_load(self, step_config):
+        self.MODEL.model_load(step_config)
+
+    def test__invalid__step_cls__model_load(self, step_config):
+        with pytest.raises(Exception):
             self.MODEL.model_load(step_config)
-        except Exception:
-            if is_valid:
-                raise
-        else:
-            if not is_valid:
-                raise AssertionError("Expected to raise an exception")
+        
 
-    def test__pipeline__model_load(self, step_config, xform, is_valid: bool):
-        try:
+    def test__valid__pipeline__model_load(self, step_config, xform):
+        BuildkitePipeline.model_load(xform(step_config))
+
+    def test__invalid__pipeline__model_load(self, step_config, xform):
+        with pytest.raises(Exception):
             BuildkitePipeline.model_load(xform(step_config))
-        except Exception:
-            if is_valid:
-                raise
-        else:
-            if not is_valid:
-                raise AssertionError("Expected to raise an exception")
 
-    def test__pipeline__generated_schema(self, step_config, xform, is_valid: bool):
-        errors = list(get_generated_schema().iter_errors(xform(step_config)))
-        assert (is_valid and not errors) or (not is_valid and errors)
+    def test__valid__pipeline__generated_schema(self, step_config, xform):
+        assert not list(get_generated_schema().iter_errors(xform(step_config)))
 
-    def test__pipeline__upstream_schema(self, step_config, xform, is_valid: bool):
-        errors = list(get_upstream_schema().iter_errors(xform(step_config)))
-        assert (is_valid and not errors) or (not is_valid and errors)
+    def test__invalid__pipeline__generated_schema(self, step_config, xform):
+        assert list(get_generated_schema().iter_errors(xform(step_config)))
 
-    def test__pipeline__api(self, step_config, xform, is_valid: bool):
+    def test__valid__pipeline__upstream_schema(self, step_config, xform):
+        assert not list(get_upstream_schema().iter_errors(xform(step_config)))
+
+    def test__invalid__pipeline__upstream_schema(self, step_config, xform):
+        assert list(get_upstream_schema().iter_errors(xform(step_config)))
+
+    def test__valid__pipeline__api(self, step_config, xform):
         # @TODO: Print a reproducer curl for debugging
-        assert is_valid_upstream(xform(step_config)) is is_valid
+        assert is_valid_upstream(xform(step_config))
+
+    def test__invalid__pipeline__api(self, step_config, xform):
+        # @TODO: Print a reproducer curl for debugging
+        assert not is_valid_upstream(xform(step_config))

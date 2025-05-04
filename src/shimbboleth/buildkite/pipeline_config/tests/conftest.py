@@ -1,6 +1,7 @@
 import pathlib
 
 import pytest
+import re
 
 # Register modules for assertion rewriting
 pytest.register_assert_rewrite("shimbboleth.buildkite.pipeline_config.tests.bases")
@@ -25,12 +26,13 @@ def pytest_collection_modifyitems(
     if not xfail_file.exists():
         return
 
-    xfail_nodeids = {
-        line.strip()
+    nodeid_patterns = {
+        re.compile(re.escape(line.strip()).replace("\\*", "\w+"))
         for line in xfail_file.read_text().splitlines()
         if line.strip() and not line.startswith("#")
     }
 
     for item in items:
-        if item.nodeid in xfail_nodeids:
-            item.add_marker(pytest.mark.xfail(reason="Listed in xfail_nodeids.txt", strict=True))
+        for pattern in nodeid_patterns:
+            if pattern.match(item.nodeid):
+                item.add_marker(pytest.mark.xfail(reason="Listed in xfail_nodeids.txt", strict=True))

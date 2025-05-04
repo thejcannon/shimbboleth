@@ -1,6 +1,6 @@
 from contextlib import contextmanager
 from functools import singledispatch
-from typing import Any, TypeVar
+from typing import Any, TypeVar, get_type_hints
 from types import UnionType, GenericAlias
 import re
 import uuid
@@ -90,9 +90,8 @@ def load(field_type, *, data):
         return field_type.model_load(data)
 
     if hasattr(field_type, "__set__"):
-        # @TODO: this doesnt do type validation
-        # we can get the `value` annotations and validate that
-        return data
+        type_hints = get_type_hints(field_type.__set__)
+        return load(type_hints['value'], data=data)
 
     raise WrongTypeError(field_type, data)
 
