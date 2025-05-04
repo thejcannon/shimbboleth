@@ -20,11 +20,12 @@ class SchemaTestBase:
     @classmethod
     def pytest_generate_tests(cls, metafunc):
         if hasattr(SchemaTestBase, metafunc.function.__name__):
-            steps = cls.INVALID_STEPS if "invalid" in metafunc.function.__name__ else cls.VALID_STEPS
-            metafunc.parametrize(
-                "step_config",
-                steps
+            steps = (
+                cls.INVALID_STEPS
+                if "invalid" in metafunc.function.__name__
+                else cls.VALID_STEPS
             )
+            metafunc.parametrize("step_config", steps)
 
             if "pipeline" in metafunc.function.__name__:
                 metafunc.parametrize(
@@ -37,7 +38,15 @@ class SchemaTestBase:
                         param(
                             lambda step_config: {
                                 # NB: `type: ` isn't valid on nested steps (since the nesting already disambiguates)
-                                "steps": [{cls.TYPENAME: {k: v for k, v in step_config.items() if k != "type"}}]
+                                "steps": [
+                                    {
+                                        cls.TYPENAME: {
+                                            k: v
+                                            for k, v in step_config.items()
+                                            if k != "type"
+                                        }
+                                    }
+                                ]
                             },
                             id="asnesteddict",
                         ),
@@ -50,7 +59,6 @@ class SchemaTestBase:
     def test__invalid__step_cls__model_load(self, step_config):
         with pytest.raises(Exception):
             self.MODEL.model_load(step_config)
-        
 
     def test__valid__pipeline__model_load(self, step_config, xform):
         BuildkitePipeline.model_load(xform(step_config))

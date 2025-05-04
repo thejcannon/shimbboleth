@@ -4,6 +4,7 @@ from shimbboleth.buildkite.pipeline_config.tests.helpers import get_upstream_sch
 
 T = TypeVar("T")
 
+
 class FieldTestBase(Generic[T]):
     MODEL: ClassVar[type[Model]]
     UPSTREAM_SCHEMA_DEF_NAME: ClassVar[str]
@@ -40,7 +41,8 @@ class FieldTestBase(Generic[T]):
         assert (
             get_upstream_schema().schema["definitions"][self.UPSTREAM_SCHEMA_DEF_NAME][
                 "properties"
-            ][self.ATTR_NAME]["default"] == self.DEFAULT
+            ][self.ATTR_NAME]["default"]
+            == self.DEFAULT
         )
 
     def test__schema__not_required(self):

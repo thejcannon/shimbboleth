@@ -1,11 +1,14 @@
 from shimbboleth.buildkite.pipeline_config.tests.bases.bk_str import BKStrTestBase
 from shimbboleth.buildkite.pipeline_config.wait_step import WaitStep
 from shimbboleth.buildkite.pipeline_config.tests.bases.bk_bool import BKBoolTest
-from shimbboleth.buildkite.pipeline_config.tests.bases.bk_str_list import BKStrListTestBase
-import pytest
+from shimbboleth.buildkite.pipeline_config.tests.bases.bk_str_list import (
+    BKStrListTestBase,
+)
 from pytest import param
 from shimbboleth.buildkite.pipeline_config.tests.bases.schema import SchemaTestBase
-from shimbboleth.buildkite.pipeline_config.tests.bases.stepname_label_name import StepNameLabelNameTestBase
+from shimbboleth.buildkite.pipeline_config.tests.bases.stepname_label_name import (
+    StepNameLabelNameTestBase,
+)
 
 
 class WaitStepTestBase:
@@ -13,12 +16,12 @@ class WaitStepTestBase:
     UPSTREAM_SCHEMA_DEF_NAME = "waitStep"
     TYPENAME = "wait"
 
+
 class Test_Field__Key(WaitStepTestBase, BKStrTestBase):
     ATTR_NAME = "key"
     DEFAULT = None
 
     # @TODO: UUID stuff
-
 
 
 class Test_Field__Branches(WaitStepTestBase, BKStrListTestBase):
@@ -43,9 +46,7 @@ class Test_Field__Wait(WaitStepTestBase, SchemaTestBase):
         param({"wait": {"key": "value"}}, id="dict"),
     ]
 
-    INVALID_STEPS = [
-        
-    ]
+    INVALID_STEPS = []
 
 
 # @TODO: Move this to some other file?
@@ -61,6 +62,6 @@ class Test_Field__Type(WaitStepTestBase, SchemaTestBase):
         # param({"wait": None, "type": {"key": "value"}}, id="dict"),
     ]
 
-    
+
 class Test_Field__WaitLabelName(WaitStepTestBase, StepNameLabelNameTestBase):
     pass

@@ -1,8 +1,5 @@
-from shimbboleth.internal.clay.model import Model
-from typing import ClassVar, Any
 import pytest
 
-from shimbboleth.buildkite.pipeline_config.tests.helpers import get_upstream_schema
 from shimbboleth.buildkite.pipeline_config.tests.bases._base import FieldTestBase
 
 parameterize_bk_strs = pytest.mark.parametrize(

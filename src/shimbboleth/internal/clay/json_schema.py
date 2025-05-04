@@ -208,7 +208,7 @@ class _ModelFieldSchemaHelper:
 
         if hasattr(field.type, "__set__"):
             type_hints = get_type_hints(field.type.__set__)
-            return schema(type_hints['value'], model_defs=model_defs)
+            return schema(type_hints["value"], model_defs=model_defs)
 
         field_schema = getattr(field.type, "__shimbboleth_json_schema__", None)
         if field_schema is not None:

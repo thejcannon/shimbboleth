@@ -1,7 +1,6 @@
 from typing import Literal, overload, Generic, TypeVar
 from dataclasses import field
 from shimbboleth.internal.clay.model import Model
-from shimbboleth.internal.clay.jsonT import JSONObject
 
 T = TypeVar("T")
 
@@ -81,12 +80,10 @@ class BKStrList(_DescriptorBase[list[str]]):
             return field(default_factory=list)
         return instance.__dict__[self.name]
 
-
     def __set__(self, instance, value: list[str] | str | None) -> None:
         instance.__dict__[self.name] = (
             value if isinstance(value, list) else [value] if value is not None else []
         )
-
 
 
 # @TODO: NonEmptyList

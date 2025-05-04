@@ -91,7 +91,7 @@ def load(field_type, *, data):
 
     if hasattr(field_type, "__set__"):
         type_hints = get_type_hints(field_type.__set__)
-        return load(type_hints['value'], data=data)
+        return load(type_hints["value"], data=data)
 
     raise WrongTypeError(field_type, data)
 

@@ -1,9 +1,6 @@
-from shimbboleth.internal.clay.model import Model
-from typing import ClassVar, Any
 import pytest
 from pytest import param
 
-from shimbboleth.buildkite.pipeline_config.tests.helpers import get_upstream_schema
 from shimbboleth.buildkite.pipeline_config.tests.bases.schema import SchemaTestBase
 from shimbboleth.buildkite.pipeline_config.tests.bases._base import FieldTestBase
 
@@ -18,10 +15,12 @@ parameterize_bk_str_list = pytest.mark.parametrize(
     ],
 )
 
+
 class BKStrListTestBase(FieldTestBase, SchemaTestBase):
     def __init_subclass__(cls) -> None:
         cls.VALID_STEPS = [
-            param({cls.ATTR_NAME:case.values[0], "type": cls.TYPENAME}, id=case.id) for case in parameterize_bk_str_list.args[1]
+            param({cls.ATTR_NAME: case.values[0], "type": cls.TYPENAME}, id=case.id)
+            for case in parameterize_bk_str_list.args[1]
         ]
         cls.INVALID_STEPS = [
             param({cls.ATTR_NAME: 1, "type": cls.TYPENAME}, id="int"),
@@ -32,11 +31,10 @@ class BKStrListTestBase(FieldTestBase, SchemaTestBase):
     def test__model_dump(self):
         assert self.ATTR_NAME not in self.model_load().model_dump()
         assert self.ATTR_NAME not in self.model_load({self.ATTR_NAME: []}).model_dump()
-        assert self.ATTR_NAME not in self.model_load({self.ATTR_NAME: None}).model_dump()
         assert (
-            self.ATTR_NAME
-            in self.model_load({self.ATTR_NAME: ["a"]}).model_dump()
+            self.ATTR_NAME not in self.model_load({self.ATTR_NAME: None}).model_dump()
         )
+        assert self.ATTR_NAME in self.model_load({self.ATTR_NAME: ["a"]}).model_dump()
 
     @parameterize_bk_str_list
     def test__python_ctor(self, value, expected):
@@ -53,4 +51,3 @@ class BKStrListTestBase(FieldTestBase, SchemaTestBase):
     def test__json_load(self, value, expected):
         instance = self.model_load({self.ATTR_NAME: value})
         assert getattr(instance, self.ATTR_NAME) == expected
-
