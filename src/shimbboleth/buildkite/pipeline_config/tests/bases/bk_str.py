@@ -13,19 +13,24 @@ parameterize_bk_strs = pytest.mark.parametrize(
     ],
 )
 
-# @TODO: Add the SchemaTestBase back
-class BKStrTestBase(FieldTestBase[str]):
+class BKStrTestBase(FieldTestBase[str], SchemaTestBase):
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
-        cls.VALID_STEPS = [
-            param({cls.ATTR_NAME: None}, id="none"),
-            param({cls.ATTR_NAME: ""}, id="empty_string"),
-            param({cls.ATTR_NAME: "string"}, id="string"),
+        cls.VALID_STEPS += [
+            param({cls.ATTR_NAME: None, "type": cls.TYPENAME}, id="none"),
+            param({cls.ATTR_NAME: "", "type": cls.TYPENAME}, id="empty_string"),
+            param({cls.ATTR_NAME: "string", "type": cls.TYPENAME}, id="string"),
+            # NB: Buildkite treats Falsey values as `None`/`""`/not-given
+            param({cls.ATTR_NAME: [], "type": cls.TYPENAME}, id="empty_list"),
+            param({cls.ATTR_NAME: {}, "type": cls.TYPENAME}, id="empty_dict"),
+            # NB: Buildkite stringifies ints
+            param({cls.ATTR_NAME: 1, "type": cls.TYPENAME}, id="int"),
         ]
-        cls.INVALID_STEPS = [
-            param({cls.ATTR_NAME: 1}, id="int"),
-            param({cls.ATTR_NAME: []}, id="list"),
-            param({cls.ATTR_NAME: {"key": 1}}, id="dict"),
+        cls.INVALID_STEPS += [
+            param({cls.ATTR_NAME: [1], "type": cls.TYPENAME}, id="int_list"),
+            param({cls.ATTR_NAME: {"a-key": 1}, "type": cls.TYPENAME}, id="dict"),
+            # NB: Buildkite doesn't stringify floats
+            param({cls.ATTR_NAME: 1.234, "type": cls.TYPENAME}, id="float"),
         ]
 
     def test__model_dump(self):

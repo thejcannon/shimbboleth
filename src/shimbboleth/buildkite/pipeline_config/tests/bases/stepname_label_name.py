@@ -17,18 +17,18 @@ class StepNameLabelNameTestBase(SchemaTestBase):
             param({"name": "name", "type": cls.TYPENAME}, id="name"),
             param(
                 {cls.TYPENAME: cls.TYPENAME, "label": "label"},
-                id=f"{cls.TYPENAME}-label",
+                id=f"{cls.TYPENAME}_label",
             ),
             param(
-                {cls.TYPENAME: cls.TYPENAME, "name": "name"}, id=f"{cls.TYPENAME}-name"
+                {cls.TYPENAME: cls.TYPENAME, "name": "name"}, id=f"{cls.TYPENAME}_name"
             ),
             param(
                 {"label": "label", "name": "name", "type": cls.TYPENAME},
-                id="label-name",
+                id="label_name",
             ),
             param(
                 {cls.TYPENAME: cls.TYPENAME, "label": "label", "name": "name"},
-                id=f"{cls.TYPENAME}-label-name",
+                id=f"{cls.TYPENAME}_label_name",
             ),
         ]
 

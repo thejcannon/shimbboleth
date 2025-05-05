@@ -9,8 +9,8 @@ parameterize_bk_str_list = pytest.mark.parametrize(
     [
         param("string", ["string"], id="string"),
         param(["string1", "string2"], ["string1", "string2"], id="list"),
-        param("", [""], id="empty-string"),
-        param([], [], id="empty-list"),
+        param("", [""], id="empty_string"),
+        param([], [], id="empty_list"),
         param(None, [], id="none"),
     ],
 )
@@ -18,13 +18,13 @@ parameterize_bk_str_list = pytest.mark.parametrize(
 
 class BKStrListTestBase(FieldTestBase, SchemaTestBase):
     def __init_subclass__(cls) -> None:
-        cls.VALID_STEPS = [
+        cls.VALID_STEPS += [
             param({cls.ATTR_NAME: case.values[0], "type": cls.TYPENAME}, id=case.id)
             for case in parameterize_bk_str_list.args[1]
         ]
-        cls.INVALID_STEPS = [
+        cls.INVALID_STEPS += [
             param({cls.ATTR_NAME: 1, "type": cls.TYPENAME}, id="int"),
-            param({cls.ATTR_NAME: [1], "type": cls.TYPENAME}, id="list-int"),
+            param({cls.ATTR_NAME: [1], "type": cls.TYPENAME}, id="list_int"),
             param({cls.ATTR_NAME: {"key": 1}, "type": cls.TYPENAME}, id="dict"),
         ]
 

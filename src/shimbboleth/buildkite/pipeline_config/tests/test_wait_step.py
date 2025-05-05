@@ -44,7 +44,7 @@ class Test_Field__Wait(WaitStepTestBase, SchemaTestBase):
         param({"wait": None}, id="none"),
         param({"wait": ""}, id="empty_string"),
         param({"wait": "a string"}, id="string"),
-        param({"wait": 1}, id="integer"),
+        param({"wait": 1}, id="int"),
         param({"wait": []}, id="empty_list"),
         param({"wait": {"key": "value"}}, id="dict"),
     ]

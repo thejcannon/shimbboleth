@@ -17,6 +17,11 @@ class SchemaTestBase:
     VALID_STEPS: ClassVar[list[dict[str, Any]]]
     INVALID_STEPS: ClassVar[list[dict[str, Any]]]
 
+    def __init_subclass__(cls) -> None:
+        super().__init_subclass__()
+        cls.VALID_STEPS = []
+        cls.INVALID_STEPS = []
+
     @classmethod
     def pytest_generate_tests(cls, metafunc: pytest.Metafunc) -> None:
         if hasattr(SchemaTestBase, metafunc.function.__name__):

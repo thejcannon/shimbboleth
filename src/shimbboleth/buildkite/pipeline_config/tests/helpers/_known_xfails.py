@@ -17,7 +17,7 @@ def mark_known_xfails(items: list[pytest.Item]) -> None:
 
     for item in items:
         for pattern in nodeid_patterns:
-            if pattern.match(item.nodeid):
+            if pattern.search(item.nodeid):
                 item.add_marker(
                     pytest.mark.xfail(reason="Listed in xfail_nodeids.txt", strict=True)
                 )
