@@ -38,3 +38,6 @@ dev-dependencies = [
 ]
 
 [tool.uv.sources]
+
+[tool.pytest.ini_options]
+addopts = "-r s"

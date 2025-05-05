@@ -66,7 +66,7 @@ def cached_bk_api(api_token: str):
 def is_valid_upstream(pipeline_config: dict[str, Any]) -> bool:
     api_token = os.getenv("BK_PIPELINE_API_TOKEN")
     if not api_token:
-        pytest.skip("No API token provided")
+        pytest.skip(reason="No API token provided")
 
     response = cached_bk_api(api_token).patch(
         "organizations/thejcannon/pipelines/step-blaster",

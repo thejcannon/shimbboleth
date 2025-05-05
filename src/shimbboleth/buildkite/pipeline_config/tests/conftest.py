@@ -1,11 +1,11 @@
-import pathlib
-
 import pytest
-import re
 
 # Register modules for assertion rewriting
 pytest.register_assert_rewrite("shimbboleth.buildkite.pipeline_config.tests.bases")
 pytest.register_assert_rewrite("shimbboleth.buildkite.pipeline_config.tests.helpers")
+
+from shimbboleth.buildkite.pipeline_config.tests.helpers._known_xfails import mark_known_xfails # noqa: E402
+from shimbboleth.buildkite.pipeline_config.tests.helpers._filter_empty_paramsets import filter_empty_paramsets # noqa: E402
 
 
 PYTEST_CONFIG: pytest.Config | None = None
@@ -17,24 +17,10 @@ def _store_config(pytestconfig: pytest.Config) -> None:
     PYTEST_CONFIG = pytestconfig
 
 
+
 def pytest_collection_modifyitems(
     config: pytest.Config, items: list[pytest.Item]
 ) -> None:
-    """Mark tests from xfail file as expected to fail."""
-    xfail_file = pathlib.Path(__file__).parent / "xfail_nodeids.txt"
+    mark_known_xfails(items)
+    filter_empty_paramsets(items)
 
-    if not xfail_file.exists():
-        return
-
-    nodeid_patterns = {
-        re.compile(re.escape(line.strip()).replace("\\*", "\w+"))
-        for line in xfail_file.read_text().splitlines()
-        if line.strip() and not line.startswith("#")
-    }
-
-    for item in items:
-        for pattern in nodeid_patterns:
-            if pattern.match(item.nodeid):
-                item.add_marker(
-                    pytest.mark.xfail(reason="Listed in xfail_nodeids.txt", strict=True)
-                )

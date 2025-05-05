@@ -18,7 +18,7 @@ class SchemaTestBase:
     INVALID_STEPS: ClassVar[list[dict[str, Any]]]
 
     @classmethod
-    def pytest_generate_tests(cls, metafunc):
+    def pytest_generate_tests(cls, metafunc: pytest.Metafunc) -> None:
         if hasattr(SchemaTestBase, metafunc.function.__name__):
             steps = (
                 cls.INVALID_STEPS
