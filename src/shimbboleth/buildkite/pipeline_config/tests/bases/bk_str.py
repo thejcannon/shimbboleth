@@ -10,6 +10,7 @@ parameterize_bk_strs = pytest.mark.parametrize(
         pytest.param(None, None, id="none"),
         pytest.param("", "", id="empty_string"),
         pytest.param("string", "string", id="string"),
+        # @TODO: Falsey values (e.g. `[]`, `{}`)
     ],
 )
 
@@ -60,5 +61,3 @@ class BKStrTestBase(FieldTestBase[str], SchemaTestBase):
     def test__json_load(self, value, expected):
         instance = self.model_load({self.ATTR_NAME: value})
         assert getattr(instance, self.ATTR_NAME) == expected
-
-
