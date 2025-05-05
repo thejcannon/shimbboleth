@@ -1,6 +1,8 @@
 import pytest
 
+from shimbboleth.buildkite.pipeline_config.tests.bases.schema import SchemaTestBase
 from shimbboleth.buildkite.pipeline_config.tests.bases._base import FieldTestBase
+from pytest import param
 
 parameterize_bk_strs = pytest.mark.parametrize(
     "value, expected",
@@ -11,8 +13,21 @@ parameterize_bk_strs = pytest.mark.parametrize(
     ],
 )
 
-
+# @TODO: Add the SchemaTestBase back
 class BKStrTestBase(FieldTestBase[str]):
+    def __init_subclass__(cls) -> None:
+        super().__init_subclass__()
+        cls.VALID_STEPS = [
+            param({cls.ATTR_NAME: None}, id="none"),
+            param({cls.ATTR_NAME: ""}, id="empty_string"),
+            param({cls.ATTR_NAME: "string"}, id="string"),
+        ]
+        cls.INVALID_STEPS = [
+            param({cls.ATTR_NAME: 1}, id="int"),
+            param({cls.ATTR_NAME: []}, id="list"),
+            param({cls.ATTR_NAME: {"key": 1}}, id="dict"),
+        ]
+
     def test__model_dump(self):
         assert self.ATTR_NAME not in self.model_load().model_dump()
         assert (
@@ -41,4 +56,4 @@ class BKStrTestBase(FieldTestBase[str]):
         instance = self.model_load({self.ATTR_NAME: value})
         assert getattr(instance, self.ATTR_NAME) == expected
 
-    # @TODO: Add schema valid/invalid tests
+

@@ -21,7 +21,9 @@ class Test_Field__Key(WaitStepTestBase, BKStrTestBase):
     ATTR_NAME = "key"
     DEFAULT = None
 
-    # @TODO: UUID stuff
+
+
+    # @TODO: UUID stuff (SCHEMA_VALID and SCHEMA_INVALID)
 
 
 class Test_Field__Branches(WaitStepTestBase, BKStrListTestBase):
@@ -30,6 +32,7 @@ class Test_Field__Branches(WaitStepTestBase, BKStrListTestBase):
     ATTR_NAME = "branches"
     DEFAULT = []
 
+    # @TODO: All of the invalid pipelines are somehow valid upstream API???
 
 class Test_Field__ContinueOnFailure(WaitStepTestBase, BKBoolTest):
     DEFAULT = False
