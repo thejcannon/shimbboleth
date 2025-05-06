@@ -12,19 +12,21 @@ parameterize_bk_str_list = pytest.mark.parametrize(
         param("", [""], id="empty_string"),
         param([], [], id="empty_list"),
         param(None, [], id="none"),
+        # NB: Buildkite stringifies ints (presumably because YAML sucks)
+        param(1, "1", id="int"),
+        param([1, 2], ["1", "2"], id="int_list"),
     ],
 )
 
 
 class BKStrListTestBase(FieldTestBase, SchemaTestBase):
     def __init_subclass__(cls) -> None:
+        super().__init_subclass__()
         cls.VALID_STEPS += [
             param({cls.ATTR_NAME: case.values[0], "type": cls.TYPENAME}, id=case.id)
             for case in parameterize_bk_str_list.args[1]
         ]
         cls.INVALID_STEPS += [
-            param({cls.ATTR_NAME: 1, "type": cls.TYPENAME}, id="int"),
-            param({cls.ATTR_NAME: [1], "type": cls.TYPENAME}, id="list_int"),
             param({cls.ATTR_NAME: {"key": 1}, "type": cls.TYPENAME}, id="dict"),
         ]
 

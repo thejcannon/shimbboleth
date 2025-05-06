@@ -10,7 +10,7 @@ def mark_known_xfails(items: list[pytest.Item]) -> None:
         return
 
     nodeid_patterns = {
-        re.compile(re.escape(line.strip()).replace("\\*", "\\w+"))
+        re.compile(re.escape(line.strip()).replace("\\*", "\\w*"))
         for line in xfail_file.read_text().splitlines()
         if line.strip() and not line.startswith("#")
     }

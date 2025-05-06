@@ -4,6 +4,15 @@
 # ===== Our Bugs =====
 
 # NB: Upstream API stringifies these
+test_wait_step.py::Test_Field__Branches::test__python_ctor[int*]
+test_wait_step.py::Test_Field__Branches::test__json_load[int*]
+test_wait_step.py::Test_Field__Branches::test__setter[int*]
+test_wait_step.py::Test_Field__Branches::test__valid__step_cls__model_load[int*]
+test_wait_step.py::Test_Field__Branches::test__valid__pipeline__model_load[int*-*]
+test_wait_step.py::Test_Field__Branches::test__valid__pipeline__generated_schema[int-aslist]
+test_wait_step.py::Test_Field__Branches::test__valid__pipeline__generated_schema[int-asdict]
+test_wait_step.py::Test_Field__Branches::test__valid__pipeline__generated_schema[int_list-aslist]
+test_wait_step.py::Test_Field__Branches::test__valid__pipeline__generated_schema[int_list-asdict]
 test_wait_step.py::Test_Field__Key::test__valid__pipeline__model_load[int-*]
 test_wait_step.py::Test_Field__Key::test__valid__step_cls__model_load[int]
 test_wait_step.py::Test_Field__Key::test__valid__pipeline__generated_schema[int-aslist]
@@ -25,7 +34,11 @@ test_wait_step.py::Test_Field__Key::test__valid__pipeline__generated_schema[empt
 test_wait_step.py::Test_Field__Key::test__valid__pipeline__generated_schema[none-asnesteddict]
 test_wait_step.py::Test_Field__Key::test__valid__pipeline__generated_schema[empty_string-asnesteddict]
 test_wait_step.py::Test_Field__Key::test__valid__pipeline__generated_schema[string-asnesteddict]
-test_wait_step.py::Test_Field__Branches::test__valid__pipeline__generated_schema[*-asnesteddict]
+test_wait_step.py::Test_Field__Branches::test__valid__pipeline__generated_schema[none-asnesteddict]
+test_wait_step.py::Test_Field__Branches::test__valid__pipeline__generated_schema[list-asnesteddict]
+test_wait_step.py::Test_Field__Branches::test__valid__pipeline__generated_schema[empty_list-asnesteddict]
+test_wait_step.py::Test_Field__Branches::test__valid__pipeline__generated_schema[empty_string-asnesteddict]
+test_wait_step.py::Test_Field__Branches::test__valid__pipeline__generated_schema[string-asnesteddict]
 test_wait_step.py::Test_Field__WaitLabelName::test__valid__pipeline__generated_schema[*-asnesteddict]
 test_wait_step.py::Test_Field__*::test__invalid__pipeline__generated_schema[*-asnesteddict]
 
@@ -34,7 +47,8 @@ test_wait_step.py::Test_Field__Wait::test__valid__pipeline__generated_schema[dic
 
 # ===== Upstream Schema Inconsistencies =====
 
-# Upstream Schema doesn't list defaults (but we do)
+# Upstream Schema doesn't list defaults for non-required fields
+test_wait_step.py::Test_Field__AllowDependencyFailure::test__default__upstream_schema
 test_wait_step.py::Test_Field__Key::test__default__upstream_schema
 test_wait_step.py::Test_Field__Branches::test__default__upstream_schema
 
@@ -53,7 +67,7 @@ test_wait_step.py::Test_Field__Key::test__valid__pipeline__upstream_schema[empty
 
 # NB: Upstream API stringifies these
 test_wait_step.py::Test_Field__Key::test__valid__pipeline__upstream_schema[int-*]
-
+test_wait_step.py::Test_Field__Branches::test__valid__pipeline__upstream_schema[int*-*]
 
 # Upstream API treats `wait` as accepting anything
 test_wait_step.py::Test_Field__Wait::test__valid__pipeline__upstream_schema[empty_list-*]

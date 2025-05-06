@@ -21,19 +21,23 @@ class Test_Field__Key(WaitStepTestBase, BKStrTestBase):
     ATTR_NAME = "key"
     DEFAULT = None
 
-
-
     # @TODO: UUID stuff (SCHEMA_VALID and SCHEMA_INVALID)
+
+class Test_Field__AllowDependencyFailure(WaitStepTestBase, BKBoolTest):
+    DEFAULT = False
+    ATTR_NAME = "allow_dependency_failure"
 
 
 
 class Test_Field__Branches(WaitStepTestBase, BKStrListTestBase):
     # @TODO: Branches seems special:
     # - It's a str/list[str] but also space-separated?
-    ATTR_NAME = "branches"
     DEFAULT = []
+    ATTR_NAME = "branches"
 
     # @TODO: All of the invalid pipelines are somehow valid upstream API???
+    #   (meaning it accepts any type)
+
 
 class Test_Field__ContinueOnFailure(WaitStepTestBase, BKBoolTest):
     DEFAULT = False
