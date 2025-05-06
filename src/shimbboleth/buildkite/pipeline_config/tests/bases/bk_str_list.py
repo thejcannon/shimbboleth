@@ -13,8 +13,9 @@ parameterize_bk_str_list = pytest.mark.parametrize(
         param([], [], id="empty_list"),
         param(None, [], id="none"),
         # NB: Buildkite stringifies ints (presumably because YAML sucks)
-        param(1, "1", id="int"),
+        param(1, ["1"], id="int"),
         param([1, 2], ["1", "2"], id="int_list"),
+        param([1, "2", 3], ["1", "2", "3"], id="mixed_list"),
     ],
 )
 

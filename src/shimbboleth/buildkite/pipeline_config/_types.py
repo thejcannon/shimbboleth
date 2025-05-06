@@ -80,10 +80,13 @@ class BKStrList(_DescriptorBase[list[str]]):
             return field(default_factory=list)
         return instance.__dict__[self.name]
 
-    def __set__(self, instance, value: list[str] | str | None) -> None:
-        instance.__dict__[self.name] = (
-            value if isinstance(value, list) else [value] if value is not None else []
-        )
+    def __set__(self, instance, value: list[int | str] | str | int | None) -> None:
+        if isinstance(value, list):
+            instance.__dict__[self.name] = [str(item) for item in value]
+        elif value is not None:
+            instance.__dict__[self.name] = [str(value)]
+        else:
+            instance.__dict__[self.name] = []
 
 
 # @TODO: NonEmptyList

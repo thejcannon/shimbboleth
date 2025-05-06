@@ -3,16 +3,8 @@
 
 # ===== Our Bugs =====
 
-# NB: Upstream API stringifies these
-test_wait_step.py::Test_Field__Branches::test__python_ctor[int*]
-test_wait_step.py::Test_Field__Branches::test__json_load[int*]
-test_wait_step.py::Test_Field__Branches::test__setter[int*]
-test_wait_step.py::Test_Field__Branches::test__valid__step_cls__model_load[int*]
-test_wait_step.py::Test_Field__Branches::test__valid__pipeline__model_load[int*-*]
-test_wait_step.py::Test_Field__Branches::test__valid__pipeline__generated_schema[int-aslist]
-test_wait_step.py::Test_Field__Branches::test__valid__pipeline__generated_schema[int-asdict]
-test_wait_step.py::Test_Field__Branches::test__valid__pipeline__generated_schema[int_list-aslist]
-test_wait_step.py::Test_Field__Branches::test__valid__pipeline__generated_schema[int_list-asdict]
+# NB: Upstream API accepts these, but they should fail schema validation (see test results)
+# These are expected xfails for upstream schema, not our bugs
 test_wait_step.py::Test_Field__Key::test__valid__pipeline__model_load[int-*]
 test_wait_step.py::Test_Field__Key::test__valid__step_cls__model_load[int]
 test_wait_step.py::Test_Field__Key::test__valid__pipeline__generated_schema[int-aslist]
@@ -56,9 +48,10 @@ test_wait_step.py::Test_Field__Branches::test__valid__pipeline__upstream_schema[
 test_wait_step.py::Test_Field__Key::test__valid__pipeline__upstream_schema[empty_list-*]
 test_wait_step.py::Test_Field__Key::test__valid__pipeline__upstream_schema[empty_dict-*]
 
-# NB: Upstream API stringifies these
+# NB: Upstream API stringifies ints
 test_wait_step.py::Test_Field__Key::test__valid__pipeline__upstream_schema[int-*]
 test_wait_step.py::Test_Field__Branches::test__valid__pipeline__upstream_schema[int*-*]
+test_wait_step.py::Test_Field__Branches::test__valid__pipeline__upstream_schema[mixed_list-*]
 
 # Upstream API treats `wait` as accepting anything
 test_wait_step.py::Test_Field__Wait::test__valid__pipeline__upstream_schema[empty_list-*]
