@@ -74,7 +74,7 @@ def schema_union_type(
     field_type: UnionType, *, model_defs: dict[str, JSONObject]
 ) -> JSONObject:
     return {
-        "oneOf": [schema(argT, model_defs=model_defs) for argT in field_type.__args__]
+        "anyOf": [schema(argT, model_defs=model_defs) for argT in field_type.__args__]
     }
 
 

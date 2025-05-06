@@ -40,7 +40,7 @@ def get_schema():
     defs = cast(JSONObject, pipeline_schema.pop("$defs"))
     return {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "oneOf": [
+        "anyOf": [
             {"$ref": "#/$defs/pipeline"},
             {"$ref": "#/$defs/pipeline/properties/steps"},
         ],
