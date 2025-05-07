@@ -19,8 +19,8 @@ class SchemaTestBase:
 
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
-        cls.VALID_STEPS = []
-        cls.INVALID_STEPS = []
+        cls.VALID_STEPS = getattr(cls, "VALID_STEPS", [])
+        cls.INVALID_STEPS = getattr(cls, "INVALID_STEPS", [])
 
     @classmethod
     def pytest_generate_tests(cls, metafunc: pytest.Metafunc) -> None:

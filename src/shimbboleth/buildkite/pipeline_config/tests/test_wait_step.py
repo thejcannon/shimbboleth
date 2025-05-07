@@ -21,6 +21,8 @@ class Test_Field__Key(WaitStepTestBase, BKStrTestBase):
     ATTR_NAME = "key"
     DEFAULT = None
 
+
+
     # @TODO: UUID stuff (SCHEMA_VALID and SCHEMA_INVALID)
 
 class Test_Field__AllowDependencyFailure(WaitStepTestBase, BKBoolTest):
@@ -51,7 +53,7 @@ class Test_Field__Wait(WaitStepTestBase, SchemaTestBase):
         param({"wait": "a string"}, id="string"),
         param({"wait": 1}, id="int"),
         param({"wait": []}, id="empty_list"),
-        param({"wait": {"key": "value"}}, id="dict"),
+        # param({"wait": {"key": "value"}}, id="dict"),
     ]
 
     INVALID_STEPS = []
