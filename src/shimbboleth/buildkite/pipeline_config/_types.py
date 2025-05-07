@@ -20,10 +20,21 @@ class _DescriptorBase(Generic[T]):
             return None
         return instance.__dict__[self.name]
 
+    def __set__(self, instance, value) -> None:
+        instance.__dict__[self.name] = value
 
 class ExitStatus(Model, extra=True):
     exit_status: Literal["*"] | int
     """The exit status number that will cause this job to soft-fail"""
+
+
+class BKStr(_DescriptorBase[str]):
+    """
+    A descriptor for Buildkite's "string" type.
+    """
+
+    def __init__(self, *, json_alias: str | None = None) -> None:
+        self.json_alias = json_alias
 
 
 class BKBool(_DescriptorBase[bool]):

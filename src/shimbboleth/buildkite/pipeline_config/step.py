@@ -8,10 +8,13 @@ from shimbboleth.internal.clay.validation import Not, ValidationError
 from shimbboleth.internal.clay.jsonT import JSONObject
 from shimbboleth.internal.clay.json_load import JSONLoadError
 from shimbboleth.buildkite.pipeline_config.notify import Notify, _parse_notify
-from shimbboleth.buildkite.pipeline_config._types import BKStrList, BKBool
+from shimbboleth.buildkite.pipeline_config._types import BKStrList, BKBool, BKStr
 from uuid import UUID
 from typing import ClassVar, final, Annotated
 
+class BKKey(BKStr):
+    def __set__(self, instance, value: Annotated[str, Not[UUID]] | None) -> None:
+        super().__set__(instance, value)
 
 class Step(Model):
     class Dependency(Model, extra=False):
@@ -19,7 +22,7 @@ class Step(Model):
 
         allow_failure: BKBool = BKBool(default=False)
 
-    key: Annotated[str, Not[UUID]] | None = field(default=None)
+    key: BKKey = BKKey()
     """A unique identifier for a step, must not resemble a UUID"""
 
     allow_dependency_failure: BKBool = BKBool(default=False)
