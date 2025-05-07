@@ -206,10 +206,6 @@ class _ModelFieldSchemaHelper:
         if is_shimbboleth_pytesting():
             _ModelFieldSchemaHelper._check_field_type(field)
 
-        if hasattr(field.type, "__set__"):
-            type_hints = get_type_hints(field.type.__set__)
-            return schema(type_hints["value"], model_defs=model_defs)
-
         field_schema = getattr(field.type, "__shimbboleth_json_schema__", None)
         if field_schema is not None:
             return field_schema()
@@ -219,11 +215,6 @@ class _ModelFieldSchemaHelper:
             input_type = field.metadata.get(
                 "json_schema_type", json_loader.__annotations__["value"]
             )
-            # @TODO: Hmmm
-            # output_type = json_loader.__annotations__["return"]
-            # assert (
-            #    output_type == field.type
-            # ), f"for {field.name} {json_loader} {output_type=} {field.type=}"
             return schema(input_type, model_defs=model_defs)
         return schema(field.type, model_defs=model_defs)
 

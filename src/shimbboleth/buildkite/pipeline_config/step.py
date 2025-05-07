@@ -13,7 +13,30 @@ from uuid import UUID
 from typing import ClassVar, final, Annotated
 
 class BKKey(BKStr):
-    def __set__(self, instance, value: Annotated[str, Not[UUID]] | None) -> None:
+    @staticmethod
+    def __shimbboleth_json_schema__():
+        return {
+            "anyOf": [
+                {
+                    "type": "string",
+                    "not": {
+                        "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+                    }
+                },
+                {
+                    "type": "null"
+                }
+            ]
+        }
+
+    def __set__(self, instance, value: str | None) -> None:
+        if value is not None:
+            try:
+                UUID(value)
+            except ValueError:
+                pass
+            else:
+                raise ValidationError(value, expectation="not be a valid UUID")
         super().__set__(instance, value)
 
 class Step(Model):
