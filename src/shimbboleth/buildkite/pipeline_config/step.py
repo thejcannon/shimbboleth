@@ -24,12 +24,15 @@ class BKKey(BKStr):
                         "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
                     },
                 },
+                {"type": "integer"},
                 {"type": "null"},
             ]
         }
 
-    def __set__(self, instance, value: str | None) -> None:
-        if value is not None:
+    def __set__(self, instance, value: str | int | None) -> None:
+        if isinstance(value, int):
+            value = str(value)
+        if isinstance(value, str):
             try:
                 UUID(value)
             except ValueError:
