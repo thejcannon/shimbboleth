@@ -15,7 +15,9 @@ from typing import ClassVar, final, TypeAlias, Any
 EmptyList: TypeAlias = list[Any]
 EmptyDict: TypeAlias = dict[str, Any]
 
-class BKKey(BKStr):
+class _BKKey(BKStr):
+    # @TODO: The "empty list/object/stringify-an-int" all belong in `BKStr`
+
     @staticmethod
     def __shimbboleth_json_schema__():
         return {
@@ -60,7 +62,7 @@ class Step(Model):
 
         allow_failure: BKBool = BKBool(default=False)
 
-    key: BKKey = BKKey()
+    key: _BKKey = _BKKey()
     """A unique identifier for a step, must not resemble a UUID"""
 
     allow_dependency_failure: BKBool = BKBool(default=False)
