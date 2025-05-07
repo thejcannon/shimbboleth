@@ -23,6 +23,13 @@ test_wait_step.py::Test_Field__Key::test__valid__pipeline__generated_schema[empt
 # ===== Our Schema Bugs =====
 
 # Nested Step doesn't seem to generate right
+# The issue: JSON Schema anyOf validation incorrectly accepts invalid nested steps.
+# When testing {'wait': {'key': {'test-key': 'value'}}}, the WaitStep schema matches
+# this because WaitStep has a 'wait' property that accepts any JSON value.
+# This causes the validation to pass when it should fail (the 'key' field should
+# only accept strings, not dictionaries). The schema generation needs to better
+# distinguish between regular steps and nested steps, but this is complex due to
+# the anyOf structure and overlapping property names.
 test_wait_step.py::Test_Field__*::test__invalid__pipeline__generated_schema[*-asnesteddict]
 
 # Upstream API treats `wait` as accepting anything
