@@ -10,8 +10,10 @@ from shimbboleth.internal.clay.json_load import JSONLoadError
 from shimbboleth.buildkite.pipeline_config.notify import Notify, _parse_notify
 from shimbboleth.buildkite.pipeline_config._types import BKStrList, BKBool, BKStr
 from uuid import UUID
-from typing import ClassVar, final
+from typing import ClassVar, final, TypeAlias, Any
 
+EmptyList: TypeAlias = list[Any]
+EmptyDict: TypeAlias = dict[str, Any]
 
 class BKKey(BKStr):
     @staticmethod
@@ -25,13 +27,13 @@ class BKKey(BKStr):
                     },
                 },
                 {"type": "integer"},
+                {"type": "array", "maxItems": 0},
+                {"type": "object", "maxProperties": 0},
                 {"type": "null"},
             ]
         }
 
-    def __set__(self, instance, value: str | int | None) -> None:
-        if isinstance(value, int):
-            value = str(value)
+    def __set__(self, instance, value: str | int | EmptyList | EmptyDict | None) -> None:
         if isinstance(value, str):
             try:
                 UUID(value)
@@ -39,6 +41,16 @@ class BKKey(BKStr):
                 pass
             else:
                 raise ValidationError(value, expectation="not be a valid UUID")
+        elif isinstance(value, int):
+            value = str(value)
+        elif isinstance(value, list):
+            if value:
+                raise ValidationError(value, expectation="be an empty list")
+            value = None
+        elif isinstance(value, dict):
+            if value:
+                raise ValidationError(value, expectation="be an empty dictionary")
+            value = None
         super().__set__(instance, value)
 
 
