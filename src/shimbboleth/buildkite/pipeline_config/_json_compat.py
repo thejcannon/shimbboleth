@@ -242,24 +242,6 @@ def _(value: str | NonEmptyList[str]) -> NonEmptyList[str]:
     return value
 
 
-# ===== Step =====
-
-
-@Step._json_loader_("depends_on", json_schema_type=str | list[str | Step.Dependency])
-@staticmethod
-def _(value: str | list[str | JSONObject]) -> list[Step.Dependency]:
-    if isinstance(value, str):
-        return [Step.Dependency(step=value)]
-    ret = []
-    for index, elem in enumerate(value):
-        with ValidationError.context(index=index):
-            ret.append(
-                Step.Dependency(step=elem)
-                if isinstance(elem, str)
-                else Step.Dependency.model_load(elem)
-            )
-    return ret
-
 
 # ===== CommandStep ====
 

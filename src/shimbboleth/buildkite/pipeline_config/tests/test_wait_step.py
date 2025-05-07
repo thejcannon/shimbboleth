@@ -9,6 +9,7 @@ from shimbboleth.buildkite.pipeline_config.tests.bases.schema import SchemaTestB
 from shimbboleth.buildkite.pipeline_config.tests.bases.stepname_label_name import (
     StepNameLabelNameTestBase,
 )
+from shimbboleth.buildkite.pipeline_config.step import Step
 
 
 class WaitStepTestBase:
@@ -69,6 +70,27 @@ class Test_Field__AllowDependencyFailure(WaitStepTestBase, BKBoolTest):
     DEFAULT = False
     ATTR_NAME = "allow_dependency_failure"
 
+
+class Test_Field__DependsOn(WaitStepTestBase, BKStrListTestBase):
+    DEFAULT = []
+    ATTR_NAME = "depends_on"
+
+    PARAMETERIZATIONS = [
+        param("string", [Step.Dependency(step="string")], id="string"),
+        param(["string1", "string2"], [Step.Dependency(step="string1"), Step.Dependency(step="string2")], id="list"),
+        param([], [], id="empty_list"),
+        param(None, [], id="none"),
+        param(1, [Step.Dependency(step="1")], id="int"),
+        param([1, 2], [Step.Dependency(step="1"), Step.Dependency(step="2")], id="int_list"),
+        param([1, "2", 3], [Step.Dependency(step="1"), Step.Dependency(step="2"), Step.Dependency(step="3")], id="mixed_list"),
+
+        # @TODO: allow_failure inside `depends_on`
+    ]
+
+    INVALID_STEPS = [
+        param({"depends_on": ""}, id="empty_string")
+    ]
+    
 
 class Test_Field__Branches(WaitStepTestBase, BKStrListTestBase):
     # @TODO: Branches seems special:

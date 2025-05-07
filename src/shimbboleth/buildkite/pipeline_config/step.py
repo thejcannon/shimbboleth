@@ -4,16 +4,21 @@ Contains the base class for all steps: `Step`.
 
 import dataclasses
 from shimbboleth.internal.clay.model import Model, field, FieldAlias
-from shimbboleth.internal.clay.validation import ValidationError
+from shimbboleth.internal.clay.validation import ValidationError, Not
 from shimbboleth.internal.clay.jsonT import JSONObject
 from shimbboleth.internal.clay.json_load import JSONLoadError
 from shimbboleth.buildkite.pipeline_config.notify import Notify, _parse_notify
-from shimbboleth.buildkite.pipeline_config._types import BKStrList, BKBool, BKStr
+from shimbboleth.buildkite.pipeline_config._types import BKStrList, BKBool, BKStr, _DescriptorBase, EmptyList, EmptyDict
 from uuid import UUID
-from typing import ClassVar, final, TypeAlias, Any
+from typing import ClassVar, final, Any, Annotated
 
-EmptyList: TypeAlias = list[Any]
-EmptyDict: TypeAlias = dict[str, Any]
+
+
+class Step(Model):  # NB: Forward-declare
+    class Dependency(Model, extra=False):
+        step: str
+
+        allow_failure: BKBool = BKBool(default=False)
 
 class _BKKey(BKStr):
     # @TODO: The "empty list/object/stringify-an-int" all belong in `BKStr`
@@ -43,32 +48,54 @@ class _BKKey(BKStr):
                 pass
             else:
                 raise ValidationError(value, expectation="not be a valid UUID")
-        elif isinstance(value, int):
-            value = str(value)
-        elif isinstance(value, list):
-            if value:
-                raise ValidationError(value, expectation="be an empty list")
-            value = None
-        elif isinstance(value, dict):
-            if value:
-                raise ValidationError(value, expectation="be an empty dictionary")
-            value = None
         super().__set__(instance, value)
 
+class _BKDependsOn(_DescriptorBase[list[Step.Dependency]]):
+    @classmethod
+    def __shimbboleth_json_schema__(cls):
+        schema = super().__shimbboleth_json_schema__()
+        schema["anyOf"][0]["not"] = {"const": ""}
+        return schema
 
-class Step(Model):
-    class Dependency(Model, extra=False):
-        step: str
+    def __get__(self, instance, owner) -> list[Step.Dependency]:
+        if instance is None:
+            return field(default_factory=list)
+        return instance.__dict__[self.name]
 
-        allow_failure: BKBool = BKBool(default=False)
+    # @TODO: Add `dict` in there as well
+    def __set__(self, instance, value: Annotated[str, Not[""]] | int | list[str | int | Step.Dependency] | None) -> None:
+        if isinstance(value, int):
+            value = str(value)
+        if isinstance(value, str):
+            if not value:
+                raise ValidationError(value, expectation="not be an empty string")
+            value = [Step.Dependency(step=value)]
+        elif isinstance(value, list):
+            coerced = []
+            for index, elem in enumerate(value):
+                with ValidationError.context(index=index):
+                    coerced.append(
+                        elem if isinstance(elem, Step.Dependency)
+                        else Step.Dependency(step=elem)
+                        if isinstance(elem, str)
+                        # @TODO: Just let `step` allow `int`
+                        else Step.Dependency(step=str(elem))
+                        if isinstance(elem, int)
+                        else Step.Dependency(**elem)
+                    )
+            value = coerced
+        elif value is None:
+            value = []
+        super().__set__(instance, value)
 
+class Step(Step):
     key: _BKKey = _BKKey()
     """A unique identifier for a step, must not resemble a UUID"""
 
     allow_dependency_failure: BKBool = BKBool(default=False)
     """Whether to proceed with this step and further steps if a step named in the depends_on attribute fails"""
 
-    depends_on: list[Dependency] = field(default_factory=list)
+    depends_on: _BKDependsOn = _BKDependsOn()
     """The step keys for a step to depend on"""
 
     # @TEST: Is an empty string considered a skip?

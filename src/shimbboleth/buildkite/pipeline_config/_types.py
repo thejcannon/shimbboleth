@@ -1,10 +1,14 @@
-from typing import Literal, overload, Generic, TypeVar, get_type_hints
+from typing import Literal, overload, Generic, TypeVar, get_type_hints, TypeAlias, Any
 from dataclasses import field
 from shimbboleth.internal.clay.model import Model
 from shimbboleth.internal.clay.json_schema import schema
 
+from shimbboleth.internal.clay.validation import ValidationError
+
 T = TypeVar("T")
 
+EmptyList: TypeAlias = list[Any]
+EmptyDict: TypeAlias = dict[str, Any]
 
 class _DescriptorBase(Generic[T]):
     def __set_name__(self, owner, name: str) -> None:
@@ -55,6 +59,18 @@ class BKStr(_DescriptorBase[str]):
     def __init__(self, *, json_alias: str | None = None) -> None:
         self.json_alias = json_alias
 
+    def __set__(self, instance, value: str | int | EmptyList | EmptyDict | None):
+        if isinstance(value, int):
+            value = str(value)
+        elif isinstance(value, list):
+            if value:
+                raise ValidationError(value, expectation="be an empty list")
+            value = None
+        elif isinstance(value, dict):
+            if value:
+                raise ValidationError(value, expectation="be an empty dictionary")
+            value = None
+        super().__set__(instance, value)
 
 class BKBool(_DescriptorBase[bool]):
     """

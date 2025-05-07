@@ -4,9 +4,9 @@ from pytest import param
 from shimbboleth.buildkite.pipeline_config.tests.bases.schema import SchemaTestBase
 from shimbboleth.buildkite.pipeline_config.tests.bases._base import FieldTestBase
 
-parameterize_bk_str_list = pytest.mark.parametrize(
-    "value, expected",
-    [
+
+class BKStrListTestBase(FieldTestBase, SchemaTestBase):
+    PARAMETERIZATIONS = [
         param("string", ["string"], id="string"),
         param(["string1", "string2"], ["string1", "string2"], id="list"),
         param("", [""], id="empty_string"),
@@ -16,18 +16,23 @@ parameterize_bk_str_list = pytest.mark.parametrize(
         param(1, ["1"], id="int"),
         param([1, 2], ["1", "2"], id="int_list"),
         param([1, "2", 3], ["1", "2", "3"], id="mixed_list"),
-    ],
-)
+    ]
 
+    @classmethod
+    def pytest_generate_tests(cls, metafunc: pytest.Metafunc) -> None:
+        super().pytest_generate_tests(metafunc)
+        name = metafunc.function.__name__
+        if name in BKStrListTestBase.__dict__ and name not in ("test__model_dump",):
+            metafunc.parametrize("value, expected", cls.PARAMETERIZATIONS)
 
-class BKStrListTestBase(FieldTestBase, SchemaTestBase):
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
         cls.VALID_STEPS += [
             param({cls.ATTR_NAME: case.values[0], "type": cls.TYPENAME}, id=case.id)
-            for case in parameterize_bk_str_list.args[1]
+            for case in cls.PARAMETERIZATIONS
         ]
         cls.INVALID_STEPS += [
+            # @TODO: empty dict vs nonempty_dict
             param({cls.ATTR_NAME: {"key": 1}, "type": cls.TYPENAME}, id="dict"),
         ]
 
@@ -39,18 +44,20 @@ class BKStrListTestBase(FieldTestBase, SchemaTestBase):
         )
         assert self.ATTR_NAME in self.model_load({self.ATTR_NAME: ["a"]}).model_dump()
 
-    @parameterize_bk_str_list
+
+    # NB: Parameterized in `pytest_generate_tests`
     def test__python_ctor(self, value, expected):
         instance = self.ctor(**{self.ATTR_NAME: value})
         assert getattr(instance, self.ATTR_NAME) == expected
 
-    @parameterize_bk_str_list
+    # NB: Parameterized in `pytest_generate_tests`
     def test__setter(self, value, expected):
         instance = self.ctor()
         setattr(instance, self.ATTR_NAME, value)
         assert getattr(instance, self.ATTR_NAME) == expected
 
-    @parameterize_bk_str_list
+
+    # NB: Parameterized in `pytest_generate_tests`
     def test__json_load(self, value, expected):
         instance = self.model_load({self.ATTR_NAME: value})
         assert getattr(instance, self.ATTR_NAME) == expected
