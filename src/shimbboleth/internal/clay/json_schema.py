@@ -1,5 +1,5 @@
 from functools import singledispatch
-from typing import Any, TypeVar, get_type_hints
+from typing import Any, TypeVar
 from types import UnionType, GenericAlias
 import re
 import os

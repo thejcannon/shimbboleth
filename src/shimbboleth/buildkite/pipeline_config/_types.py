@@ -23,19 +23,24 @@ class _DescriptorBase(Generic[T]):
 
     def __set__(self, instance, value) -> None:
         instance.__dict__[self.name] = value
-    
+
     @classmethod
     def __shimbboleth_json_schema__(cls):
         """Generate JSON schema based on the __set__ method's type hints."""
-        if not hasattr(cls, '__set__'):
-            raise TypeError(f"{cls.__name__} must have a __set__ method with type hints")
-        
+        if not hasattr(cls, "__set__"):
+            raise TypeError(
+                f"{cls.__name__} must have a __set__ method with type hints"
+            )
+
         type_hints = get_type_hints(cls.__set__)
-        if 'value' not in type_hints:
-            raise TypeError(f"{cls.__name__}.__set__ must have a 'value' parameter with type hints")
-        
+        if "value" not in type_hints:
+            raise TypeError(
+                f"{cls.__name__}.__set__ must have a 'value' parameter with type hints"
+            )
+
         model_defs = {}
-        return schema(type_hints['value'], model_defs=model_defs)
+        return schema(type_hints["value"], model_defs=model_defs)
+
 
 class ExitStatus(Model, extra=True):
     exit_status: Literal["*"] | int

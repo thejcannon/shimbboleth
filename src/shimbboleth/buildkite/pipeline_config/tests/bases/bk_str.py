@@ -14,6 +14,7 @@ parameterize_bk_strs = pytest.mark.parametrize(
     ],
 )
 
+
 class BKStrTestBase(FieldTestBase[str], SchemaTestBase):
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
@@ -29,7 +30,10 @@ class BKStrTestBase(FieldTestBase[str], SchemaTestBase):
         ]
         cls.INVALID_STEPS += [
             param({cls.ATTR_NAME: [1], "type": cls.TYPENAME}, id="int_list"),
-            param({cls.ATTR_NAME: {"test-key": "value"}, "type": cls.TYPENAME}, id="non_empty_dict"),
+            param(
+                {cls.ATTR_NAME: {"test-key": "value"}, "type": cls.TYPENAME},
+                id="non_empty_dict",
+            ),
             # NB: Buildkite doesn't stringify floats
             param({cls.ATTR_NAME: 1.234, "type": cls.TYPENAME}, id="float"),
         ]

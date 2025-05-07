@@ -4,13 +4,14 @@ Contains the base class for all steps: `Step`.
 
 import dataclasses
 from shimbboleth.internal.clay.model import Model, field, FieldAlias
-from shimbboleth.internal.clay.validation import Not, ValidationError
+from shimbboleth.internal.clay.validation import ValidationError
 from shimbboleth.internal.clay.jsonT import JSONObject
 from shimbboleth.internal.clay.json_load import JSONLoadError
 from shimbboleth.buildkite.pipeline_config.notify import Notify, _parse_notify
 from shimbboleth.buildkite.pipeline_config._types import BKStrList, BKBool, BKStr
 from uuid import UUID
-from typing import ClassVar, final, Annotated
+from typing import ClassVar, final
+
 
 class BKKey(BKStr):
     @staticmethod
@@ -21,11 +22,9 @@ class BKKey(BKStr):
                     "type": "string",
                     "not": {
                         "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-                    }
+                    },
                 },
-                {
-                    "type": "null"
-                }
+                {"type": "null"},
             ]
         }
 
@@ -38,6 +37,7 @@ class BKKey(BKStr):
             else:
                 raise ValidationError(value, expectation="not be a valid UUID")
         super().__set__(instance, value)
+
 
 class Step(Model):
     class Dependency(Model, extra=False):

@@ -2,6 +2,7 @@ import pytest
 import pathlib
 import re
 
+
 def mark_known_xfails(items: list[pytest.Item]) -> None:
     """Mark tests from xfail file as expected to fail."""
     xfail_file = pathlib.Path(__file__).parent.parent / "xfail_nodeids.txt"
