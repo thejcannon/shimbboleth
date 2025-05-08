@@ -2,6 +2,7 @@ from typing import Literal, overload, Generic, TypeVar, get_type_hints, TypeAlia
 from dataclasses import field
 from shimbboleth.internal.clay.model import Model
 from shimbboleth.internal.clay.json_schema import schema
+from shimbboleth.internal.clay.jsonT import JSONObject
 
 from shimbboleth.internal.clay.validation import ValidationError
 
@@ -29,7 +30,7 @@ class _DescriptorBase(Generic[T]):
         instance.__dict__[self.name] = value
 
     @classmethod
-    def __shimbboleth_json_schema__(cls):
+    def __shimbboleth_json_schema__(cls, *, model_defs: dict[str, JSONObject]):
         """Generate JSON schema based on the __set__ method's type hints."""
         if not hasattr(cls, "__set__"):
             raise TypeError(
@@ -42,7 +43,6 @@ class _DescriptorBase(Generic[T]):
                 f"{cls.__name__}.__set__ must have a 'value' parameter with type hints"
             )
 
-        model_defs = {}
         return schema(type_hints["value"], model_defs=model_defs)
 
 

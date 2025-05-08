@@ -16,15 +16,15 @@ from typing import ClassVar, final, Any, Annotated
 
 class Step(Model):  # NB: Forward-declare
     class Dependency(Model, extra=False):
-        step: str
+        step: BKStr = BKStr()
 
         allow_failure: BKBool = BKBool(default=False)
 
 class _BKKey(BKStr):
     # @TODO: The "empty list/object/stringify-an-int" all belong in `BKStr`
 
-    @staticmethod
-    def __shimbboleth_json_schema__():
+    @classmethod
+    def __shimbboleth_json_schema__(cls, *, model_defs: dict[str, JSONObject]) -> JSONObject:
         return {
             "anyOf": [
                 {
@@ -52,8 +52,8 @@ class _BKKey(BKStr):
 
 class _BKDependsOn(_DescriptorBase[list[Step.Dependency]]):
     @classmethod
-    def __shimbboleth_json_schema__(cls):
-        schema = super().__shimbboleth_json_schema__()
+    def __shimbboleth_json_schema__(cls, *, model_defs: dict[str, JSONObject]):
+        schema = super().__shimbboleth_json_schema__(model_defs=model_defs)
         schema["anyOf"][0]["not"] = {"const": ""}
         return schema
 
@@ -64,12 +64,12 @@ class _BKDependsOn(_DescriptorBase[list[Step.Dependency]]):
 
     # @TODO: Add `dict` in there as well
     def __set__(self, instance, value: Annotated[str, Not[""]] | int | list[str | int | Step.Dependency] | None) -> None:
-        if isinstance(value, int):
-            value = str(value)
         if isinstance(value, str):
             if not value:
                 raise ValidationError(value, expectation="not be an empty string")
             value = [Step.Dependency(step=value)]
+        elif isinstance(value, int):
+            value = [Step.Dependency(step=str(value))]
         elif isinstance(value, list):
             coerced = []
             for index, elem in enumerate(value):
@@ -77,10 +77,7 @@ class _BKDependsOn(_DescriptorBase[list[Step.Dependency]]):
                     coerced.append(
                         elem if isinstance(elem, Step.Dependency)
                         else Step.Dependency(step=elem)
-                        if isinstance(elem, str)
-                        # @TODO: Just let `step` allow `int`
-                        else Step.Dependency(step=str(elem))
-                        if isinstance(elem, int)
+                        if isinstance(elem, (str, int))
                         else Step.Dependency(**elem)
                     )
             value = coerced

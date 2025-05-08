@@ -46,6 +46,7 @@ test_wait_step.py::Test_Field__Branches::test__valid__pipeline__upstream_schema[
 test_wait_step.py::Test_Field__Branches::test__valid__pipeline__upstream_schema[mixed_list-*]
 test_wait_step.py::Test_Field__DependsOn::test__valid__pipeline__upstream_schema[int*-*]
 test_wait_step.py::Test_Field__DependsOn::test__valid__pipeline__upstream_schema[mixed_list-*]
+test_wait_step.py::Test_Field__DependsOn::test__valid__pipeline__upstream_schema[dict_with_int_step-*]
 
 # Upstream API treats `wait` as accepting anything
 test_wait_step.py::Test_Field__Wait::test__valid__pipeline__upstream_schema[empty_list-*]
@@ -58,4 +59,3 @@ test_wait_step.py::Test_Field__Branches::test__invalid__pipeline__api[*-*]
 # Upstream API doesnt allow empty DependsOn string
 test_wait_step.py::Test_Field__DependsOn::test__invalid__pipeline__upstream_schema[empty_string-asdict]
 test_wait_step.py::Test_Field__DependsOn::test__invalid__pipeline__upstream_schema[empty_string-asnesteddict]
-

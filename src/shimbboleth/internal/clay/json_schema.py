@@ -208,7 +208,7 @@ class _ModelFieldSchemaHelper:
 
         field_schema = getattr(field.type, "__shimbboleth_json_schema__", None)
         if field_schema is not None:
-            return field_schema()
+            return field_schema(model_defs=model_defs)
 
         json_loader = field.metadata.get("json_loader", None)
         if json_loader:

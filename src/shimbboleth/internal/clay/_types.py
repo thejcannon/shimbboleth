@@ -24,7 +24,7 @@ T = TypeVar("T")
 
 class NonEmptyList(Generic[T]):
     @classmethod
-    def __shimbboleth_json_schema__(cls) -> JSONObject:
+    def __shimbboleth_json_schema__(cls, *, model_defs: dict[str, JSONObject]) -> JSONObject:
         return {"type": "array", "minItems": 1}
 
     def __set_name__(self, owner, name: str) -> None:
