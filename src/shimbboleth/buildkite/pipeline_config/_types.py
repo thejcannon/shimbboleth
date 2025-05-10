@@ -11,6 +11,7 @@ T = TypeVar("T")
 EmptyList: TypeAlias = list[Any]
 EmptyDict: TypeAlias = dict[str, Any]
 
+
 class _DescriptorBase(Generic[T]):
     def __set_name__(self, owner, name: str) -> None:
         self.name = name
@@ -71,6 +72,7 @@ class BKStr(_DescriptorBase[str]):
                 raise ValidationError(value, expectation="be an empty dictionary")
             value = None
         super().__set__(instance, value)
+
 
 class BKBool(_DescriptorBase[bool]):
     """

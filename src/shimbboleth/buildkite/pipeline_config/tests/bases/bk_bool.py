@@ -1,7 +1,10 @@
 import pytest
 from pytest import param
 
-from shimbboleth.buildkite.pipeline_config.tests.bases._base import FieldTestBase
+from shimbboleth.buildkite.pipeline_config.tests.bases._base import (
+    DefaultTestBase,
+    FieldTestBase,
+)
 from shimbboleth.buildkite.pipeline_config.tests.bases.schema import SchemaTestBase
 
 
@@ -22,18 +25,6 @@ class BKBoolTest(FieldTestBase, SchemaTestBase):
         if name in BKBoolTest.__dict__ and name not in ("test__model_dump",):
             metafunc.parametrize("value, expected", cls.PARAMETRIZATIONS)
 
-    def test__model_dump(self):
-        assert self.ATTR_NAME not in self.model_load().model_dump()
-        assert (
-            self.ATTR_NAME
-            not in self.model_load({self.ATTR_NAME: self.DEFAULT}).model_dump()
-        )
-        opposite = not self.DEFAULT
-        assert (
-            self.model_load({self.ATTR_NAME: opposite}).model_dump()[self.ATTR_NAME]
-            is opposite
-        )
-
     # NB: Parameterized in `pytest_generate_tests`
     def test__python_ctor(self, value, expected):
         instance = self.ctor(**{self.ATTR_NAME: value})
@@ -51,3 +42,17 @@ class BKBoolTest(FieldTestBase, SchemaTestBase):
         assert getattr(instance, self.ATTR_NAME) is expected
 
     # @TODO: Add schema valid/invalid tests?
+
+
+class BKBoolDefaultTest(DefaultTestBase):
+    def test__model_dump(self):
+        assert self.ATTR_NAME not in self.model_load().model_dump()
+        assert (
+            self.ATTR_NAME
+            not in self.model_load({self.ATTR_NAME: self.DEFAULT}).model_dump()
+        )
+        opposite = not self.DEFAULT
+        assert (
+            self.model_load({self.ATTR_NAME: opposite}).model_dump()[self.ATTR_NAME]
+            is opposite
+        )

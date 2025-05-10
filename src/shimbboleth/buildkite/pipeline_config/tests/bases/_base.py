@@ -1,14 +1,11 @@
-from typing import ClassVar, Any, Generic, TypeVar
+from typing import ClassVar, Any
 from shimbboleth.internal.clay.model import Model
 from shimbboleth.buildkite.pipeline_config.tests.helpers import get_upstream_schema
 
-T = TypeVar("T")
 
-
-class FieldTestBase(Generic[T]):
+class FieldTestBase:
     MODEL: ClassVar[type[Model]]
     UPSTREAM_SCHEMA_DEF_NAME: ClassVar[str]
-    DEFAULT: ClassVar[T | None]
     ATTR_NAME: ClassVar[str]
 
     @classmethod
@@ -29,7 +26,19 @@ class FieldTestBase(Generic[T]):
         """
         return cls.MODEL.model_load(data)
 
-    def test__default(self):
+
+class DefaultTestBase(FieldTestBase):
+    """
+    A base class for testing fields with a default value.
+
+    This class is used to test the default value of a field in a model.
+    It is not intended to be used directly, but rather as a base class for
+    other test classes.
+    """
+
+    DEFAULT: ClassVar
+
+    def test_value(self):
         assert getattr(self.model_load(), self.ATTR_NAME) == self.DEFAULT
         assert getattr(self.ctor(), self.ATTR_NAME) == self.DEFAULT
         assert (
@@ -37,7 +46,7 @@ class FieldTestBase(Generic[T]):
             == self.DEFAULT
         )
 
-    def test__default__upstream_schema(self):
+    def test_upstream_schema(self):
         assert (
             get_upstream_schema().schema["definitions"][self.UPSTREAM_SCHEMA_DEF_NAME][
                 "properties"
@@ -45,7 +54,7 @@ class FieldTestBase(Generic[T]):
             == self.DEFAULT
         )
 
-    def test__schema__not_required(self):
+    def test_schema_not_required(self):
         assert self.ATTR_NAME not in self.MODEL.model_json_schema.get("required", [])
         assert self.ATTR_NAME not in get_upstream_schema().schema["definitions"][
             self.UPSTREAM_SCHEMA_DEF_NAME

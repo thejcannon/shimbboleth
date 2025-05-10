@@ -6,6 +6,8 @@ from shimbboleth.buildkite.pipeline_config.tests.bases._base import FieldTestBas
 
 
 class BKStrListTestBase(FieldTestBase, SchemaTestBase):
+    DEFUALT = []
+
     PARAMETRIZATIONS = [
         param("string", ["string"], id="string"),
         param(["string1", "string2"], ["string1", "string2"], id="list"),
@@ -44,7 +46,6 @@ class BKStrListTestBase(FieldTestBase, SchemaTestBase):
         )
         assert self.ATTR_NAME in self.model_load({self.ATTR_NAME: ["a"]}).model_dump()
 
-
     # NB: Parameterized in `pytest_generate_tests`
     def test__python_ctor(self, value, expected):
         instance = self.ctor(**{self.ATTR_NAME: value})
@@ -55,7 +56,6 @@ class BKStrListTestBase(FieldTestBase, SchemaTestBase):
         instance = self.ctor()
         setattr(instance, self.ATTR_NAME, value)
         assert getattr(instance, self.ATTR_NAME) == expected
-
 
     # NB: Parameterized in `pytest_generate_tests`
     def test__json_load(self, value, expected):

@@ -1,7 +1,10 @@
 import pytest
 
 from shimbboleth.buildkite.pipeline_config.tests.bases.schema import SchemaTestBase
-from shimbboleth.buildkite.pipeline_config.tests.bases._base import FieldTestBase
+from shimbboleth.buildkite.pipeline_config.tests.bases._base import (
+    DefaultTestBase,
+    FieldTestBase,
+)
 from pytest import param
 
 parameterize_bk_strs = pytest.mark.parametrize(
@@ -15,7 +18,7 @@ parameterize_bk_strs = pytest.mark.parametrize(
 )
 
 
-class BKStrTestBase(FieldTestBase[str], SchemaTestBase):
+class BKStrTestBase(FieldTestBase, SchemaTestBase):
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
         cls.VALID_STEPS += [
@@ -38,18 +41,6 @@ class BKStrTestBase(FieldTestBase[str], SchemaTestBase):
             param({cls.ATTR_NAME: 1.234, "type": cls.TYPENAME}, id="float"),
         ]
 
-    def test__model_dump(self):
-        assert self.ATTR_NAME not in self.model_load().model_dump()
-        assert (
-            self.ATTR_NAME
-            not in self.model_load({self.ATTR_NAME: self.DEFAULT}).model_dump()
-        )
-        a_string = "string"
-        assert (
-            self.model_load({self.ATTR_NAME: a_string}).model_dump()[self.ATTR_NAME]
-            == a_string
-        )
-
     @parameterize_bk_strs
     def test__python_ctor(self, value, expected):
         instance = self.ctor(**{self.ATTR_NAME: value})
@@ -65,3 +56,17 @@ class BKStrTestBase(FieldTestBase[str], SchemaTestBase):
     def test__json_load(self, value, expected):
         instance = self.model_load({self.ATTR_NAME: value})
         assert getattr(instance, self.ATTR_NAME) == expected
+
+
+class BKStrDefaultTestBase(DefaultTestBase):
+    def test__model_dump(self):
+        assert self.ATTR_NAME not in self.model_load().model_dump()
+        assert (
+            self.ATTR_NAME
+            not in self.model_load({self.ATTR_NAME: self.DEFAULT}).model_dump()
+        )
+        a_string = "string"
+        assert (
+            self.model_load({self.ATTR_NAME: a_string}).model_dump()[self.ATTR_NAME]
+            == a_string
+        )

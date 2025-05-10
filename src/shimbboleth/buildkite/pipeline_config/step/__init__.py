@@ -12,6 +12,7 @@ from shimbboleth.buildkite.pipeline_config._types import BKStrList, BKBool, BKSt
 
 from typing import ClassVar, final
 
+
 # NB: This is a "forward declare" for `Step` such that
 # `Step.Dependency` exists before `Step` is (fully) defined.
 class Step(Model):
@@ -19,7 +20,9 @@ class Step(Model):
         step: BKStr = BKStr()
         allow_failure: BKBool = BKBool(default=False)
 
+
 from shimbboleth.buildkite.pipeline_config.step._types import KeyT, DependsOnT
+
 
 class Step(Step):
     key: KeyT = KeyT()

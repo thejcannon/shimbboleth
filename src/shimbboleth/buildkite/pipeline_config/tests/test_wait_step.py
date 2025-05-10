@@ -1,6 +1,12 @@
-from shimbboleth.buildkite.pipeline_config.tests.bases.bk_str import BKStrTestBase
+from shimbboleth.buildkite.pipeline_config.tests.bases.bk_str import (
+    BKStrTestBase,
+    BKStrDefaultTestBase,
+)
 from shimbboleth.buildkite.pipeline_config.wait_step import WaitStep
-from shimbboleth.buildkite.pipeline_config.tests.bases.bk_bool import BKBoolTest
+from shimbboleth.buildkite.pipeline_config.tests.bases.bk_bool import (
+    BKBoolDefaultTest,
+    BKBoolTest,
+)
 from shimbboleth.buildkite.pipeline_config.tests.bases.bk_str_list import (
     BKStrListTestBase,
 )
@@ -18,9 +24,13 @@ class WaitStepTestBase:
     TYPENAME = "wait"
 
 
-class Test_Field__Key(WaitStepTestBase, BKStrTestBase):
+class Test_Field__Key__Default(WaitStepTestBase, BKStrDefaultTestBase):
     ATTR_NAME = "key"
     DEFAULT = None
+
+
+class Test_Field__Key(WaitStepTestBase, BKStrTestBase):
+    ATTR_NAME = "key"
 
     # @TODO: "Step keys may only contain alphanumeric characters, underscores, dashes and colons"
 
@@ -66,13 +76,16 @@ class Test_Field__Key(WaitStepTestBase, BKStrTestBase):
     ]
 
 
-class Test_Field__AllowDependencyFailure(WaitStepTestBase, BKBoolTest):
+class Test_Field__AllowDependencyFailure__Default(WaitStepTestBase, BKBoolDefaultTest):
+    ATTR_NAME = "allow_dependency_failure"
     DEFAULT = False
+
+
+class Test_Field__AllowDependencyFailure(WaitStepTestBase, BKBoolTest):
     ATTR_NAME = "allow_dependency_failure"
 
 
 class Test_Field__DependsOn(WaitStepTestBase, BKStrListTestBase):
-    DEFAULT = []
     ATTR_NAME = "depends_on"
 
     PARAMETRIZATIONS = [
@@ -81,22 +94,47 @@ class Test_Field__DependsOn(WaitStepTestBase, BKStrListTestBase):
         param("string", [Step.Dependency(step="string")], id="string"),
         param(1, [Step.Dependency(step="1")], id="int"),
         # Lists
-        param(["string1", "string2"], [Step.Dependency(step="string1"), Step.Dependency(step="string2")], id="list"),
+        param(
+            ["string1", "string2"],
+            [Step.Dependency(step="string1"), Step.Dependency(step="string2")],
+            id="list",
+        ),
         param([], [], id="empty_list"),
-        param([1, 2], [Step.Dependency(step="1"), Step.Dependency(step="2")], id="int_list"),
-        param([1, "2", 3], [Step.Dependency(step="1"), Step.Dependency(step="2"), Step.Dependency(step="3")], id="mixed_list"),
-        param([{"step": "step"}], [Step.Dependency(step="step")], id="dict_with_string_step"),
+        param(
+            [1, 2],
+            [Step.Dependency(step="1"), Step.Dependency(step="2")],
+            id="int_list",
+        ),
+        param(
+            [1, "2", 3],
+            [
+                Step.Dependency(step="1"),
+                Step.Dependency(step="2"),
+                Step.Dependency(step="3"),
+            ],
+            id="mixed_list",
+        ),
+        param(
+            [{"step": "step"}],
+            [Step.Dependency(step="step")],
+            id="dict_with_string_step",
+        ),
         param([{"step": 1}], [Step.Dependency(step="1")], id="dict_with_int_step"),
         # Allow failure
         *[
-            param([{"step": "step", "allow_failure": bool_param.values[0]}], [Step.Dependency(step="step", allow_failure=bool_param.values[1])], id=f"allow_failure__{bool_param.id}")
+            param(
+                [{"step": "step", "allow_failure": bool_param.values[0]}],
+                [Step.Dependency(step="step", allow_failure=bool_param.values[1])],
+                id=f"allow_failure__{bool_param.id}",
+            )
             for bool_param in BKBoolTest.PARAMETRIZATIONS
-        ]
+        ],
+        # @TODO: test `param([Step.Dependency(...)])`
     ]
 
     INVALID_STEPS = [
         param({"depends_on": ""}, id="empty_string"),
-        param({"depends_on": {}},  id="empty_dict"),
+        param({"depends_on": {}}, id="empty_dict"),
         param({"depends_on": {"step": "step"}}, id="scalar_dict"),
         param({"depends_on": {"allow_failure": True}}, id="missing_step"),
     ]
@@ -105,15 +143,18 @@ class Test_Field__DependsOn(WaitStepTestBase, BKStrListTestBase):
 class Test_Field__Branches(WaitStepTestBase, BKStrListTestBase):
     # @TODO: Branches seems special:
     # - It's a str/list[str] but also space-separated?
-    DEFAULT = []
     ATTR_NAME = "branches"
 
     # @TODO: All of the invalid pipelines are somehow valid upstream API???
     #   (meaning it accepts any type)
 
 
-class Test_Field__ContinueOnFailure(WaitStepTestBase, BKBoolTest):
+class Test_Field__ContinueOnFailure__Default(WaitStepTestBase, BKBoolDefaultTest):
+    ATTR_NAME = "continue_on_failure"
     DEFAULT = False
+
+
+class Test_Field__ContinueOnFailure(WaitStepTestBase, BKBoolTest):
     ATTR_NAME = "continue_on_failure"
 
 

@@ -3,17 +3,23 @@ Contains descriptors specific to steps.
 """
 
 from uuid import UUID
-from typing import Annotated, TYPE_CHECKING
-from dataclasses import field
+from typing import Annotated
 from shimbboleth.internal.clay.validation import ValidationError, Not
 from shimbboleth.internal.clay.jsonT import JSONObject
-from shimbboleth.buildkite.pipeline_config._types import BKStr, _DescriptorBase, EmptyList, EmptyDict
+from shimbboleth.buildkite.pipeline_config._types import (
+    BKStr,
+    _DescriptorBase,
+    EmptyList,
+    EmptyDict,
+)
 from shimbboleth.buildkite.pipeline_config.step import Step
 
 
 class KeyT(BKStr):
     @classmethod
-    def __shimbboleth_json_schema__(cls, *, model_defs: dict[str, JSONObject]) -> JSONObject:
+    def __shimbboleth_json_schema__(
+        cls, *, model_defs: dict[str, JSONObject]
+    ) -> JSONObject:
         return {
             "anyOf": [
                 {
@@ -29,7 +35,9 @@ class KeyT(BKStr):
             ]
         }
 
-    def __set__(self, instance, value: str | int | EmptyList | EmptyDict | None) -> None:
+    def __set__(
+        self, instance, value: str | int | EmptyList | EmptyDict | None
+    ) -> None:
         if isinstance(value, str):
             try:
                 UUID(value)
@@ -51,11 +59,16 @@ class DependsOnT(_DescriptorBase):
     def __get__(self, instance, owner) -> list[Step.Dependency]:
         if instance is None:
             from dataclasses import field
+
             return field(default_factory=list)
         return instance.__dict__[self.name]
 
     # @TODO: Add `dict` in there as well
-    def __set__(self, instance, value: Annotated[str, Not[""]] | int | list[str | int | Step.Dependency] | None) -> None:
+    def __set__(
+        self,
+        instance,
+        value: Annotated[str, Not[""]] | int | list[str | int | Step.Dependency] | None,
+    ) -> None:
         if isinstance(value, str):
             if not value:
                 raise ValidationError(value, expectation="not be an empty string")
@@ -67,7 +80,8 @@ class DependsOnT(_DescriptorBase):
             for index, elem in enumerate(value):
                 with ValidationError.context(index=index):
                     coerced.append(
-                        elem if isinstance(elem, Step.Dependency)
+                        elem
+                        if isinstance(elem, Step.Dependency)
                         else Step.Dependency(step=elem)
                         if isinstance(elem, (str, int))
                         else Step.Dependency(**elem)
