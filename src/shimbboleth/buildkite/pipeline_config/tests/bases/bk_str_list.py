@@ -2,10 +2,13 @@ import pytest
 from pytest import param
 
 from shimbboleth.buildkite.pipeline_config.tests.bases.schema import SchemaTestBase
-from shimbboleth.buildkite.pipeline_config.tests.bases._base import FieldTestBase
+from shimbboleth.buildkite.pipeline_config.tests.bases._base import (
+    DefaultTestBase,
+    FieldTestBase,
+)
 
 
-class BKStrListTestBase(FieldTestBase, SchemaTestBase):
+class BKStrListTest(FieldTestBase, SchemaTestBase):
     DEFUALT = []
 
     PARAMETRIZATIONS = [
@@ -24,7 +27,7 @@ class BKStrListTestBase(FieldTestBase, SchemaTestBase):
     def pytest_generate_tests(cls, metafunc: pytest.Metafunc) -> None:
         super().pytest_generate_tests(metafunc)
         name = metafunc.function.__name__
-        if name in BKStrListTestBase.__dict__ and name not in ("test__model_dump",):
+        if name in BKStrListTest.__dict__:
             metafunc.parametrize("value, expected", cls.PARAMETRIZATIONS)
 
     def __init_subclass__(cls) -> None:
@@ -37,14 +40,6 @@ class BKStrListTestBase(FieldTestBase, SchemaTestBase):
             # @TODO: empty dict vs nonempty_dict
             param({cls.ATTR_NAME: {"key": 1}, "type": cls.TYPENAME}, id="dict"),
         ]
-
-    def test__model_dump(self):
-        assert self.ATTR_NAME not in self.model_load().model_dump()
-        assert self.ATTR_NAME not in self.model_load({self.ATTR_NAME: []}).model_dump()
-        assert (
-            self.ATTR_NAME not in self.model_load({self.ATTR_NAME: None}).model_dump()
-        )
-        assert self.ATTR_NAME in self.model_load({self.ATTR_NAME: ["a"]}).model_dump()
 
     # NB: Parameterized in `pytest_generate_tests`
     def test__python_ctor(self, value, expected):
@@ -61,3 +56,15 @@ class BKStrListTestBase(FieldTestBase, SchemaTestBase):
     def test__json_load(self, value, expected):
         instance = self.model_load({self.ATTR_NAME: value})
         assert getattr(instance, self.ATTR_NAME) == expected
+
+
+class BKStrListDefaultTest(DefaultTestBase):
+    DEFAULT = []
+
+    def test__model_dump(self):
+        assert self.ATTR_NAME not in self.model_load().model_dump()
+        assert self.ATTR_NAME not in self.model_load({self.ATTR_NAME: []}).model_dump()
+        assert (
+            self.ATTR_NAME not in self.model_load({self.ATTR_NAME: None}).model_dump()
+        )
+        assert self.ATTR_NAME in self.model_load({self.ATTR_NAME: ["a"]}).model_dump()

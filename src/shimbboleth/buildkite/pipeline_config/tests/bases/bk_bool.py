@@ -22,7 +22,7 @@ class BKBoolTest(FieldTestBase, SchemaTestBase):
     def pytest_generate_tests(cls, metafunc: pytest.Metafunc) -> None:
         super().pytest_generate_tests(metafunc)
         name = metafunc.function.__name__
-        if name in BKBoolTest.__dict__ and name not in ("test__model_dump",):
+        if name in BKBoolTest.__dict__:
             metafunc.parametrize("value, expected", cls.PARAMETRIZATIONS)
 
     # NB: Parameterized in `pytest_generate_tests`

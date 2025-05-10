@@ -3,7 +3,7 @@ from pytest import param
 from typing import ClassVar, Any
 
 
-class StepNameLabelNameTestBase(SchemaTestBase):
+class StepNameLabelNameTest(SchemaTestBase):
     TYPENAME: ClassVar[str]
 
     VALID_STEPS: ClassVar[list[dict[str, Any]]]

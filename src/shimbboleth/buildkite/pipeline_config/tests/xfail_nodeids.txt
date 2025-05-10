@@ -24,8 +24,8 @@ test_wait_step.py::Test_Field__Wait::test__valid__pipeline__generated_schema[dic
 # Upstream Schema doesn't list defaults for non-required fields
 test_wait_step.py::Test_Field__AllowDependencyFailure__Default::test_upstream_schema
 test_wait_step.py::Test_Field__Key__Default::test_upstream_schema
-test_wait_step.py::Test_Field__Branches::test__default__upstream_schema
-test_wait_step.py::Test_Field__DependsOn::test__default__upstream_schema
+test_wait_step.py::Test_Field__Branches__Default::test_upstream_schema
+test_wait_step.py::Test_Field__DependsOn__Default::test_upstream_schema
 
 # ===== Upstream Schema Bugs =====
 
