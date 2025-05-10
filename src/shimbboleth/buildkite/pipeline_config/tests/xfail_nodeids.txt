@@ -35,6 +35,7 @@ test_wait_step.py::Test_Field__*::test__valid__pipeline__upstream_schema[*-aslis
 # Upstream Schema doesn't list `None`-able fields
 test_wait_step.py::Test_Field__Key::test__valid__pipeline__upstream_schema[none-*]
 test_wait_step.py::Test_Field__Branches::test__valid__pipeline__upstream_schema[none-*]
+test_wait_step.py::Test_Field__DependsOn::test__valid__pipeline__upstream_schema[allow_failure__None-*]
 
 # NB: Upstream API treats "Falsey" values as missing/`None`/etc...
 test_wait_step.py::Test_Field__Key::test__valid__pipeline__upstream_schema[empty_list-*]

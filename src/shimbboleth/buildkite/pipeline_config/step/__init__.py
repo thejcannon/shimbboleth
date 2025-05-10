@@ -12,8 +12,8 @@ from shimbboleth.buildkite.pipeline_config._types import BKStrList, BKBool, BKSt
 
 from typing import ClassVar, final
 
-# NB: This is a "forward declare" for `Step` such that `Step.Dependency` before
-# `Step` is (fully) defined.
+# NB: This is a "forward declare" for `Step` such that
+# `Step.Dependency` exists before `Step` is (fully) defined.
 class Step(Model):
     class Dependency(Model, extra=False):
         step: BKStr = BKStr()

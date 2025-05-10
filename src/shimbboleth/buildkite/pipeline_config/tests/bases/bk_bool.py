@@ -1,21 +1,27 @@
 import pytest
+from pytest import param
 
 from shimbboleth.buildkite.pipeline_config.tests.bases._base import FieldTestBase
-
-parameterize_bk_bools = pytest.mark.parametrize(
-    "value, expected",
-    [
-        pytest.param(True, True, id="True"),
-        pytest.param("true", True, id="'true'"),
-        pytest.param(False, False, id="False"),
-        pytest.param("false", False, id="'false'"),
-        # @TODO: Should `None` instead be the default?
-        pytest.param(None, False, id="None"),
-    ],
-)
+from shimbboleth.buildkite.pipeline_config.tests.bases.schema import SchemaTestBase
 
 
-class BKBoolTest(FieldTestBase[bool]):
+class BKBoolTest(FieldTestBase, SchemaTestBase):
+    PARAMETRIZATIONS = [
+        param(True, True, id="True"),
+        param("true", True, id="true"),
+        param(False, False, id="False"),
+        param("false", False, id="false"),
+        # @TODO: Should `None` instead be the default? Or the default?
+        param(None, False, id="None"),
+    ]
+
+    @classmethod
+    def pytest_generate_tests(cls, metafunc: pytest.Metafunc) -> None:
+        super().pytest_generate_tests(metafunc)
+        name = metafunc.function.__name__
+        if name in BKBoolTest.__dict__ and name not in ("test__model_dump",):
+            metafunc.parametrize("value, expected", cls.PARAMETRIZATIONS)
+
     def test__model_dump(self):
         assert self.ATTR_NAME not in self.model_load().model_dump()
         assert (
@@ -28,20 +34,20 @@ class BKBoolTest(FieldTestBase[bool]):
             is opposite
         )
 
-    @parameterize_bk_bools
+    # NB: Parameterized in `pytest_generate_tests`
     def test__python_ctor(self, value, expected):
         instance = self.ctor(**{self.ATTR_NAME: value})
         assert getattr(instance, self.ATTR_NAME) is expected
 
-    @parameterize_bk_bools
+    # NB: Parameterized in `pytest_generate_tests`
     def test__setter(self, value, expected):
         wait_step = self.ctor()
         setattr(wait_step, self.ATTR_NAME, value)
         assert getattr(wait_step, self.ATTR_NAME) is expected
 
-    @parameterize_bk_bools
+    # NB: Parameterized in `pytest_generate_tests`
     def test__json_load(self, value, expected):
         instance = self.model_load({self.ATTR_NAME: value})
         assert getattr(instance, self.ATTR_NAME) is expected
 
-    # @TODO: Add schema valid/invalid tests
+    # @TODO: Add schema valid/invalid tests?

@@ -6,7 +6,7 @@ from shimbboleth.buildkite.pipeline_config.tests.bases._base import FieldTestBas
 
 
 class BKStrListTestBase(FieldTestBase, SchemaTestBase):
-    PARAMETERIZATIONS = [
+    PARAMETRIZATIONS = [
         param("string", ["string"], id="string"),
         param(["string1", "string2"], ["string1", "string2"], id="list"),
         param("", [""], id="empty_string"),
@@ -23,13 +23,13 @@ class BKStrListTestBase(FieldTestBase, SchemaTestBase):
         super().pytest_generate_tests(metafunc)
         name = metafunc.function.__name__
         if name in BKStrListTestBase.__dict__ and name not in ("test__model_dump",):
-            metafunc.parametrize("value, expected", cls.PARAMETERIZATIONS)
+            metafunc.parametrize("value, expected", cls.PARAMETRIZATIONS)
 
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
         cls.VALID_STEPS += [
             param({cls.ATTR_NAME: case.values[0], "type": cls.TYPENAME}, id=case.id)
-            for case in cls.PARAMETERIZATIONS
+            for case in cls.PARAMETRIZATIONS
         ]
         cls.INVALID_STEPS += [
             # @TODO: empty dict vs nonempty_dict

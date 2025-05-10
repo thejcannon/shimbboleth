@@ -75,7 +75,7 @@ class Test_Field__DependsOn(WaitStepTestBase, BKStrListTestBase):
     DEFAULT = []
     ATTR_NAME = "depends_on"
 
-    PARAMETERIZATIONS = [
+    PARAMETRIZATIONS = [
         param(None, [], id="none"),
         # Scalars
         param("string", [Step.Dependency(step="string")], id="string"),
@@ -87,14 +87,18 @@ class Test_Field__DependsOn(WaitStepTestBase, BKStrListTestBase):
         param([1, "2", 3], [Step.Dependency(step="1"), Step.Dependency(step="2"), Step.Dependency(step="3")], id="mixed_list"),
         param([{"step": "step"}], [Step.Dependency(step="step")], id="dict_with_string_step"),
         param([{"step": 1}], [Step.Dependency(step="1")], id="dict_with_int_step"),
-
-
-        # @TODO: allow_failure inside `depends_on`
+        # Allow failure
+        *[
+            param([{"step": "step", "allow_failure": bool_param.values[0]}], [Step.Dependency(step="step", allow_failure=bool_param.values[1])], id=f"allow_failure__{bool_param.id}")
+            for bool_param in BKBoolTest.PARAMETRIZATIONS
+        ]
     ]
 
     INVALID_STEPS = [
         param({"depends_on": ""}, id="empty_string"),
-        param({"step": "step"}, id="scalar_dict"),
+        param({"depends_on": {}},  id="empty_dict"),
+        param({"depends_on": {"step": "step"}}, id="scalar_dict"),
+        param({"depends_on": {"allow_failure": True}}, id="missing_step"),
     ]
 
 
