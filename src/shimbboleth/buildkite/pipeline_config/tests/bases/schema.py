@@ -14,13 +14,30 @@ from typing import ClassVar, Any
 class SchemaTestBase:
     MODEL: ClassVar[type]
     TYPENAME: ClassVar[str]
-    VALID_STEPS: ClassVar[list[dict[str, Any]]]
-    INVALID_STEPS: ClassVar[list[dict[str, Any]]]
+    VALID_STEPS: ClassVar[list]
+    INVALID_STEPS: ClassVar[list]
 
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
         cls.VALID_STEPS = getattr(cls, "VALID_STEPS", []).copy()
         cls.INVALID_STEPS = getattr(cls, "INVALID_STEPS", []).copy()
+
+    @classmethod
+    def _aslist(cls, step_config):
+        return [step_config]
+
+    @classmethod
+    def _asdict(cls, step_config):
+        return {"steps": [step_config]}
+
+    @classmethod
+    def _asnesteddict(cls, step_config):
+        return {
+            # NB: `type: ` isn't valid on nested steps (since the nesting already disambiguates)
+            "steps": [
+                {cls.TYPENAME: {k: v for k, v in step_config.items() if k != "type"}}
+            ]
+        }
 
     @classmethod
     def pytest_generate_tests(cls, metafunc: pytest.Metafunc) -> None:
@@ -36,25 +53,9 @@ class SchemaTestBase:
                 metafunc.parametrize(
                     "xform",
                     [
-                        param(lambda step_config: [step_config], id="aslist"),
-                        param(
-                            lambda step_config: {"steps": [step_config]}, id="asdict"
-                        ),
-                        param(
-                            lambda step_config: {
-                                # NB: `type: ` isn't valid on nested steps (since the nesting already disambiguates)
-                                "steps": [
-                                    {
-                                        cls.TYPENAME: {
-                                            k: v
-                                            for k, v in step_config.items()
-                                            if k != "type"
-                                        }
-                                    }
-                                ]
-                            },
-                            id="asnesteddict",
-                        ),
+                        param(cls._aslist, id="aslist"),
+                        param(cls._asdict, id="asdict"),
+                        param(cls._asnesteddict, id="asnesteddict"),
                     ],
                 )
 

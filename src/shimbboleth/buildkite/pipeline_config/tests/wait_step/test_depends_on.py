@@ -1,3 +1,5 @@
+from typing import TYPE_CHECKING
+from shimbboleth.buildkite.pipeline_config import WaitStep
 from shimbboleth.buildkite.pipeline_config.tests.wait_step.base import TestBase
 from shimbboleth.buildkite.pipeline_config.tests.bases.bk_bool import BKBoolTest
 from shimbboleth.buildkite.pipeline_config.tests.bases.bk_str_list import (
@@ -6,6 +8,13 @@ from shimbboleth.buildkite.pipeline_config.tests.bases.bk_str_list import (
 )
 from pytest import param
 from shimbboleth.buildkite.pipeline_config.step import Step
+
+
+if TYPE_CHECKING:
+    from typing import assert_type
+
+    assert_type(WaitStep().depends_on, list[Step.Dependency])
+    """Test the attribute type."""
 
 
 class Test_Default(TestBase, BKStrListDefaultTest):
@@ -65,3 +74,17 @@ class Test_Pipelines(TestBase, BKStrListTest):
         param({"depends_on": {"step": "step"}}, id="scalar_dict"),
         param({"depends_on": {"allow_failure": True}}, id="missing_step"),
     ]
+
+    def test__pythontype__ctor(self):
+        """Test the constructor correctly accepts `[Step.Dependency]`"""
+        depends_on = Step.Dependency(step="step")
+        instance = self.ctor(depends_on=[depends_on])
+        assert instance.depends_on == [depends_on]
+
+    def test__pythontype__setter(self):
+        """Test setting to `[Step.Dependency]` works"""
+        depends_on = Step.Dependency(step="step")
+        instance = self.ctor()
+        assert instance.depends_on != depends_on
+        instance.depends_on = [depends_on]
+        assert instance.depends_on == [depends_on]
