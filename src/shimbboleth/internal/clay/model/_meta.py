@@ -80,6 +80,16 @@ class ModelMeta(type):
     def __delattr__(self, name: str) -> None:
         pass
 
+    # NB: Prevent overriding descriptors with default values (maybe a bug in `dataclasses`).
+    # The problem is `dataclasses` replaces class field attributes which have defaults with
+    # the default. (E.g. `attr: int = field(default=2)` has an implicit `<dataclass>.attr = 2`).
+    # But this wipes out our descriptors.
+    def __setattr__(self, name: str, value) -> None:
+        """Override __setattr__ to leave all class Field attributes as Fields."""
+        if isinstance(getattr(self, name, None), dataclasses.Field):
+            return
+        super().__setattr__(name, value)
+
     # @TODO: Introduce `Namespace` type, and use it for namespaces
     @property
     def __modelname__(cls) -> str:

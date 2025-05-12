@@ -96,10 +96,22 @@ class IfT(_DescriptorBase):
     # @TODO: Overload
     def __get__(self, instance, owner):
         if instance is None:
-            from dataclasses import field
+            from dataclasses import Field, MISSING
 
-            return field(default=None, metadata={"json_alias": "if"})
-        return instance.__dict__[self.name]
+            field = Field(
+                default=None,
+                default_factory= MISSING,  # type: ignore
+                init=True,
+                repr=True,
+                hash=None,
+                compare=True,
+                kw_only=True,
+                metadata={"json_alias": "if"},
+            )
+            field.name = "if_condition"
+            field.type = self
+            return field
+        return super().__get__(instance, owner)
 
     def __set__(
         self,

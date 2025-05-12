@@ -49,7 +49,6 @@ class Step(Step):
     id: ClassVar = FieldAlias("key", deprecated=True)
     identifier: ClassVar = FieldAlias("key")
 
-
     @final
     @classmethod
     def _get_canonical_type(cls) -> str | None:
@@ -83,7 +82,6 @@ class Step(Step):
                     )
                 ret.append(notify)
         return ret
-
 
 class SubStep(Step):
     branches: BKStrList = BKStrList()
