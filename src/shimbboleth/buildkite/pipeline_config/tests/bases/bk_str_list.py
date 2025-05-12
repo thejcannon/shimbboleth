@@ -1,14 +1,14 @@
 import pytest
 from pytest import param
 
-from shimbboleth.buildkite.pipeline_config.tests.bases.schema import SchemaTestBase
+from shimbboleth.buildkite.pipeline_config.tests.bases.schema import SchemaTest
 from shimbboleth.buildkite.pipeline_config.tests.bases._base import (
     DefaultTestBase,
-    FieldTestBase,
+    FieldTest,
 )
 
 
-class BKStrListTest(FieldTestBase, SchemaTestBase):
+class BKStrListTest(FieldTest):
     DEFUALT = []
 
     PARAMETRIZATIONS = [
@@ -23,48 +23,21 @@ class BKStrListTest(FieldTestBase, SchemaTestBase):
         param([1, "2", 3], ["1", "2", "3"], id="mixed_list"),
     ]
 
-    @classmethod
-    def pytest_generate_tests(cls, metafunc: pytest.Metafunc) -> None:
-        super().pytest_generate_tests(metafunc)
-        name = metafunc.function.__name__
-        if name in BKStrListTest.__dict__:
-            metafunc.parametrize("value, expected", cls.PARAMETRIZATIONS)
-
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
-        cls.VALID_STEPS += [
-            param({cls.ATTR_NAME: case.values[0], "type": cls.TYPENAME}, id=case.id)
-            for case in cls.PARAMETRIZATIONS
-        ]
         cls.INVALID_STEPS += [
             # @TODO: empty dict vs nonempty_dict
             param({cls.ATTR_NAME: {"key": 1}, "type": cls.TYPENAME}, id="dict"),
         ]
-
-    # NB: Parameterized in `pytest_generate_tests`
-    def test__python_ctor(self, value, expected):
-        instance = self.ctor(**{self.ATTR_NAME: value})
-        assert getattr(instance, self.ATTR_NAME) == expected
-
-    # NB: Parameterized in `pytest_generate_tests`
-    def test__setter(self, value, expected):
-        instance = self.ctor()
-        setattr(instance, self.ATTR_NAME, value)
-        assert getattr(instance, self.ATTR_NAME) == expected
-
-    # NB: Parameterized in `pytest_generate_tests`
-    def test__json_load(self, value, expected):
-        instance = self.model_load({self.ATTR_NAME: value})
-        assert getattr(instance, self.ATTR_NAME) == expected
 
 
 class BKStrListDefaultTest(DefaultTestBase):
     DEFAULT = []
 
     def test__model_dump(self):
-        assert self.ATTR_NAME not in self.model_load().model_dump()
-        assert self.ATTR_NAME not in self.model_load({self.ATTR_NAME: []}).model_dump()
+        assert self.FIELD_NAME not in self.model_load().model_dump()
+        assert self.FIELD_NAME not in self.model_load({self.FIELD_NAME: []}).model_dump()
         assert (
-            self.ATTR_NAME not in self.model_load({self.ATTR_NAME: None}).model_dump()
+            self.FIELD_NAME not in self.model_load({self.FIELD_NAME: None}).model_dump()
         )
-        assert self.ATTR_NAME in self.model_load({self.ATTR_NAME: ["a"]}).model_dump()
+        assert self.FIELD_NAME in self.model_load({self.FIELD_NAME: ["a"]}).model_dump()

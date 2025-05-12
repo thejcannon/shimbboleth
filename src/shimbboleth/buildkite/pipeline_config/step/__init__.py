@@ -21,10 +21,17 @@ class Step(Model):
         allow_failure: BKBool = BKBool(default=False)
 
 
-from shimbboleth.buildkite.pipeline_config.step._types import KeyT, DependsOnT
+from shimbboleth.buildkite.pipeline_config.step._types import KeyT, DependsOnT, IfT
 
 
 class Step(Step):
+    NotifyT = (
+        Notify.BasecampCampfire
+        | Notify.Slack
+        | Notify.GitHubCheck
+        | Notify.GitHubCommitStatus
+    )
+
     key: KeyT = KeyT()
     """A unique identifier for a step, must not resemble a UUID"""
 
@@ -35,19 +42,13 @@ class Step(Step):
     """The step keys for a step to depend on"""
 
     # @TEST: Is an empty string considered a skip?
-    if_condition: str | None = field(default=None, json_alias="if")
+    # @TODO: Rename `if_`
+    if_condition: IfT = IfT()
     """A boolean expression that omits the step when false"""
 
     id: ClassVar = FieldAlias("key", deprecated=True)
     identifier: ClassVar = FieldAlias("key")
 
-    # NB: Used in `GroupStep` and `CommandStep`
-    NotifyT = (
-        Notify.BasecampCampfire
-        | Notify.Slack
-        | Notify.GitHubCheck
-        | Notify.GitHubCommitStatus
-    )
 
     @final
     @classmethod

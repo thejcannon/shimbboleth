@@ -90,3 +90,24 @@ class DependsOnT(_DescriptorBase):
         elif value is None:
             value = []
         super().__set__(instance, value)
+
+
+class IfT(_DescriptorBase):
+    # @TODO: Overload
+    def __get__(self, instance, owner):
+        if instance is None:
+            from dataclasses import field
+
+            return field(default=None, metadata={"json_alias": "if"})
+        return instance.__dict__[self.name]
+
+    def __set__(
+        self,
+        instance,
+        value: str | EmptyList | EmptyDict | None
+    ) -> None:
+        if isinstance(value, (list, dict)):
+            if value:
+                raise ValidationError(value, expectation="be an empty list/dict")
+            value = None  # @TODO: Is this right? Are these truthy or falsey?
+        super().__set__(instance, value)

@@ -11,7 +11,7 @@ import pytest
 from typing import ClassVar, Any
 
 
-class SchemaTestBase:
+class SchemaTest:
     MODEL: ClassVar[type]
     TYPENAME: ClassVar[str]
     VALID_STEPS: ClassVar[list]
@@ -41,7 +41,7 @@ class SchemaTestBase:
 
     @classmethod
     def pytest_generate_tests(cls, metafunc: pytest.Metafunc) -> None:
-        if hasattr(SchemaTestBase, metafunc.function.__name__):
+        if hasattr(SchemaTest, metafunc.function.__name__):
             steps = (
                 cls.INVALID_STEPS
                 if "invalid" in metafunc.function.__name__

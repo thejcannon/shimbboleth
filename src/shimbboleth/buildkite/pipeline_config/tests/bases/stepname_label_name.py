@@ -1,9 +1,9 @@
-from shimbboleth.buildkite.pipeline_config.tests.bases.schema import SchemaTestBase
+from shimbboleth.buildkite.pipeline_config.tests.bases.schema import SchemaTest
 from pytest import param
 from typing import ClassVar, Any
 
 
-class StepNameLabelNameTest(SchemaTestBase):
+class StepNameLabelNameTest(SchemaTest):
     TYPENAME: ClassVar[str]
 
     VALID_STEPS: ClassVar[list[dict[str, Any]]]

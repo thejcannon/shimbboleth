@@ -3,12 +3,12 @@ from pytest import param
 
 from shimbboleth.buildkite.pipeline_config.tests.bases._base import (
     DefaultTestBase,
-    FieldTestBase,
+    FieldTest,
 )
-from shimbboleth.buildkite.pipeline_config.tests.bases.schema import SchemaTestBase
+from shimbboleth.buildkite.pipeline_config.tests.bases.schema import SchemaTest
 
 
-class BKBoolTest(FieldTestBase, SchemaTestBase):
+class BKBoolTest(FieldTest):
     PARAMETRIZATIONS = [
         param(True, True, id="True"),
         param("true", True, id="true"),
@@ -18,41 +18,22 @@ class BKBoolTest(FieldTestBase, SchemaTestBase):
         param(None, False, id="None"),
     ]
 
-    @classmethod
-    def pytest_generate_tests(cls, metafunc: pytest.Metafunc) -> None:
-        super().pytest_generate_tests(metafunc)
-        name = metafunc.function.__name__
-        if name in BKBoolTest.__dict__:
-            metafunc.parametrize("value, expected", cls.PARAMETRIZATIONS)
-
-    # NB: Parameterized in `pytest_generate_tests`
-    def test__python_ctor(self, value, expected):
-        instance = self.ctor(**{self.ATTR_NAME: value})
-        assert getattr(instance, self.ATTR_NAME) is expected
-
-    # NB: Parameterized in `pytest_generate_tests`
-    def test__setter(self, value, expected):
-        wait_step = self.ctor()
-        setattr(wait_step, self.ATTR_NAME, value)
-        assert getattr(wait_step, self.ATTR_NAME) is expected
-
-    # NB: Parameterized in `pytest_generate_tests`
-    def test__json_load(self, value, expected):
-        instance = self.model_load({self.ATTR_NAME: value})
-        assert getattr(instance, self.ATTR_NAME) is expected
-
-    # @TODO: Add schema valid/invalid tests?
+    def __init_subclass__(cls) -> None:
+        super().__init_subclass__()
+        cls.INVALID_STEPS += [
+            # @TODO: Add cases (but also BK seems to just be OK with any value???)
+        ]
 
 
 class BKBoolDefaultTest(DefaultTestBase):
     def test__model_dump(self):
-        assert self.ATTR_NAME not in self.model_load().model_dump()
+        assert self.FIELD_NAME not in self.model_load().model_dump()
         assert (
-            self.ATTR_NAME
-            not in self.model_load({self.ATTR_NAME: self.DEFAULT}).model_dump()
+            self.FIELD_NAME
+            not in self.model_load({self.FIELD_NAME: self.DEFAULT}).model_dump()
         )
         opposite = not self.DEFAULT
         assert (
-            self.model_load({self.ATTR_NAME: opposite}).model_dump()[self.ATTR_NAME]
+            self.model_load({self.FIELD_NAME: opposite}).model_dump()[self.FIELD_NAME]
             is opposite
         )

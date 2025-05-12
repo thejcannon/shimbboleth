@@ -1,10 +1,10 @@
 from shimbboleth.buildkite.pipeline_config.tests.wait_step.base import TestBase
 from pytest import param
-from shimbboleth.buildkite.pipeline_config.tests.bases.schema import SchemaTestBase
+from shimbboleth.buildkite.pipeline_config.tests.bases.schema import SchemaTest
 
 
 # @TODO: Move this to some other file?
-class Test_Type(TestBase, SchemaTestBase):
+class Test_Type(TestBase, SchemaTest):
     VALID_STEPS = [
         param({"type": "wait"}, id="wait"),
         param({"type": "waiter"}, id="waiter"),

@@ -26,20 +26,25 @@ wait_step/test_allow_dependency_failure.py::Test_Default::test_upstream_schema
 wait_step/test_key.py::Test_Default::test_upstream_schema
 wait_step/test_branches.py::Test_Default::test_upstream_schema
 wait_step/test_depends_on.py::Test_Default::test_upstream_schema
+wait_step/test_if.py::Test_Default::test_upstream_schema
 
 # ===== Upstream Schema Bugs =====
 
 # Upstream Schema doesn't allow top-level list-of-steps
 wait_step/test_*.py::Test_*::test__valid__pipeline__upstream_schema[*-aslist]
 
-# Upstream Schema doesn't list `None`-able fields
-wait_step/test_key.py::Test_Pipelines::test__valid__pipeline__upstream_schema[none-*]
+# Upstream Schema doesn't list (most) `None`-able fields
+wait_step/test_*.py::Test_Pipelines::test__valid__pipeline__upstream_schema[None-*]
+wait_step/test_*.py::Test_Pipelines::test__valid__pipeline__upstream_schema[*__None-*]
 wait_step/test_branches.py::Test_Pipelines::test__valid__pipeline__upstream_schema[none-*]
-wait_step/test_depends_on.py::Test_Pipelines::test__valid__pipeline__upstream_schema[allow_failure__None-*]
+wait_step/test_key.py::Test_Pipelines::test__valid__pipeline__upstream_schema[none-*]
+wait_step/test_if.py::Test_Pipelines::test__valid__pipeline__upstream_schema[none-*]
 
 # NB: Upstream API treats "Falsey" values as missing/`None`/etc...
 wait_step/test_key.py::Test_Pipelines::test__valid__pipeline__upstream_schema[empty_list-*]
 wait_step/test_key.py::Test_Pipelines::test__valid__pipeline__upstream_schema[empty_dict-*]
+wait_step/test_if.py::Test_Pipelines::test__valid__pipeline__upstream_schema[empty_list-*]
+wait_step/test_if.py::Test_Pipelines::test__valid__pipeline__upstream_schema[empty_dict-*]
 
 # NB: Upstream API stringifies ints, but the upstream schema doesn't support that
 wait_step/test_key.py::Test_Pipelines::test__valid__pipeline__upstream_schema[int-*]

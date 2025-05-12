@@ -10,5 +10,5 @@ class Test_Default(TestBase, BKBoolDefaultTest):
     DEFAULT = False
 
 
-class Test_Pipeline(TestBase, BKBoolTest):
+class Test_Pipelines(TestBase, BKBoolTest):
     ATTR_NAME = "allow_dependency_failure"

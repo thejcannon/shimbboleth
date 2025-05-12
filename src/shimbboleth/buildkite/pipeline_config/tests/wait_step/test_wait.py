@@ -1,9 +1,9 @@
 from shimbboleth.buildkite.pipeline_config.tests.wait_step.base import TestBase
 from pytest import param
-from shimbboleth.buildkite.pipeline_config.tests.bases.schema import SchemaTestBase
+from shimbboleth.buildkite.pipeline_config.tests.bases.schema import SchemaTest
 
 
-class Test_Wait(TestBase, SchemaTestBase):
+class Test_Wait(TestBase, SchemaTest):
     VALID_STEPS = [
         param({"wait": None}, id="none"),
         param({"wait": ""}, id="empty_string"),
