@@ -20,7 +20,7 @@ class FieldAlias:
 
     def __get__(self, obj, objtype=None):
         if obj is None:
-            return self
+            return None
         return getattr(obj, self.alias_of)
 
     def __set__(self, obj, value):

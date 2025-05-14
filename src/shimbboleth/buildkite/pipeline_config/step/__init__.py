@@ -21,7 +21,7 @@ class Step(Model):
         allow_failure: BKBool = BKBool(default=False)
 
 
-from shimbboleth.buildkite.pipeline_config.step._types import KeyT, DependsOnT, IfT
+from shimbboleth.buildkite.pipeline_config.step._types import KeyT, DependsOnT, IfT, KeyAliasT
 
 
 class Step(Step):
@@ -46,8 +46,15 @@ class Step(Step):
     if_condition: IfT = IfT()
     """A boolean expression that omits the step when false"""
 
-    id: ClassVar = FieldAlias("key", deprecated=True)
-    identifier: ClassVar = FieldAlias("key")
+    id: KeyT = KeyAliasT()
+    identifier: KeyT = KeyAliasT()
+
+    def __post_init__(self) -> None:
+        if self.key is None:
+            self.key = self.identifier
+        if self.key is None:
+            self.key = self.id
+
 
     @final
     @classmethod
@@ -82,6 +89,7 @@ class Step(Step):
                     )
                 ret.append(notify)
         return ret
+
 
 class SubStep(Step):
     branches: BKStrList = BKStrList()

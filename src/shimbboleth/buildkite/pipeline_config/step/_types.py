@@ -47,6 +47,18 @@ class KeyT(BKStr):
                 raise ValidationError(value, expectation="not be a valid UUID")
         super().__set__(instance, value)
 
+class KeyAliasT(KeyT):
+    def __set_name__(self, instance, name: str) -> None:
+        self.name = "key"
+
+    def __set__(
+        self, instance, value: str | int | EmptyList | EmptyDict | None
+    ) -> None:
+        if value is None:
+            return
+        super().__set__(instance, value)
+
+
 
 class DependsOnT(_DescriptorBase):
     @classmethod

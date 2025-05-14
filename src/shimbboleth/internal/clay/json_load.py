@@ -236,7 +236,6 @@ class _LoadModelHelper:
                     or data.get(field_alias.alias_of) is None
                 ):
                     data_copy[field_alias.alias_of] = value
-
         return data_copy
 
     @staticmethod
@@ -252,7 +251,7 @@ class _LoadModelHelper:
     def get_extras(model_type: type[Model], data: JSONObject) -> JSONObject:
         extras = {}
         for data_key in frozenset(data.keys()):
-            if data_key not in model_type.__json_fieldnames__:
+            if data_key not in model_type.__json_fieldnames__ and data_key not in model_type.__field_aliases__:
                 extras[data_key] = data.pop(data_key)
 
         if extras and not model_type.__allow_extra_properties__:
@@ -307,7 +306,7 @@ class _LoadModelHelper:
 
 def load_model(model_type: type[ModelT], data: JSONObject) -> ModelT:
     data = load(JSONObject, data=data)
-    data = _LoadModelHelper.handle_field_aliases(model_type, data)
+    # data = _LoadModelHelper.handle_field_aliases(model_type, data)
 
     extras = _LoadModelHelper.get_extras(model_type, data)
     _LoadModelHelper.rename_json_aliases(model_type, data)

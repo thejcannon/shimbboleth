@@ -27,3 +27,6 @@ class WaitStep(SubStep, extra=False):
     # (NB: These are somewhat meaningless, since they never appear in the UI)
     label: ClassVar = FieldAlias("wait", json_mode="prepend")
     name: ClassVar = FieldAlias("wait", json_mode="prepend")
+
+fields = WaitStep.__dataclass_fields__
+print(fields)
