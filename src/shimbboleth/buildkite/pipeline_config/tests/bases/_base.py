@@ -6,8 +6,29 @@ from shimbboleth.buildkite.pipeline_config.tests.helpers import get_upstream_sch
 from shimbboleth.buildkite.pipeline_config.tests.bases.schema import SchemaTest
 import pytest
 
-class FieldTestBase:
+class ModelTestBase:
     MODEL: ClassVar[type[Model]]
+
+    @classmethod
+    def ctor(cls, **kwargs) -> Model:
+        """
+        Construct a new instance of the model.
+
+        Subclasses can override.
+        """
+        return cls.MODEL(**kwargs)
+
+    @classmethod
+    def model_load(cls, data: dict[str, Any] = {}) -> Model:
+        """
+        Load a new instance of the model from a JSON object.
+
+        Subclasses can override.
+        """
+        return cls.MODEL.model_load(data)
+
+
+class FieldTestBase(ModelTestBase):
     UPSTREAM_SCHEMA_DEF_NAME: ClassVar[str]
     ATTR_NAME: ClassVar[str]
     """The name of the attribute in the model."""
@@ -70,9 +91,9 @@ class FieldTest(FieldTestBase, SchemaTest):
 
     # NB: Parameterized in `pytest_generate_tests`
     def test__setter(self, value, expected):
-        wait_step = self.ctor()
-        setattr(wait_step, self.ATTR_NAME, value)
-        assert getattr(wait_step, self.ATTR_NAME) == expected
+        instance = self.ctor()
+        setattr(instance, self.ATTR_NAME, value)
+        assert getattr(instance, self.ATTR_NAME) == expected
 
     # NB: Parameterized in `pytest_generate_tests`
     def test__json_load(self, value, expected):
