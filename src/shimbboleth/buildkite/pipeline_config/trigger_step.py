@@ -1,13 +1,9 @@
-from typing import Literal, ClassVar
+from typing import ClassVar, Literal
 
-
-from shimbboleth.internal.clay.model import field, FieldAlias, Model
-from shimbboleth.internal.clay.jsonT import JSONObject
-
-from shimbboleth.buildkite.pipeline_config._types import Skip
-from shimbboleth.buildkite.pipeline_config._converters import bk_bool
-
+from shimbboleth.buildkite.pipeline_config._converters import bk_bool, convert_skip
 from shimbboleth.buildkite.pipeline_config.step import SubStep
+from shimbboleth.internal.clay.jsonT import JSONObject
+from shimbboleth.internal.clay.model import FieldAlias, Model, field
 
 
 class TriggerStep(SubStep, extra=False):
@@ -53,7 +49,7 @@ class TriggerStep(SubStep, extra=False):
     build: Build | None = None
     """Attributes for the triggered build"""
 
-    skip: Skip = Skip()
+    skip: bool | str = field(default=False, converter=convert_skip)
     """Whether to skip this step or not. Passing a string provides a reason for skipping this command."""
 
     soft_fail: bool = field(default=False, converter=bk_bool(default=False))

@@ -1,15 +1,14 @@
 from typing import ClassVar
 
-
-from shimbboleth.internal.clay.model import field, FieldAlias
-from shimbboleth.internal.clay.validation import NonEmptyList
+from shimbboleth.buildkite.pipeline_config._converters import convert_skip
 from shimbboleth.buildkite.pipeline_config.block_step import BlockStep
-from shimbboleth.buildkite.pipeline_config.input_step import InputStep
-from shimbboleth.buildkite.pipeline_config.wait_step import WaitStep
-from shimbboleth.buildkite.pipeline_config.trigger_step import TriggerStep
 from shimbboleth.buildkite.pipeline_config.command_step import CommandStep
+from shimbboleth.buildkite.pipeline_config.input_step import InputStep
 from shimbboleth.buildkite.pipeline_config.step import Step
-from shimbboleth.buildkite.pipeline_config._types import Skip
+from shimbboleth.buildkite.pipeline_config.trigger_step import TriggerStep
+from shimbboleth.buildkite.pipeline_config.wait_step import WaitStep
+from shimbboleth.internal.clay.model import FieldAlias, field
+from shimbboleth.internal.clay.validation import NonEmptyList
 
 
 class GroupStep(Step, extra=False):
@@ -27,7 +26,7 @@ class GroupStep(Step, extra=False):
     notify: list[Step.NotifyT] = field(default_factory=list)
     """Array of notification options for this step"""
 
-    skip: Skip = Skip()
+    skip: bool | str = field(default=False, converter=convert_skip)
     "Whether this step should be skipped. Passing a string provides a reason for skipping this command"
 
     steps: NonEmptyList[
