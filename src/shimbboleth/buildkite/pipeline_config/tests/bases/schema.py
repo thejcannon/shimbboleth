@@ -1,18 +1,18 @@
+from typing import ClassVar
+
+import pytest
+from pytest import param
+
 from shimbboleth.buildkite.pipeline_config import BuildkitePipeline
+from shimbboleth.buildkite.pipeline_config.tests.bases._base import ModelTestBase
 from shimbboleth.buildkite.pipeline_config.tests.helpers import (
-    get_upstream_schema,
     get_generated_schema,
+    get_upstream_schema,
     is_valid_upstream,
 )
 
-from pytest import param
-import pytest
 
-from typing import ClassVar, Any
-
-
-class SchemaTest:
-    MODEL: ClassVar[type]
+class SchemaTest(ModelTestBase):
     TYPENAME: ClassVar[str]
     VALID_STEPS: ClassVar[list]
     INVALID_STEPS: ClassVar[list]
@@ -60,11 +60,11 @@ class SchemaTest:
                 )
 
     def test__valid__step_cls__model_load(self, step_config):
-        self.MODEL.model_load(step_config)
+        self.model_load(step_config)
 
     def test__invalid__step_cls__model_load(self, step_config):
         with pytest.raises(Exception):
-            self.MODEL.model_load(step_config)
+            self.model_load(step_config)
 
     def test__valid__pipeline__model_load(self, step_config, xform):
         BuildkitePipeline.model_load(xform(step_config))

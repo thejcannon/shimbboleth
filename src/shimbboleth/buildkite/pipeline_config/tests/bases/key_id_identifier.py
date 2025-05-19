@@ -1,11 +1,10 @@
-from shimbboleth.buildkite.pipeline_config.tests.bases.schema import SchemaTest
-from shimbboleth.buildkite.pipeline_config.tests.bases._base import ModelTestBase
-from pytest import param
 import pytest
-from typing import ClassVar, Any, ClassVar
+from pytest import param
+
+from shimbboleth.buildkite.pipeline_config.tests.bases.schema import SchemaTest
 
 
-class KeyIDIdentifierTest(ModelTestBase, SchemaTest):
+class KeyIDIdentifierTest(SchemaTest):
     PARAMETRIZATIONS = [
         #param({"key": "key"}, "key", id="key"),
         #param({"key": "key", "id": "id"}, "key", id="key_id"),
@@ -24,12 +23,14 @@ class KeyIDIdentifierTest(ModelTestBase, SchemaTest):
             ]
             cls.INVALID_STEPS = getattr(cls, "INVALID_STEPS", []).copy()
 
+
     @classmethod
     def pytest_generate_tests(cls, metafunc: pytest.Metafunc) -> None:
         super().pytest_generate_tests(metafunc)
         parameters = metafunc.function.__code__.co_varnames
         if "value" in parameters and "expected" in parameters:
             metafunc.parametrize("value, expected", cls.PARAMETRIZATIONS)
+
 
     # NB: Parameterized in `pytest_generate_tests`
     def test__python_ctor(self, value, expected):

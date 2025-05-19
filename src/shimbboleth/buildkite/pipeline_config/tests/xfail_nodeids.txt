@@ -16,52 +16,53 @@
 # the anyOf structure and overlapping property names.
 wait_step/test_*.py::Test_*::test__invalid__pipeline__generated_schema[*-asnesteddict]
 
+
 # Upstream API treats `wait` as accepting anything
 wait_step/test_wait.py::Test_Wait::test__valid__pipeline__generated_schema[dict-*]
 
 # ===== Upstream Schema Inconsistencies =====
 
 # Upstream Schema doesn't list defaults for non-required fields
-wait_step/test_allow_dependency_failure.py::Test_Default::test_upstream_schema
-wait_step/test_key.py::Test_Default::test_upstream_schema
-wait_step/test_branches.py::Test_Default::test_upstream_schema
-wait_step/test_depends_on.py::Test_Default::test_upstream_schema
-wait_step/test_if.py::Test_Default::test_upstream_schema
+*_step/test_allow_dependency_failure.py::Test_Default::test_upstream_schema
+*_step/test_key.py::Test_Default::test_upstream_schema
+*_step/test_branches.py::Test_Default::test_upstream_schema
+*_step/test_depends_on.py::Test_Default::test_upstream_schema
+*_step/test_if.py::Test_Default::test_upstream_schema
 
 # ===== Upstream Schema Bugs =====
 
 # Upstream Schema doesn't allow top-level list-of-steps
-wait_step/test_*.py::Test_*::test__valid__pipeline__upstream_schema[*-aslist]
+*_step/test_*.py::Test_*::test__valid__pipeline__upstream_schema[*-aslist]
 
 # Upstream Schema doesn't list (most) `None`-able fields
-wait_step/test_*.py::Test_Pipelines::test__valid__pipeline__upstream_schema[None-*]
-wait_step/test_*.py::Test_Pipelines::test__valid__pipeline__upstream_schema[*__None-*]
-wait_step/test_branches.py::Test_Pipelines::test__valid__pipeline__upstream_schema[none-*]
-wait_step/test_key.py::Test_Pipelines::test__valid__pipeline__upstream_schema[none-*]
-wait_step/test_if.py::Test_Pipelines::test__valid__pipeline__upstream_schema[none-*]
+*_step/test_*.py::Test_Pipelines::test__valid__pipeline__upstream_schema[None-*]
+*_step/test_*.py::Test_Pipelines::test__valid__pipeline__upstream_schema[*__None-*]
+*_step/test_branches.py::Test_Pipelines::test__valid__pipeline__upstream_schema[none-*]
+*_step/test_key.py::Test_Pipelines::test__valid__pipeline__upstream_schema[none-*]
+*_step/test_if.py::Test_Pipelines::test__valid__pipeline__upstream_schema[none-*]
 
 # NB: Upstream API treats "Falsey" values as missing/`None`/etc...
-wait_step/test_key.py::Test_Pipelines::test__valid__pipeline__upstream_schema[empty_list-*]
-wait_step/test_key.py::Test_Pipelines::test__valid__pipeline__upstream_schema[empty_dict-*]
-wait_step/test_if.py::Test_Pipelines::test__valid__pipeline__upstream_schema[empty_list-*]
-wait_step/test_if.py::Test_Pipelines::test__valid__pipeline__upstream_schema[empty_dict-*]
+*_step/test_key.py::Test_Pipelines::test__valid__pipeline__upstream_schema[empty_list-*]
+*_step/test_key.py::Test_Pipelines::test__valid__pipeline__upstream_schema[empty_dict-*]
+*_step/test_if.py::Test_Pipelines::test__valid__pipeline__upstream_schema[empty_list-*]
+*_step/test_if.py::Test_Pipelines::test__valid__pipeline__upstream_schema[empty_dict-*]
 
 # NB: Upstream API stringifies ints, but the upstream schema doesn't support that
-wait_step/test_key.py::Test_Pipelines::test__valid__pipeline__upstream_schema[int-*]
-wait_step/test_branches.py::Test_Pipelines::test__valid__pipeline__upstream_schema[int*-*]
-wait_step/test_branches.py::Test_Pipelines::test__valid__pipeline__upstream_schema[mixed_list-*]
-wait_step/test_depends_on.py::Test_Pipelines::test__valid__pipeline__upstream_schema[int*-*]
-wait_step/test_depends_on.py::Test_Pipelines::test__valid__pipeline__upstream_schema[mixed_list-*]
-wait_step/test_depends_on.py::Test_Pipelines::test__valid__pipeline__upstream_schema[dict_with_int_step-*]
+*_step/test_key.py::Test_Pipelines::test__valid__pipeline__upstream_schema[int-*]
+*_step/test_branches.py::Test_Pipelines::test__valid__pipeline__upstream_schema[int*-*]
+*_step/test_branches.py::Test_Pipelines::test__valid__pipeline__upstream_schema[mixed_list-*]
+*_step/test_depends_on.py::Test_Pipelines::test__valid__pipeline__upstream_schema[int*-*]
+*_step/test_depends_on.py::Test_Pipelines::test__valid__pipeline__upstream_schema[mixed_list-*]
+*_step/test_depends_on.py::Test_Pipelines::test__valid__pipeline__upstream_schema[dict_with_int_step-*]
 
 # Upstream API treats `wait` as accepting anything
-wait_step/test_wait.py::Test_Wait::test__valid__pipeline__upstream_schema[empty_list-*]
-wait_step/test_wait.py::Test_Wait::test__valid__pipeline__upstream_schema[int-*]
-wait_step/test_wait.py::Test_Wait::test__valid__pipeline__upstream_schema[dict-asnesteddict]
+*_step/test_wait.py::Test_Wait::test__valid__pipeline__upstream_schema[empty_list-*]
+*_step/test_wait.py::Test_Wait::test__valid__pipeline__upstream_schema[int-*]
+*_step/test_wait.py::Test_Wait::test__valid__pipeline__upstream_schema[dict-asnesteddict]
 
 # Upstream API accepts invalid types for branches (int/list/dict)
-wait_step/test_branches.py::Test_Pipelines::test__invalid__pipeline__api[*-*]
+*_step/test_branches.py::Test_Pipelines::test__invalid__pipeline__api[*-*]
 
 # Upstream API doesnt allow empty DependsOn string
-wait_step/test_depends_on.py::Test_Pipelines::test__invalid__pipeline__upstream_schema[empty_string-asdict]
-wait_step/test_depends_on.py::Test_Pipelines::test__invalid__pipeline__upstream_schema[empty_string-asnesteddict]
+*_step/test_depends_on.py::Test_Pipelines::test__invalid__pipeline__upstream_schema[empty_string-asdict]
+*_step/test_depends_on.py::Test_Pipelines::test__invalid__pipeline__upstream_schema[empty_string-asnesteddict]

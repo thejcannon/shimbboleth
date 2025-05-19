@@ -1,11 +1,7 @@
-import pytest
 from pytest import param
 
-from shimbboleth.buildkite.pipeline_config.tests.bases._base import (
-    DefaultTestBase,
-    FieldTest,
-)
-from shimbboleth.buildkite.pipeline_config.tests.bases.schema import SchemaTest
+from shimbboleth.buildkite.pipeline_config.tests.bases._base import DefaultTestBase
+from shimbboleth.buildkite.pipeline_config.tests.bases.field import FieldTest
 
 
 class BKBoolTest(FieldTest):
