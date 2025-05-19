@@ -1,11 +1,12 @@
 from typing import Annotated, ClassVar, Literal
 
-from shimbboleth.buildkite.pipeline_config._types import (
-    BKStrList,
-    Skip,
-    SoftFail,
+from shimbboleth.buildkite.pipeline_config._converters import (
+    bk_bool,
+    convert_bk_str_list,
+    convert_skip,
+    convert_soft_fail,
 )
-from shimbboleth.buildkite.pipeline_config._converters import bk_bool
+from shimbboleth.buildkite.pipeline_config._types import ExitStatus
 from shimbboleth.buildkite.pipeline_config.step import Step, SubStep
 from shimbboleth.internal.clay.jsonT import JSONObject
 from shimbboleth.internal.clay.model import (
@@ -28,10 +29,10 @@ class CommandStep(SubStep, extra=False):  # type: ignore
         ElementT = str | int | bool
 
         class _Adjustment(Model):
-            skip: Skip = Skip()
+            skip: bool | str = field(default=False, converter=convert_skip)
             """Whether to skip this step or not. Passing a string provides a reason for skipping this command."""
 
-            soft_fail: SoftFail = SoftFail()
+            soft_fail: bool | list[ExitStatus] = field(default=False, converter=convert_soft_fail)
             """Allow specified non-zero exit statuses not to fail the build."""
 
 
@@ -169,7 +170,7 @@ class CommandStep(CommandStep, extra=False):
     See https://buildkite.com/docs/agent/v3/cli-start#agent-targeting
     """
 
-    artifact_paths: BKStrList = BKStrList()
+    artifact_paths: list[str] = field(default_factory=list, converter=convert_bk_str_list)
     """The glob paths of artifacts to upload once this step has finished running"""
 
     # NB: branches from `SubStep`
@@ -180,7 +181,7 @@ class CommandStep(CommandStep, extra=False):
     cancel_on_build_failing: bool = field(default=False, converter=bk_bool(default=False))
     """Whether to cancel the job as soon as the build is marked as failing"""
 
-    command: BKStrList = BKStrList()
+    command: list[str] = field(default_factory=list, converter=convert_bk_str_list)
     """The commands to run on the agent"""
 
     concurrency: int | None = None
@@ -231,12 +232,12 @@ class CommandStep(CommandStep, extra=False):
     signature: Signature | None = None
     """@TODO (missing description)"""
 
-    skip: Skip = Skip()
+    skip: bool | str = field(default=False, converter=convert_skip)
     """Whether to skip this step or not. Passing a string provides a reason for skipping this command."""
 
     # NB: This differs from the upstream schema in that we "unpack"
     #  the `exit_status` object into the status.
-    soft_fail: SoftFail = SoftFail
+    soft_fail: bool | list[ExitStatus] = field(default=False, converter=convert_soft_fail)
     """Allow specified non-zero exit statuses not to fail the build."""
 
     # @TEST: Zero is OK upstream?

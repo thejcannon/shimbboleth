@@ -60,3 +60,42 @@ def if_condition_converter(value: str | EmptyList | EmptyDict | None) -> str | N
             raise ValidationError(value, expectation="be an empty list/dict")
         return None
     return value
+
+
+def convert_skip(value: bool | Literal["true", "false", ""] | str | None) -> bool | str:
+    """Converter for Buildkite's 'skip' type."""
+    if value in (True, "true"):
+        return True
+    elif value in (None, False, "false", ""):
+        return False
+    else:
+        return value
+
+
+def convert_bk_str_list(value: list[int | str] | str | int | None) -> list[str]:
+    """Converter for Buildkite's 'list of strings' type."""
+    if isinstance(value, list):
+        return [str(item) for item in value]
+    elif value is not None:
+        return [str(value)]
+    else:
+        return []
+
+
+def convert_soft_fail(value: bool | Literal["true", "false"] | list[int] | None) -> bool | list:
+    """Converter for Buildkite's 'soft-fail' type."""
+    # Import here to avoid circular imports
+    from shimbboleth.buildkite.pipeline_config._types import ExitStatus
+    
+    if value in (True, "true"):
+        return True
+    elif value in (False, "false", None):
+        return False
+    elif value == []:
+        return False
+    elif isinstance(value, list) and any(status.exit_status == "*" for status in value if hasattr(status, 'exit_status')):
+        return True
+    elif isinstance(value, list):
+        return [ExitStatus(exit_status=status) for status in value]
+    else:
+        return value

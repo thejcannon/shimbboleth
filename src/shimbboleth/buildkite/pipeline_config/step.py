@@ -11,8 +11,9 @@ from shimbboleth.buildkite.pipeline_config._converters import (
     bk_key,
     bk_str,
     if_condition_converter,
+    convert_bk_str_list,
 )
-from shimbboleth.buildkite.pipeline_config._types import BKStrList, EmptyDict, EmptyList
+from shimbboleth.buildkite.pipeline_config._types import EmptyDict, EmptyList
 from shimbboleth.buildkite.pipeline_config.notify import Notify, _parse_notify
 from shimbboleth.internal.clay.json_load import JSONLoadError
 from shimbboleth.internal.clay.jsonT import JSONObject
@@ -141,5 +142,5 @@ class Step(Step):
 
 
 class SubStep(Step):
-    branches: BKStrList = BKStrList()
+    branches: list[str] = field(default_factory=list, converter=convert_bk_str_list)
     """Which branches will include this step in their builds"""
