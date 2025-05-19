@@ -4,7 +4,7 @@ import re
 import uuid
 from functools import singledispatch
 from types import GenericAlias, UnionType
-from typing import Any, TypeVar
+from typing import Any, Never, TypeVar
 
 from shimbboleth.internal.clay._types import (
     AnnotationType,
@@ -138,6 +138,9 @@ def schema_list(
     field_type: GenericAlias, *, model_defs: dict[str, JSONObject]
 ) -> JSONObject:
     (argT,) = field_type.__args__
+    if argT is Never:
+        return {"type": "array", "maxItems": 0}
+
     return {"type": "array", "items": schema(argT, model_defs=model_defs)}
 
 
@@ -147,6 +150,9 @@ def schema_dict(
     keyT, valueT = field_type.__args__
     key_schema = schema(keyT, model_defs=model_defs)
     assert key_schema.pop("type") == "string"
+
+    if valueT is Never:
+        return {"type": "object", "maxProperties": 0}
     return {
         "type": "object",
         "additionalProperties": schema(valueT, model_defs=model_defs)

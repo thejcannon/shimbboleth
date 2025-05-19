@@ -2,62 +2,16 @@
 Contains descriptors specific to steps.
 """
 
-from uuid import UUID
 from typing import Annotated
-from shimbboleth.internal.clay.validation import ValidationError, Not
-from shimbboleth.internal.clay.jsonT import JSONObject
+
 from shimbboleth.buildkite.pipeline_config._types import (
-    BKStr,
-    _DescriptorBase,
-    EmptyList,
     EmptyDict,
+    EmptyList,
+    _DescriptorBase,
 )
 from shimbboleth.buildkite.pipeline_config.step import Step
-
-
-class KeyT(BKStr):
-    @classmethod
-    def __shimbboleth_json_schema__(
-        cls, *, model_defs: dict[str, JSONObject]
-    ) -> JSONObject:
-        return {
-            "anyOf": [
-                {
-                    "type": "string",
-                    "not": {
-                        "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-                    },
-                },
-                {"type": "integer"},
-                {"type": "array", "maxItems": 0},
-                {"type": "object", "maxProperties": 0},
-                {"type": "null"},
-            ]
-        }
-
-    def __set__(
-        self, instance, value: str | int | EmptyList | EmptyDict | None
-    ) -> None:
-        if isinstance(value, str):
-            try:
-                UUID(value)
-            except ValueError:
-                pass
-            else:
-                raise ValidationError(value, expectation="not be a valid UUID")
-        super().__set__(instance, value)
-
-class KeyAliasT(KeyT):
-    def __set_name__(self, instance, name: str) -> None:
-        self.name = "key"
-
-    def __set__(
-        self, instance, value: str | int | EmptyList | EmptyDict | None
-    ) -> None:
-        if value is None:
-            return
-        super().__set__(instance, value)
-
+from shimbboleth.internal.clay.jsonT import JSONObject
+from shimbboleth.internal.clay.validation import Not, ValidationError
 
 
 class DependsOnT(_DescriptorBase):
@@ -108,7 +62,7 @@ class IfT(_DescriptorBase):
     # @TODO: Overload
     def __get__(self, instance, owner):
         if instance is None:
-            from dataclasses import Field, MISSING
+            from dataclasses import MISSING, Field
 
             field = Field(
                 default=None,

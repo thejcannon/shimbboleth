@@ -3,27 +3,45 @@ Contains the base class for all steps: `Step`.
 """
 
 import dataclasses
-from shimbboleth.internal.clay.model import Model, field, FieldAlias
-from shimbboleth.internal.clay.validation import ValidationError
-from shimbboleth.internal.clay.jsonT import JSONObject
-from shimbboleth.internal.clay.json_load import JSONLoadError
-from shimbboleth.buildkite.pipeline_config.notify import Notify, _parse_notify
-from shimbboleth.buildkite.pipeline_config._types import BKStrList, BKStr
-from shimbboleth.buildkite.pipeline_config._converters import bk_bool
+from typing import Annotated, ClassVar, final
+from uuid import UUID
 
-from typing import ClassVar, final
+from shimbboleth.buildkite.pipeline_config._converters import bk_bool, bk_key, bk_str
+from shimbboleth.buildkite.pipeline_config._types import BKStrList, EmptyDict, EmptyList
+from shimbboleth.buildkite.pipeline_config.notify import Notify, _parse_notify
+from shimbboleth.internal.clay.json_load import JSONLoadError
+from shimbboleth.internal.clay.jsonT import JSONObject
+from shimbboleth.internal.clay.model import FieldAlias, Model, field
+from shimbboleth.internal.clay.validation import Not, ValidationError
 
 
 # NB: This is a "forward declare" for `Step` such that
 # `Step.Dependency` exists before `Step` is (fully) defined.
 class Step(Model):
     class Dependency(Model, extra=False):
-        step: BKStr = BKStr()
+        step: str | None = field(default=None, converter=bk_str)
         allow_failure: bool = field(default=False, converter=bk_bool(default=False))
 
 
-from shimbboleth.buildkite.pipeline_config.step._types import KeyT, DependsOnT, IfT, KeyAliasT
+from shimbboleth.buildkite.pipeline_config.step._types import (
+    DependsOnT,
+    IfT,
+)
 
+
+# @TODO: Rename to "FieldAlias"
+class _KeyAliasT:
+    def __get__(self, instance, owner):
+        if instance is None:
+            return None
+        return instance.key
+
+    def __set__(
+        self, instance, value: Annotated[str, Not[UUID]] | int | EmptyList | EmptyDict | None
+    ) -> None:
+        if value is None:
+            return
+        instance.key = value
 
 class Step(Step):
     NotifyT = (
@@ -33,7 +51,7 @@ class Step(Step):
         | Notify.GitHubCommitStatus
     )
 
-    key: KeyT = KeyT()
+    key: str | None = field(default=None, converter=bk_key)
     """A unique identifier for a step, must not resemble a UUID"""
 
     allow_dependency_failure: bool = field(default=False, converter=bk_bool(default=False))
@@ -47,8 +65,8 @@ class Step(Step):
     if_condition: IfT = IfT()
     """A boolean expression that omits the step when false"""
 
-    id: KeyT = KeyAliasT()
-    identifier: KeyT = KeyAliasT()
+    id: str | None = _KeyAliasT()
+    identifier: str | None = _KeyAliasT()
 
     def __post_init__(self) -> None:
         if self.key is None:

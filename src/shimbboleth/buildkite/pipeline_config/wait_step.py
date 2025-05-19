@@ -1,10 +1,23 @@
-from typing import ClassVar, Literal
+from typing import Any, Literal
 
 from shimbboleth.buildkite.pipeline_config._converters import bk_bool
 from shimbboleth.buildkite.pipeline_config.step import SubStep
 from shimbboleth.internal.clay.jsonT import JSON
-from shimbboleth.internal.clay.model import FieldAlias, field
+from shimbboleth.internal.clay.model import field
 
+
+class _WaitAliasT:
+    def __get__(self, instance, owner):
+        if instance is None:
+            return None
+        return instance.wait
+
+    def __set__(
+        self, instance, value: Any
+    ) -> None:
+        if value is None:
+            return
+        instance.wait = value
 
 class WaitStep(SubStep, extra=False):
     """
@@ -24,8 +37,14 @@ class WaitStep(SubStep, extra=False):
     type: Literal["wait", "waiter"] = "wait"
 
     # (NB: These are somewhat meaningless, since they never appear in the UI)
-    label: ClassVar = FieldAlias("wait", json_mode="prepend")
-    name: ClassVar = FieldAlias("wait", json_mode="prepend")
+    label: Any = _WaitAliasT()
+    name: Any = _WaitAliasT()
+
+    def __post_init__(self) -> None:
+        if self.wait is None:
+            self.wait = self.label
+        if self.wait is None:
+            self.wait = self.name
 
 fields = WaitStep.__dataclass_fields__
 print(fields)

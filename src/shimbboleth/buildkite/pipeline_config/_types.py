@@ -52,28 +52,6 @@ class ExitStatus(Model, extra=True):
     """The exit status number that will cause this job to soft-fail"""
 
 
-class BKStr(_DescriptorBase[str]):
-    """
-    A descriptor for Buildkite's "string" type.
-    """
-
-    def __init__(self, *, json_alias: str | None = None) -> None:
-        self.json_alias = json_alias
-
-    def __set__(self, instance, value: str | int | EmptyList | EmptyDict | None):
-        if isinstance(value, int):
-            value = str(value)
-        elif isinstance(value, list):
-            if value:
-                raise ValidationError(value, expectation="be an empty list")
-            value = None
-        elif isinstance(value, dict):
-            if value:
-                raise ValidationError(value, expectation="be an empty dictionary")
-            value = None
-        super().__set__(instance, value)
-
-
 class Skip(_DescriptorBase[bool | str]):
     """
     A descriptor for Buildkite's "skip" type.
