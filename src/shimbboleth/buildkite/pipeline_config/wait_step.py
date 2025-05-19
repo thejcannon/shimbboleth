@@ -6,7 +6,7 @@ from shimbboleth.internal.clay.jsonT import JSON
 from shimbboleth.internal.clay.model import field
 
 
-class WaitAlias:
+class _WaitAlias:
     def __get__(self, instance, owner):
         if instance is None:
             return None
@@ -35,5 +35,5 @@ class WaitStep(SubStep, extra=False):
     type: Literal["wait", "waiter"] = "wait"
 
     # (NB: These are somewhat meaningless, since they never appear in the UI)
-    label: JSON = WaitAlias()
-    name: JSON = WaitAlias()
+    label: JSON = _WaitAlias()
+    name: JSON = _WaitAlias()

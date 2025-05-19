@@ -62,7 +62,7 @@ def convert_depends_on(value: Annotated[str, Not[""]] | int | list[str | int | S
 
 
 # @TODO: Rename to "FieldAlias"
-class _KeyAliasT:
+class _KeyAlias:
     def __get__(self, instance, owner):
         if instance is None:
             return None
@@ -97,14 +97,8 @@ class Step(Step):
     if_condition: str | None = field(default=None, converter=if_condition_converter, json_alias="if")
     """A boolean expression that omits the step when false"""
 
-    id: str | None = _KeyAliasT()
-    identifier: str | None = _KeyAliasT()
-
-    def __post_init__(self) -> None:
-        if self.key is None:
-            self.key = self.identifier
-        if self.key is None:
-            self.key = self.id
+    id: str | None = _KeyAlias()
+    identifier: str | None = _KeyAlias()
 
 
     @final
