@@ -1,9 +1,6 @@
-from typing import Any, Literal, TypeAlias
+from typing import Literal
 
 from shimbboleth.internal.clay.model import Model
-
-EmptyList: TypeAlias = list[Any]
-EmptyDict: TypeAlias = dict[str, Any]
 
 
 class ExitStatus(Model, extra=True):

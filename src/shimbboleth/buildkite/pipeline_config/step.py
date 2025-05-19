@@ -7,13 +7,14 @@ from typing import Annotated, final
 from uuid import UUID
 
 from shimbboleth.buildkite.pipeline_config._converters import (
+    EmptyDict,
+    EmptyList,
     bk_bool,
     bk_key,
     bk_str,
-    if_condition_converter,
     convert_bk_str_list,
+    if_condition_converter,
 )
-from shimbboleth.buildkite.pipeline_config._types import EmptyDict, EmptyList
 from shimbboleth.buildkite.pipeline_config.notify import Notify, _parse_notify
 from shimbboleth.internal.clay.json_load import JSONLoadError
 from shimbboleth.internal.clay.jsonT import JSONObject

@@ -1,13 +1,10 @@
 from typing import Annotated, Callable, Literal, Never, TypeAlias
 from uuid import UUID
 
-from typing_extensions import TYPE_CHECKING
-
+from shimbboleth.buildkite.pipeline_config._types import ExitStatus
 from shimbboleth.internal.clay.validation import Not, ValidationError
 
-if TYPE_CHECKING:
-    pass
-
+# @TODO: Move these to clay
 EmptyList: TypeAlias = list[Never]
 EmptyDict: TypeAlias = dict[str, Never]
 
@@ -84,9 +81,6 @@ def convert_bk_str_list(value: list[int | str] | str | int | None) -> list[str]:
 
 def convert_soft_fail(value: bool | Literal["true", "false"] | list[int] | None) -> bool | list:
     """Converter for Buildkite's 'soft-fail' type."""
-    # Import here to avoid circular imports
-    from shimbboleth.buildkite.pipeline_config._types import ExitStatus
-    
     if value in (True, "true"):
         return True
     elif value in (False, "false", None):
