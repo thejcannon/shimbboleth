@@ -1,10 +1,9 @@
-from typing import Literal, overload, Generic, TypeVar, get_type_hints, TypeAlias, Any
 from dataclasses import field
-from shimbboleth.internal.clay.model import Model
+from typing import Any, Generic, Literal, TypeAlias, TypeVar, get_type_hints, overload
+
 from shimbboleth.internal.clay.json_schema import schema
 from shimbboleth.internal.clay.jsonT import JSONObject
-
-from shimbboleth.internal.clay.validation import ValidationError
+from shimbboleth.internal.clay.model import Model
 
 T = TypeVar("T")
 
@@ -50,6 +49,7 @@ class _DescriptorBase(Generic[T]):
 class ExitStatus(Model, extra=True):
     exit_status: Literal["*"] | int
     """The exit status number that will cause this job to soft-fail"""
+
 
 
 class Skip(_DescriptorBase[bool | str]):

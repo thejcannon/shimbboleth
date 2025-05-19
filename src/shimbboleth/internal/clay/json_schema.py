@@ -107,6 +107,8 @@ def _schema_annotation_type(annotation: Any, *, outer: Any) -> JSONObject:
     elif isinstance(annotation, Le):
         return {"maximum": annotation.bound}
     elif isinstance(annotation, _NotGenericAlias):
+        if annotation.inner == "":
+            return {"not": {"const": ""}}
         return {"not": _schema_annotation_type(annotation.inner, outer=outer)}
     elif isinstance(annotation, MaxLength):
         outer = getattr(outer, "__origin__", outer)
@@ -140,7 +142,6 @@ def schema_list(
     (argT,) = field_type.__args__
     if argT is Never:
         return {"type": "array", "maxItems": 0}
-
     return {"type": "array", "items": schema(argT, model_defs=model_defs)}
 
 

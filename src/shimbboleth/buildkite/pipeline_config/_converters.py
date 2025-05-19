@@ -1,7 +1,12 @@
 from typing import Annotated, Callable, Literal, Never, TypeAlias
 from uuid import UUID
 
+from typing_extensions import TYPE_CHECKING
+
 from shimbboleth.internal.clay.validation import Not, ValidationError
+
+if TYPE_CHECKING:
+    pass
 
 EmptyList: TypeAlias = list[Never]
 EmptyDict: TypeAlias = dict[str, Never]
@@ -46,40 +51,6 @@ def bk_bool(*, default: bool) -> Callable[[bool | Literal["true", "false"] | Non
         else:
             raise ValueError(f"Invalid value for bool: {value}")
     return bk_bool
-
-
-def depends_on_converter(value: Annotated[str, Not[""]] | int | list[str | int | dict] | None) -> list:
-    """Converter for depends_on field that handles various input types."""
-    # Import here to avoid circular imports
-    from shimbboleth.buildkite.pipeline_config.step import Step
-    
-    if isinstance(value, str):
-        if not value:
-            raise ValidationError(value, expectation="not be an empty string")
-        return [Step.Dependency(step=value)]
-    elif isinstance(value, int):
-        return [Step.Dependency(step=str(value))]
-    elif isinstance(value, list):
-        coerced = []
-        for index, elem in enumerate(value):
-            with ValidationError.context(index=index):
-                if isinstance(elem, str):
-                    if not elem:
-                        raise ValidationError(elem, expectation="not be an empty string")
-                    coerced.append(Step.Dependency(step=elem))
-                elif isinstance(elem, int):
-                    coerced.append(Step.Dependency(step=str(elem)))
-                elif isinstance(elem, dict):
-                    coerced.append(Step.Dependency(**elem))
-                elif hasattr(elem, 'step'):  # Already a Step.Dependency
-                    coerced.append(elem)
-                else:
-                    raise ValidationError(elem, expectation="be a string, int, dict, or Step.Dependency")
-        return coerced
-    elif value is None:
-        return []
-    else:
-        raise ValidationError(value, expectation="be a string, int, list, or None")
 
 
 def if_condition_converter(value: str | EmptyList | EmptyDict | None) -> str | None:
