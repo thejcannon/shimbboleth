@@ -1,7 +1,5 @@
-from typing import Any, TypeVar, Callable
 import dataclasses
-from typing import overload
-
+from typing import Any, Callable, TypeVar, overload
 
 T = TypeVar("T")
 
@@ -10,6 +8,7 @@ T = TypeVar("T")
 def field(
     *,
     default: T,
+    converter: Callable[[Any], T] | None = None,
     json_loader: Callable | None = None,
     json_dumper: Callable | None = None,
     json_alias: str | None = None,
@@ -20,6 +19,7 @@ def field(
 def field(
     *,
     default_factory: Callable[[], T],
+    converter: Callable[[Any], T] | None = None,
     json_loader: Callable | None = None,
     json_dumper: Callable | None = None,
     json_alias: str | None = None,
@@ -29,6 +29,7 @@ def field(
 @overload
 def field(
     *,
+    converter: Callable[[Any], T],
     json_loader: Callable | None = None,
     json_dumper: Callable | None = None,
     json_alias: str | None = None,

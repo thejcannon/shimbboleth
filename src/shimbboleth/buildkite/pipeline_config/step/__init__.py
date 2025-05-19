@@ -8,7 +8,8 @@ from shimbboleth.internal.clay.validation import ValidationError
 from shimbboleth.internal.clay.jsonT import JSONObject
 from shimbboleth.internal.clay.json_load import JSONLoadError
 from shimbboleth.buildkite.pipeline_config.notify import Notify, _parse_notify
-from shimbboleth.buildkite.pipeline_config._types import BKStrList, BKBool, BKStr
+from shimbboleth.buildkite.pipeline_config._types import BKStrList, BKStr
+from shimbboleth.buildkite.pipeline_config._converters import bk_bool
 
 from typing import ClassVar, final
 
@@ -18,7 +19,7 @@ from typing import ClassVar, final
 class Step(Model):
     class Dependency(Model, extra=False):
         step: BKStr = BKStr()
-        allow_failure: BKBool = BKBool(default=False)
+        allow_failure: bool = field(default=False, converter=bk_bool(default=False))
 
 
 from shimbboleth.buildkite.pipeline_config.step._types import KeyT, DependsOnT, IfT, KeyAliasT
@@ -35,7 +36,7 @@ class Step(Step):
     key: KeyT = KeyT()
     """A unique identifier for a step, must not resemble a UUID"""
 
-    allow_dependency_failure: BKBool = BKBool(default=False)
+    allow_dependency_failure: bool = field(default=False, converter=bk_bool(default=False))
     """Whether to proceed with this step and further steps if a step named in the depends_on attribute fails"""
 
     depends_on: DependsOnT = DependsOnT()

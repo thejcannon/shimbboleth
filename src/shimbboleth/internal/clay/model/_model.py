@@ -2,12 +2,11 @@
 Module defining the `Model` base class for all shimbboleth modeling.
 """
 
-from typing import Any, Self, TypeVar, Callable, ClassVar
 import dataclasses
+from typing import Any, Callable, ClassVar, Self, TypeVar
 
 from shimbboleth.internal.clay.jsonT import JSON, JSONObject
 from shimbboleth.internal.clay.model._meta import ModelMeta
-
 
 T = TypeVar("T")
 
@@ -78,6 +77,8 @@ class Model(_ModelBase, metaclass=ModelMeta):
 
         return dump_model(self)
 
-    # @TODO: Why is this here?
     def __setattr__(self, name: str, value: Any):
+        if field := self.__dataclass_fields__.get(name):
+            if converter := field.metadata.get("converter"):
+                return super().__setattr__(name, converter(value))
         return super().__setattr__(name, value)

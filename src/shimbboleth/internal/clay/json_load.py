@@ -1,22 +1,22 @@
-from contextlib import contextmanager
-from functools import singledispatch
-from typing import Any, TypeVar, get_type_hints
-from types import UnionType, GenericAlias
-import re
-import uuid
 import dataclasses
 import logging
+import re
+import uuid
+from contextlib import contextmanager
+from functools import singledispatch
+from types import GenericAlias, UnionType
+from typing import Any, TypeVar, get_type_hints
 
-from shimbboleth.internal.utils import is_shimbboleth_pytesting
-from shimbboleth.internal.clay.jsonT import JSONObject
-from shimbboleth.internal.clay.model import Model
 from shimbboleth.internal.clay._types import (
     AnnotationType,
-    LiteralType,
     GenericUnionType,
+    LiteralType,
     get_origin,
 )
+from shimbboleth.internal.clay.jsonT import JSONObject
+from shimbboleth.internal.clay.model import Model
 from shimbboleth.internal.clay.validation import ValidationError
+from shimbboleth.internal.utils import is_shimbboleth_pytesting
 
 T = TypeVar("T")
 ModelT = TypeVar("ModelT", bound=Model)
@@ -89,9 +89,11 @@ def load(field_type, *, data):
     if issubclass(field_type, Model):
         return field_type.model_load(data)
 
+    # Descriptor types
     if hasattr(field_type, "__set__"):
         type_hints = get_type_hints(field_type.__set__)
         return load(type_hints["value"], data=data)
+
 
     raise WrongTypeError(field_type, data)
 
@@ -261,15 +263,16 @@ class _LoadModelHelper:
 
     @staticmethod
     def load_field(field: dataclasses.Field, data: JSONObject):
-        json_loader = field.metadata.get("json_loader", None)
+        converter = field.metadata.get("json_loader", field.metadata.get("converter", None))
         expected_type = (
-            json_loader.__annotations__["value"] if json_loader else field.type
+            converter.__annotations__["value"] if (converter or converter) else field.type
         )
 
         with ValidationError.context(attr=field.metadata.get("json_alias", field.name)):
             value = load(expected_type, data=data[field.name])
-            if json_loader:
-                value = json_loader(value)
+            # @TODO: Technically this can be removed
+            if converter:
+                value = converter(value)
 
         return value
 

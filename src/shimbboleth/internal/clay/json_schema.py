@@ -1,28 +1,28 @@
-from functools import singledispatch
-from typing import Any, TypeVar
-from types import UnionType, GenericAlias
-import re
-import os
-import uuid
 import dataclasses
+import os
+import re
+import uuid
+from functools import singledispatch
+from types import GenericAlias, UnionType
+from typing import Any, TypeVar
 
-from shimbboleth.internal.utils import is_shimbboleth_pytesting
-from shimbboleth.internal.clay.model import Model
-from shimbboleth.internal.clay.json_dump import dump
 from shimbboleth.internal.clay._types import (
     AnnotationType,
-    LiteralType,
     GenericUnionType,
+    LiteralType,
 )
+from shimbboleth.internal.clay.json_dump import dump
+from shimbboleth.internal.clay.jsonT import JSONObject
+from shimbboleth.internal.clay.model import Model
 from shimbboleth.internal.clay.validation import (
-    MatchesRegex,
-    _NotGenericAlias,
-    MaxLength,
-    NonEmpty,
     Ge,
     Le,
+    MatchesRegex,
+    MaxLength,
+    NonEmpty,
+    _NotGenericAlias,
 )
-from shimbboleth.internal.clay.jsonT import JSONObject
+from shimbboleth.internal.utils import is_shimbboleth_pytesting
 
 T = TypeVar("T")
 ModelT = TypeVar("ModelT", bound=Model)
@@ -210,10 +210,10 @@ class _ModelFieldSchemaHelper:
         if field_schema is not None:
             return field_schema(model_defs=model_defs)
 
-        json_loader = field.metadata.get("json_loader", None)
-        if json_loader:
+        converter = field.metadata.get("json_loader", field.metadata.get("converter", None))
+        if converter:
             input_type = field.metadata.get(
-                "json_schema_type", json_loader.__annotations__["value"]
+                "json_schema_type", converter.__annotations__["value"]
             )
             return schema(input_type, model_defs=model_defs)
         return schema(field.type, model_defs=model_defs)

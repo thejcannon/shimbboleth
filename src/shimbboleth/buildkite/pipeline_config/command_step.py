@@ -1,25 +1,25 @@
-from typing import Literal, Annotated, ClassVar
+from typing import Annotated, ClassVar, Literal
 
-from shimbboleth.internal.clay.model import (
-    Model,
-    field,
-    FieldAlias,
-)
-from shimbboleth.internal.clay.jsonT import JSONObject
-from shimbboleth.internal.clay.validation import (
-    Ge,
-    Le,
-    NonEmptyList,
-    NonEmptyDict,
-    MatchesRegex,
-)
 from shimbboleth.buildkite.pipeline_config._types import (
     BKStrList,
-    BKBool,
     Skip,
     SoftFail,
 )
-from shimbboleth.buildkite.pipeline_config.step import SubStep, Step
+from shimbboleth.buildkite.pipeline_config._converters import bk_bool
+from shimbboleth.buildkite.pipeline_config.step import Step, SubStep
+from shimbboleth.internal.clay.jsonT import JSONObject
+from shimbboleth.internal.clay.model import (
+    FieldAlias,
+    Model,
+    field,
+)
+from shimbboleth.internal.clay.validation import (
+    Ge,
+    Le,
+    MatchesRegex,
+    NonEmptyDict,
+    NonEmptyList,
+)
 
 
 # NB: Forward-declares
@@ -132,10 +132,10 @@ class CommandStep(CommandStep, extra=False):
         class Manual(Model, extra=False):
             """See https://buildkite.com/docs/pipelines/configure/step-types/command-step#retry-attributes-manual-retry-attributes"""
 
-            allowed: BKBool = BKBool(default=True)
+            allowed: bool = field(default=True, converter=bk_bool(default=True))
             """Whether or not this job can be retried manually"""
 
-            permit_on_passed: BKBool = BKBool(default=True)
+            permit_on_passed: bool = field(default=True, converter=bk_bool(default=True))
             """Whether or not this job can be retried after it has passed"""
 
             reason: str | None = None
@@ -177,7 +177,7 @@ class CommandStep(CommandStep, extra=False):
     cache: Cache = field(default_factory=lambda: CommandStep.Cache(paths=[]))
     """See: https://buildkite.com/docs/pipelines/hosted-agents/linux"""
 
-    cancel_on_build_failing: BKBool = BKBool(default=False)
+    cancel_on_build_failing: bool = field(default=False, converter=bk_bool(default=False))
     """Whether to cancel the job as soon as the build is marked as failing"""
 
     command: BKStrList = BKStrList()

@@ -4,7 +4,8 @@ from typing import Literal, ClassVar
 from shimbboleth.internal.clay.model import field, FieldAlias, Model
 from shimbboleth.internal.clay.jsonT import JSONObject
 
-from shimbboleth.buildkite.pipeline_config._types import BKBool, Skip
+from shimbboleth.buildkite.pipeline_config._types import Skip
+from shimbboleth.buildkite.pipeline_config._converters import bk_bool
 
 from shimbboleth.buildkite.pipeline_config.step import SubStep
 
@@ -46,7 +47,7 @@ class TriggerStep(SubStep, extra=False):
     trigger: str
     """The slug of the pipeline to create a build"""
 
-    is_async: BKBool = BKBool(default=False, json_alias="async")
+    is_async: bool = field(default=False, converter=bk_bool(default=False), json_alias="async")
     """Whether to continue the build without waiting for the triggered step to complete"""
 
     build: Build | None = None
@@ -55,7 +56,7 @@ class TriggerStep(SubStep, extra=False):
     skip: Skip = Skip()
     """Whether to skip this step or not. Passing a string provides a reason for skipping this command."""
 
-    soft_fail: BKBool = BKBool(default=False)
+    soft_fail: bool = field(default=False, converter=bk_bool(default=False))
     """When true, failure of the triggered build will not cause the triggering build to fail"""
 
     label: str | None = None

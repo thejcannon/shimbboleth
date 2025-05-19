@@ -74,34 +74,6 @@ class BKStr(_DescriptorBase[str]):
         super().__set__(instance, value)
 
 
-class BKBool(_DescriptorBase[bool]):
-    """
-    A descriptor for Buildkite's "boolean" type.
-
-    @TODO: Mention get/set types.
-    """
-
-    def __init__(self, *, default: bool, json_alias: str | None = None) -> None:
-        self.default = default
-        self.json_alias = json_alias
-
-    def __get__(self, instance, owner) -> T:
-        if instance is None:
-            return self.default
-        return instance.__dict__[self.name]
-
-    def __set__(self, instance, value: bool | Literal["true", "false"] | None) -> None:
-        if value is None:
-            value = self.default
-        if value in (True, "true"):
-            value = True
-        elif value in (False, "false"):
-            value = False
-        else:
-            raise ValueError(f"Invalid value for bool: {value}")
-        instance.__dict__[self.name] = value
-
-
 class Skip(_DescriptorBase[bool | str]):
     """
     A descriptor for Buildkite's "skip" type.

@@ -1,10 +1,9 @@
 from typing import ClassVar, Literal
 
-
-from shimbboleth.internal.clay.jsonT import JSON
-from shimbboleth.internal.clay.model import FieldAlias
-from shimbboleth.buildkite.pipeline_config._types import BKBool
+from shimbboleth.buildkite.pipeline_config._converters import bk_bool
 from shimbboleth.buildkite.pipeline_config.step import SubStep
+from shimbboleth.internal.clay.jsonT import JSON
+from shimbboleth.internal.clay.model import FieldAlias, field
 
 
 class WaitStep(SubStep, extra=False):
@@ -14,7 +13,7 @@ class WaitStep(SubStep, extra=False):
     https://buildkite.com/docs/pipelines/wait-step
     """
 
-    continue_on_failure: BKBool = BKBool(default=False)
+    continue_on_failure: bool = field(default=False, converter=bk_bool(default=False))
     """Continue to the next steps, even if the previous group of steps fail"""
 
     # NB: Can be literally anything, since its ignored
